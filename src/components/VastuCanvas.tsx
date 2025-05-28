@@ -1,6 +1,6 @@
-
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Canvas as FabricCanvas, FabricImage, Polygon, Circle } from "fabric";
+import { Button } from "@/components/ui/button";
 
 interface Point {
   x: number;
@@ -62,25 +62,15 @@ export const VastuCanvas = ({
       onPolygonPointAdd(point);
     };
 
-    const handleMouseDblClick = () => {
-      console.log("Double click event triggered", { isSelectingPolygon, pointsLength: polygonPoints.length });
-      
-      if (isSelectingPolygon && polygonPoints.length >= 3) {
-        onPolygonComplete(polygonPoints);
-      }
-    };
-
     canvas.on("mouse:down", handleMouseDown);
-    canvas.on("mouse:dblclick", handleMouseDblClick);
 
     setFabricCanvas(canvas);
 
     return () => {
       canvas.off("mouse:down", handleMouseDown);
-      canvas.off("mouse:dblclick", handleMouseDblClick);
       canvas.dispose();
     };
-  }, [isSelectingPolygon, onPolygonPointAdd, onPolygonComplete, polygonPoints]);
+  }, [isSelectingPolygon, onPolygonPointAdd]);
 
   // Load map image
   useEffect(() => {
@@ -226,6 +216,12 @@ export const VastuCanvas = ({
     });
   }, [fabricCanvas, center, chakraRotation, chakraScale, chakraOpacity]);
 
+  const handleFinishSelection = () => {
+    if (polygonPoints.length >= 3) {
+      onPolygonComplete(polygonPoints);
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-lg p-4 border-2 border-gray-200">
@@ -233,11 +229,22 @@ export const VastuCanvas = ({
           <h3 className="text-lg font-semibold text-gray-800">
             Vastu Analysis Canvas
           </h3>
-          {isSelectingPolygon && (
-            <div className="text-sm text-blue-600 font-medium">
-              Click to add points • Double-click to finish
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {isSelectingPolygon && (
+              <div className="text-sm text-blue-600 font-medium">
+                Click to add points
+              </div>
+            )}
+            {isSelectingPolygon && polygonPoints.length >= 3 && (
+              <Button
+                onClick={handleFinishSelection}
+                className="bg-green-600 hover:bg-green-700 text-white"
+                size="sm"
+              >
+                Finish Selection
+              </Button>
+            )}
+          </div>
         </div>
         
         <div className="relative overflow-hidden rounded-lg border border-gray-300">
