@@ -112,7 +112,6 @@ export const VastuCanvas = ({
       });
 
       fabricCanvas.add(img);
-      // Use sendObjectToBack instead of sendToBack for Fabric.js v6
       fabricCanvas.sendObjectToBack(img);
       setMapImageObject(img);
       fabricCanvas.renderAll();
@@ -140,64 +139,35 @@ export const VastuCanvas = ({
 
       fabricCanvas.add(polygon);
       setPolygonObject(polygon);
+      console.log("Polygon added with points:", polygonPoints);
     }
 
     fabricCanvas.renderAll();
   }, [fabricCanvas, polygonPoints]);
 
-  // Load and update Shakti Chakra
-  useEffect(() => {
-    if (!fabricCanvas || !center) return;
-
-    // Create transparent version of the uploaded Shakti Chakra
-    const chakraUrl = "/lovable-uploads/e824cac3-4bde-4c8d-831a-eb96d1098e85.png";
-
-    FabricImage.fromURL(chakraUrl).then((img) => {
-      // Remove existing chakra
-      if (chakraImageObject) {
-        fabricCanvas.remove(chakraImageObject);
-      }
-
-      // Make background transparent and apply styling
-      img.set({
-        left: center.x,
-        top: center.y,
-        originX: "center",
-        originY: "center",
-        scaleX: chakraScale * 0.3, // Base scale for good fit
-        scaleY: chakraScale * 0.3,
-        angle: chakraRotation,
-        opacity: chakraOpacity,
-        selectable: false,
-        evented: false,
-      });
-
-      // Apply filters to make white background transparent
-      img.filters = [];
-      fabricCanvas.add(img);
-      setChakraImageObject(img);
-      fabricCanvas.renderAll();
-    });
-  }, [fabricCanvas, center, chakraRotation, chakraScale, chakraOpacity]);
-
   // Update center point indicator
   useEffect(() => {
+    console.log("Center point effect triggered", { center, fabricCanvas: !!fabricCanvas });
+    
     if (!fabricCanvas) return;
 
     // Remove existing center point
     if (centerPointObject) {
       fabricCanvas.remove(centerPointObject);
       setCenterPointObject(null);
+      console.log("Removed existing center point");
     }
 
     if (center) {
+      console.log("Creating center point at:", center);
+      
       const centerPoint = new Circle({
         left: center.x,
         top: center.y,
-        radius: 4,
+        radius: 8,
         fill: "#ef4444",
         stroke: "#ffffff",
-        strokeWidth: 2,
+        strokeWidth: 3,
         originX: "center",
         originY: "center",
         selectable: false,
@@ -206,10 +176,55 @@ export const VastuCanvas = ({
 
       fabricCanvas.add(centerPoint);
       setCenterPointObject(centerPoint);
+      console.log("Center point added successfully");
     }
 
     fabricCanvas.renderAll();
   }, [fabricCanvas, center]);
+
+  // Load and update Shakti Chakra
+  useEffect(() => {
+    console.log("Chakra effect triggered", { center, fabricCanvas: !!fabricCanvas });
+    
+    if (!fabricCanvas || !center) {
+      console.log("Skipping chakra - no canvas or center");
+      return;
+    }
+
+    const chakraUrl = "/lovable-uploads/e824cac3-4bde-4c8d-831a-eb96d1098e85.png";
+    console.log("Loading chakra from:", chakraUrl);
+
+    FabricImage.fromURL(chakraUrl).then((img) => {
+      console.log("Chakra image loaded successfully");
+      
+      // Remove existing chakra
+      if (chakraImageObject) {
+        fabricCanvas.remove(chakraImageObject);
+        console.log("Removed existing chakra");
+      }
+
+      // Configure chakra image
+      img.set({
+        left: center.x,
+        top: center.y,
+        originX: "center",
+        originY: "center",
+        scaleX: chakraScale * 0.5, // Increased base scale for better visibility
+        scaleY: chakraScale * 0.5,
+        angle: chakraRotation,
+        opacity: chakraOpacity,
+        selectable: false,
+        evented: false,
+      });
+
+      fabricCanvas.add(img);
+      setChakraImageObject(img);
+      console.log("Chakra added at center:", center, "with scale:", chakraScale * 0.5);
+      fabricCanvas.renderAll();
+    }).catch((error) => {
+      console.error("Failed to load chakra image:", error);
+    });
+  }, [fabricCanvas, center, chakraRotation, chakraScale, chakraOpacity]);
 
   return (
     <div className="w-full">
@@ -244,6 +259,14 @@ export const VastuCanvas = ({
                 <span className="text-green-600 font-medium">✓ Area defined</span>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Debug info */}
+        {center && (
+          <div className="mt-2 text-xs text-gray-500">
+            Debug: Center point should be visible at ({Math.round(center.x)}, {Math.round(center.y)})
+            {chakraImageObject && " | Shakti Chakra loaded"}
           </div>
         )}
       </div>
