@@ -47,13 +47,56 @@ const Index = () => {
 
   const calculateCenter = useCallback((points: Point[]): Point => {
     if (points.length === 0) return { x: 0, y: 0 };
+    if (points.length < 3) {
+      // For less than 3 points, just use average
+      const sumX = points.reduce((sum, point) => sum + point.x, 0);
+      const sumY = points.reduce((sum, point) => sum + point.y, 0);
+      return {
+        x: sumX / points.length,
+        y: sumY / points.length
+      };
+    }
+
+    // Calculate polygon centroid (area-weighted center)
+    let area = 0;
+    let centroidX = 0;
+    let centroidY = 0;
+
+    // Use shoelace formula for polygon area and centroid
+    for (let i = 0; i < points.length; i++) {
+      const j = (i + 1) % points.length;
+      const xi = points[i].x;
+      const yi = points[i].y;
+      const xj = points[j].x;
+      const yj = points[j].y;
+      
+      const crossProduct = xi * yj - xj * yi;
+      area += crossProduct;
+      centroidX += (xi + xj) * crossProduct;
+      centroidY += (yi + yj) * crossProduct;
+    }
+
+    area = area / 2;
     
-    const sumX = points.reduce((sum, point) => sum + point.x, 0);
-    const sumY = points.reduce((sum, point) => sum + point.y, 0);
-    
+    if (Math.abs(area) < 0.001) {
+      // Fallback to simple average if area is too small
+      const sumX = points.reduce((sum, point) => sum + point.x, 0);
+      const sumY = points.reduce((sum, point) => sum + point.y, 0);
+      return {
+        x: sumX / points.length,
+        y: sumY / points.length
+      };
+    }
+
+    centroidX = centroidX / (6 * area);
+    centroidY = centroidY / (6 * area);
+
+    console.log("Polygon area:", Math.abs(area));
+    console.log("Calculated centroid:", { x: centroidX, y: centroidY });
+
     return {
-      x: sumX / points.length,
-      y: sumY / points.length
+      x: centroidX,
+      y: centroidY
     };
   }, []);
 
