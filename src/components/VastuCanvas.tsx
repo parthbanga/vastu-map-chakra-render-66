@@ -99,7 +99,8 @@ export const VastuCanvas = ({
       });
 
       fabricCanvas.add(img);
-      fabricCanvas.sendToBack(img);
+      // Use sendObjectToBack instead of sendToBack for Fabric.js v6
+      fabricCanvas.sendObjectToBack(img);
       setMapImageObject(img);
       fabricCanvas.renderAll();
     });
