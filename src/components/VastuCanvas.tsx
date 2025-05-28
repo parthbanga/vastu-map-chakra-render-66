@@ -48,26 +48,39 @@ export const VastuCanvas = ({
       selection: false,
     });
 
-    canvas.on("mouse:down", (e) => {
-      if (!isSelectingPolygon || !e.pointer) return;
+    // Mouse event handlers
+    const handleMouseDown = (e: any) => {
+      console.log("Mouse down event triggered", { isSelectingPolygon, event: e });
       
-      const point = { x: e.pointer.x, y: e.pointer.y };
+      if (!isSelectingPolygon) return;
+      
+      // Get the pointer position relative to the canvas
+      const pointer = canvas.getPointer(e.e);
+      console.log("Pointer position:", pointer);
+      
+      const point = { x: pointer.x, y: pointer.y };
       onPolygonPointAdd(point);
-    });
+    };
 
-    // Double-click to complete polygon
-    canvas.on("mouse:dblclick", () => {
+    const handleMouseDblClick = () => {
+      console.log("Double click event triggered", { isSelectingPolygon, pointsLength: polygonPoints.length });
+      
       if (isSelectingPolygon && polygonPoints.length >= 3) {
         onPolygonComplete(polygonPoints);
       }
-    });
+    };
+
+    canvas.on("mouse:down", handleMouseDown);
+    canvas.on("mouse:dblclick", handleMouseDblClick);
 
     setFabricCanvas(canvas);
 
     return () => {
+      canvas.off("mouse:down", handleMouseDown);
+      canvas.off("mouse:dblclick", handleMouseDblClick);
       canvas.dispose();
     };
-  }, []);
+  }, [isSelectingPolygon, onPolygonPointAdd, onPolygonComplete, polygonPoints]);
 
   // Load map image
   useEffect(() => {
