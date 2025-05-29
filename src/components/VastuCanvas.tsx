@@ -172,7 +172,7 @@ export const VastuCanvas = ({
     fabricCanvas.renderAll();
   }, [fabricCanvas, center]);
 
-  // Load and update Shakti Chakra
+  // Load and update Shakti Chakra with canvas bounds constraint
   useEffect(() => {
     console.log("Chakra effect triggered", { center, fabricCanvas: !!fabricCanvas });
     
@@ -193,14 +193,27 @@ export const VastuCanvas = ({
         console.log("Removed existing chakra");
       }
 
+      const canvasWidth = fabricCanvas.width || 800;
+      const canvasHeight = fabricCanvas.height || 600;
+      const imgWidth = img.width || 1;
+      const imgHeight = img.height || 1;
+
+      // Calculate maximum scale that keeps chakra within canvas bounds
+      const maxScaleX = canvasWidth / imgWidth;
+      const maxScaleY = canvasHeight / imgHeight;
+      const maxScale = Math.min(maxScaleX, maxScaleY) * 0.9; // 90% of max to add some padding
+      
+      // Constrain the user's scale to not exceed canvas bounds
+      const constrainedScale = Math.min(chakraScale * 0.5, maxScale);
+
       // Configure chakra image
       img.set({
         left: center.x,
         top: center.y,
         originX: "center",
         originY: "center",
-        scaleX: chakraScale * 0.5, // Increased base scale for better visibility
-        scaleY: chakraScale * 0.5,
+        scaleX: constrainedScale,
+        scaleY: constrainedScale,
         angle: chakraRotation,
         opacity: chakraOpacity,
         selectable: false,
@@ -209,7 +222,7 @@ export const VastuCanvas = ({
 
       fabricCanvas.add(img);
       setChakraImageObject(img);
-      console.log("Chakra added at center:", center, "with scale:", chakraScale * 0.5);
+      console.log("Chakra added at center:", center, "with constrained scale:", constrainedScale);
       fabricCanvas.renderAll();
     }).catch((error) => {
       console.error("Failed to load chakra image:", error);
@@ -221,6 +234,28 @@ export const VastuCanvas = ({
       onPolygonComplete(polygonPoints);
     }
   };
+
+  // Export function for high-quality PDF
+  const exportCanvasData = useCallback(() => {
+    if (!fabricCanvas) return null;
+    
+    return {
+      dataURL: fabricCanvas.toDataURL({
+        format: 'png',
+        quality: 1,
+        multiplier: 3 // Higher resolution for PDF export
+      }),
+      width: fabricCanvas.width,
+      height: fabricCanvas.height
+    };
+  }, [fabricCanvas]);
+
+  // Expose export function to parent
+  useEffect(() => {
+    if (fabricCanvas) {
+      (window as any).exportVastuCanvas = exportCanvasData;
+    }
+  }, [fabricCanvas, exportCanvasData]);
 
   return (
     <div className="w-full">

@@ -4,7 +4,6 @@ import { Download, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 interface Point {
   x: number;
@@ -39,41 +38,48 @@ export const PDFExporter = ({
     setIsExporting(true);
     
     try {
-      // Find the canvas element
-      const canvasElement = document.querySelector('canvas') as HTMLCanvasElement;
-      if (!canvasElement) {
-        throw new Error("Canvas not found");
+      // Get high-quality canvas data directly from Fabric.js
+      const canvasData = (window as any).exportVastuCanvas?.();
+      
+      if (!canvasData) {
+        throw new Error("Canvas export function not available");
       }
 
-      // Create a higher resolution version for PDF
-      const canvas = await html2canvas(canvasElement, {
-        scale: 2, // Higher resolution
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff"
-      });
-
-      const imgData = canvas.toDataURL('image/png');
+      const { dataURL, width, height } = canvasData;
       
       // Create PDF
       const pdf = new jsPDF({
-        orientation: 'landscape',
+        orientation: width > height ? 'landscape' : 'portrait',
         unit: 'mm',
         format: 'a4'
       });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
 
       // Add title
       pdf.setFontSize(20);
       pdf.setTextColor(51, 51, 51);
       pdf.text('Vastu Shakti Chakra Analysis', 20, 20);
 
-      // Add image
-      const imgWidth = 250;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 20, 30, imgWidth, imgHeight);
+      // Calculate image dimensions to fit page while maintaining aspect ratio
+      const maxImgWidth = pageWidth - 40; // 20mm margin on each side
+      const maxImgHeight = pageHeight - 80; // Space for title and metadata
+      
+      const imgAspectRatio = width / height;
+      let imgWidth = maxImgWidth;
+      let imgHeight = maxImgWidth / imgAspectRatio;
+      
+      if (imgHeight > maxImgHeight) {
+        imgHeight = maxImgHeight;
+        imgWidth = maxImgHeight * imgAspectRatio;
+      }
+
+      // Add high-quality image
+      pdf.addImage(dataURL, 'PNG', 20, 30, imgWidth, imgHeight, undefined, 'FAST');
 
       // Add metadata
-      const metadataY = 30 + imgHeight + 20;
+      const metadataY = 35 + imgHeight;
       pdf.setFontSize(12);
       pdf.setTextColor(85, 85, 85);
       
@@ -90,34 +96,16 @@ export const PDFExporter = ({
       ];
 
       details.forEach((detail, index) => {
-        pdf.text(detail, 20, metadataY + 10 + (index * 5));
-      });
-
-      // Add zones information
-      const zonesY = metadataY + 50;
-      pdf.setFontSize(12);
-      pdf.setTextColor(51, 51, 51);
-      pdf.text('Shakti Chakra Information:', 20, zonesY);
-      
-      pdf.setFontSize(9);
-      pdf.setTextColor(85, 85, 85);
-      const zonesInfo = [
-        '• 16 Zones: Each zone represents specific energies and influences',
-        '• 32 Entrances: Strategic entry points for optimal energy flow',
-        '• Devta Positions: Divine energies placed according to Vastu principles',
-        '• Directional Alignment: Proper orientation for maximum benefits',
-        '• Center Point: Brahmasthan - the most sacred energy center'
-      ];
-
-      zonesInfo.forEach((info, index) => {
-        pdf.text(info, 20, zonesY + 10 + (index * 4));
+        if (metadataY + 10 + (index * 5) < pageHeight - 10) {
+          pdf.text(detail, 20, metadataY + 10 + (index * 5));
+        }
       });
 
       // Save the PDF
       const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
       pdf.save(`vastu-chakra-analysis-${timestamp}.pdf`);
       
-      toast.success("PDF exported successfully!");
+      toast.success("High-quality PDF exported successfully!");
       
     } catch (error) {
       console.error("Export error:", error);
