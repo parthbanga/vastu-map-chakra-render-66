@@ -172,7 +172,7 @@ export const VastuCanvas = ({
     fabricCanvas.renderAll();
   }, [fabricCanvas, center]);
 
-  // Load and update Shakti Chakra with canvas bounds constraint
+  // Load and update Shakti Chakra with improved scaling
   useEffect(() => {
     console.log("Chakra effect triggered", { center, fabricCanvas: !!fabricCanvas });
     
@@ -198,13 +198,14 @@ export const VastuCanvas = ({
       const imgWidth = img.width || 1;
       const imgHeight = img.height || 1;
 
-      // Calculate maximum scale that keeps chakra within canvas bounds
-      const maxScaleX = canvasWidth / imgWidth;
-      const maxScaleY = canvasHeight / imgHeight;
-      const maxScale = Math.min(maxScaleX, maxScaleY) * 0.9; // 90% of max to add some padding
+      // Calculate scale to cover entire canvas when at maximum
+      // Use diagonal distance to ensure full coverage even when rotated
+      const canvasDiagonal = Math.sqrt(canvasWidth * canvasWidth + canvasHeight * canvasHeight);
+      const imgDiagonal = Math.sqrt(imgWidth * imgWidth + imgHeight * imgHeight);
+      const maxScaleForFullCoverage = canvasDiagonal / imgDiagonal;
       
-      // Constrain the user's scale to not exceed canvas bounds
-      const constrainedScale = Math.min(chakraScale * 0.5, maxScale);
+      // Allow chakra to scale up to cover the entire canvas
+      const finalScale = chakraScale * maxScaleForFullCoverage * 0.5;
 
       // Configure chakra image
       img.set({
@@ -212,8 +213,8 @@ export const VastuCanvas = ({
         top: center.y,
         originX: "center",
         originY: "center",
-        scaleX: constrainedScale,
-        scaleY: constrainedScale,
+        scaleX: finalScale,
+        scaleY: finalScale,
         angle: chakraRotation,
         opacity: chakraOpacity,
         selectable: false,
@@ -222,7 +223,7 @@ export const VastuCanvas = ({
 
       fabricCanvas.add(img);
       setChakraImageObject(img);
-      console.log("Chakra added at center:", center, "with constrained scale:", constrainedScale);
+      console.log("Chakra added at center:", center, "with scale:", finalScale);
       fabricCanvas.renderAll();
     }).catch((error) => {
       console.error("Failed to load chakra image:", error);
