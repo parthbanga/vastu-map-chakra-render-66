@@ -37,13 +37,13 @@ export const VastuCanvas = ({
   const [chakraImageObject, setChakraImageObject] = useState<FabricImage | null>(null);
   const [centerPointObject, setCenterPointObject] = useState<Circle | null>(null);
 
-  // Initialize canvas
+  // Initialize canvas with larger dimensions
   useEffect(() => {
     if (!canvasRef.current) return;
 
     const canvas = new FabricCanvas(canvasRef.current, {
-      width: 800,
-      height: 600,
+      width: 1200,  // Increased from 800
+      height: 900,  // Increased from 600
       backgroundColor: "#f8fafc",
       selection: false,
     });
@@ -83,8 +83,8 @@ export const VastuCanvas = ({
       }
 
       // Scale image to fit canvas while maintaining aspect ratio
-      const canvasWidth = fabricCanvas.width || 800;
-      const canvasHeight = fabricCanvas.height || 600;
+      const canvasWidth = fabricCanvas.width || 1200;
+      const canvasHeight = fabricCanvas.height || 900;
       const imgWidth = img.width || 1;
       const imgHeight = img.height || 1;
       
@@ -172,7 +172,7 @@ export const VastuCanvas = ({
     fabricCanvas.renderAll();
   }, [fabricCanvas, center]);
 
-  // Load and update Shakti Chakra with proper scaling
+  // Load and update Shakti Chakra with unlimited scaling
   useEffect(() => {
     console.log("Chakra effect triggered", { center, fabricCanvas: !!fabricCanvas });
     
@@ -193,21 +193,21 @@ export const VastuCanvas = ({
         console.log("Removed existing chakra");
       }
 
-      const canvasWidth = fabricCanvas.width || 800;
-      const canvasHeight = fabricCanvas.height || 600;
+      const canvasWidth = fabricCanvas.width || 1200;
+      const canvasHeight = fabricCanvas.height || 900;
       const imgWidth = img.width || 1;
       const imgHeight = img.height || 1;
 
-      // Calculate reasonable scale that allows full coverage but isn't excessive
+      // Calculate much more generous scale limits for complete coverage
       const canvasDiagonal = Math.sqrt(canvasWidth * canvasWidth + canvasHeight * canvasHeight);
       const imgDiagonal = Math.sqrt(imgWidth * imgWidth + imgHeight * imgHeight);
       const baseScale = canvasDiagonal / imgDiagonal;
       
-      // Apply user's scale with reasonable limits (0.1x to 1.5x of full coverage)
+      // Allow scaling from 10% to 300% of full coverage for maximum flexibility
       const minScale = 0.1;
-      const maxScale = 1.5;
+      const maxScale = 3.0;  // Increased from 1.5 to 3.0
       const normalizedScale = minScale + (chakraScale * (maxScale - minScale));
-      const finalScale = normalizedScale * baseScale * 0.8; // 0.8 factor for better fit
+      const finalScale = normalizedScale * baseScale;
 
       // Configure chakra image
       img.set({
