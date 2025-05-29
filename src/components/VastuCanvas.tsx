@@ -172,7 +172,7 @@ export const VastuCanvas = ({
     fabricCanvas.renderAll();
   }, [fabricCanvas, center]);
 
-  // Load and update Shakti Chakra with improved scaling
+  // Load and update Shakti Chakra with proper scaling
   useEffect(() => {
     console.log("Chakra effect triggered", { center, fabricCanvas: !!fabricCanvas });
     
@@ -198,14 +198,16 @@ export const VastuCanvas = ({
       const imgWidth = img.width || 1;
       const imgHeight = img.height || 1;
 
-      // Calculate scale to cover entire canvas when at maximum
-      // Use diagonal distance to ensure full coverage even when rotated
+      // Calculate reasonable scale that allows full coverage but isn't excessive
       const canvasDiagonal = Math.sqrt(canvasWidth * canvasWidth + canvasHeight * canvasHeight);
       const imgDiagonal = Math.sqrt(imgWidth * imgWidth + imgHeight * imgHeight);
-      const maxScaleForFullCoverage = canvasDiagonal / imgDiagonal;
+      const baseScale = canvasDiagonal / imgDiagonal;
       
-      // Allow chakra to scale up to cover the entire canvas
-      const finalScale = chakraScale * maxScaleForFullCoverage * 0.5;
+      // Apply user's scale with reasonable limits (0.1x to 1.5x of full coverage)
+      const minScale = 0.1;
+      const maxScale = 1.5;
+      const normalizedScale = minScale + (chakraScale * (maxScale - minScale));
+      const finalScale = normalizedScale * baseScale * 0.8; // 0.8 factor for better fit
 
       // Configure chakra image
       img.set({
