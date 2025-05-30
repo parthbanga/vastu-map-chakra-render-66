@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Canvas as FabricCanvas, FabricImage, Polygon, Circle } from "fabric";
 import { Button } from "@/components/ui/button";
@@ -31,19 +32,56 @@ export const VastuCanvas = ({
   chakraOpacity
 }: VastuCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
   const [mapImageObject, setMapImageObject] = useState<FabricImage | null>(null);
   const [polygonObject, setPolygonObject] = useState<Polygon | null>(null);
   const [chakraImageObject, setChakraImageObject] = useState<FabricImage | null>(null);
   const [centerPointObject, setCenterPointObject] = useState<Circle | null>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 1200, height: 900 });
 
-  // Initialize canvas with larger dimensions
+  // Calculate responsive canvas size
+  const calculateCanvasSize = useCallback(() => {
+    if (!containerRef.current) return { width: 1200, height: 900 };
+    
+    const container = containerRef.current;
+    const containerWidth = container.clientWidth - 32; // Account for padding
+    const maxWidth = Math.min(containerWidth, 1200);
+    const aspectRatio = 4/3; // 1200/900
+    const height = Math.min(maxWidth / aspectRatio, 900);
+    const width = height * aspectRatio;
+    
+    return { width: Math.floor(width), height: Math.floor(height) };
+  }, []);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      const newSize = calculateCanvasSize();
+      setCanvasSize(newSize);
+      
+      if (fabricCanvas) {
+        fabricCanvas.setDimensions(newSize);
+        fabricCanvas.renderAll();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial size calculation
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, [calculateCanvasSize, fabricCanvas]);
+
+  // Initialize canvas with responsive dimensions
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    const initialSize = calculateCanvasSize();
+    setCanvasSize(initialSize);
+
     const canvas = new FabricCanvas(canvasRef.current, {
-      width: 1200,  // Increased from 800
-      height: 900,  // Increased from 600
+      width: initialSize.width,
+      height: initialSize.height,
       backgroundColor: "#f8fafc",
       selection: false,
     });
@@ -70,7 +108,7 @@ export const VastuCanvas = ({
       canvas.off("mouse:down", handleMouseDown);
       canvas.dispose();
     };
-  }, [isSelectingPolygon, onPolygonPointAdd]);
+  }, [isSelectingPolygon, onPolygonPointAdd, calculateCanvasSize]);
 
   // Load map image
   useEffect(() => {
@@ -83,8 +121,8 @@ export const VastuCanvas = ({
       }
 
       // Scale image to fit canvas while maintaining aspect ratio
-      const canvasWidth = fabricCanvas.width || 1200;
-      const canvasHeight = fabricCanvas.height || 900;
+      const canvasWidth = fabricCanvas.width || canvasSize.width;
+      const canvasHeight = fabricCanvas.height || canvasSize.height;
       const imgWidth = img.width || 1;
       const imgHeight = img.height || 1;
       
@@ -106,7 +144,7 @@ export const VastuCanvas = ({
       setMapImageObject(img);
       fabricCanvas.renderAll();
     });
-  }, [fabricCanvas, mapImage]);
+  }, [fabricCanvas, mapImage, canvasSize]);
 
   // Update polygon display
   useEffect(() => {
@@ -193,8 +231,8 @@ export const VastuCanvas = ({
         console.log("Removed existing chakra");
       }
 
-      const canvasWidth = fabricCanvas.width || 1200;
-      const canvasHeight = fabricCanvas.height || 900;
+      const canvasWidth = fabricCanvas.width || canvasSize.width;
+      const canvasHeight = fabricCanvas.height || canvasSize.height;
       const imgWidth = img.width || 1;
       const imgHeight = img.height || 1;
 
@@ -230,7 +268,7 @@ export const VastuCanvas = ({
     }).catch((error) => {
       console.error("Failed to load chakra image:", error);
     });
-  }, [fabricCanvas, center, chakraRotation, chakraScale, chakraOpacity]);
+  }, [fabricCanvas, center, chakraRotation, chakraScale, chakraOpacity, canvasSize]);
 
   const handleFinishSelection = () => {
     if (polygonPoints.length >= 3) {
@@ -261,22 +299,22 @@ export const VastuCanvas = ({
   }, [fabricCanvas, exportCanvasData]);
 
   return (
-    <div className="w-full">
-      <div className="bg-white rounded-lg shadow-lg p-4 border-2 border-gray-200">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">
+    <div className="w-full" ref={containerRef}>
+      <div className="bg-white rounded-lg shadow-lg p-2 sm:p-4 border-2 border-gray-200">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800">
             Vastu Analysis Canvas
           </h3>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
             {isSelectingPolygon && (
-              <div className="text-sm text-blue-600 font-medium">
+              <div className="text-xs sm:text-sm text-blue-600 font-medium">
                 Click to add points
               </div>
             )}
             {isSelectingPolygon && polygonPoints.length >= 3 && (
               <Button
                 onClick={handleFinishSelection}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
                 size="sm"
               >
                 Finish Selection
@@ -285,18 +323,24 @@ export const VastuCanvas = ({
           </div>
         </div>
         
-        <div className="relative overflow-hidden rounded-lg border border-gray-300">
-          <canvas
-            ref={canvasRef}
-            className="max-w-full block"
-            style={{ cursor: isSelectingPolygon ? "crosshair" : "default" }}
-          />
+        <div className="relative overflow-auto rounded-lg border border-gray-300 bg-gray-50">
+          <div className="min-w-fit">
+            <canvas
+              ref={canvasRef}
+              className="block border-0"
+              style={{ 
+                cursor: isSelectingPolygon ? "crosshair" : "default",
+                maxWidth: "100%",
+                height: "auto"
+              }}
+            />
+          </div>
         </div>
 
         {polygonPoints.length > 0 && (
-          <div className="mt-4 text-sm text-gray-600">
-            <div className="flex flex-wrap gap-4">
-              <span>Points selected: {polygonPoints.length}</span>
+          <div className="mt-4 text-xs sm:text-sm text-gray-600">
+            <div className="flex flex-wrap gap-2 sm:gap-4">
+              <span>Points: {polygonPoints.length}</span>
               {center && (
                 <span>Center: ({Math.round(center.x)}, {Math.round(center.y)})</span>
               )}
@@ -310,7 +354,7 @@ export const VastuCanvas = ({
         {/* Debug info */}
         {center && (
           <div className="mt-2 text-xs text-gray-500">
-            Debug: Center point should be visible at ({Math.round(center.x)}, {Math.round(center.y)})
+            Canvas: {canvasSize.width}×{canvasSize.height} | Center: ({Math.round(center.x)}, {Math.round(center.y)})
             {chakraImageObject && " | Shakti Chakra loaded"}
           </div>
         )}
