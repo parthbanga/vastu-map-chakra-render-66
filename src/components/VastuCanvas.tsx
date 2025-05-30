@@ -225,7 +225,7 @@ export const VastuCanvas = ({
     fabricCanvas.renderAll();
   }, [fabricCanvas, center]);
 
-  // Load and update Shakti Chakra with improved scaling
+  // Load and update Shakti Chakra with proper boundary constraints
   useEffect(() => {
     console.log("Chakra effect triggered", { center, fabricCanvas: !!fabricCanvas });
     
@@ -251,24 +251,28 @@ export const VastuCanvas = ({
       const imgWidth = img.width || 1;
       const imgHeight = img.height || 1;
 
-      // Calculate scale that ensures chakra fits within canvas at minimum scale
-      // Use the smaller canvas dimension to ensure it always fits
-      const minCanvasDimension = Math.min(canvasWidth, canvasHeight);
-      const maxImgDimension = Math.max(imgWidth, imgHeight);
+      // Calculate scale ensuring chakra always stays within canvas bounds
+      const canvasMargin = 20; // Minimum margin from canvas edges
+      const effectiveCanvasWidth = canvasWidth - (canvasMargin * 2);
+      const effectiveCanvasHeight = canvasHeight - (canvasMargin * 2);
       
-      // Base scale ensures the image fits within canvas at minimum setting
-      const baseScale = (minCanvasDimension * 0.2) / maxImgDimension; // 20% of canvas at minimum
+      // Maximum scale that keeps the chakra within canvas bounds
+      const maxScaleX = effectiveCanvasWidth / imgWidth;
+      const maxScaleY = effectiveCanvasHeight / imgHeight;
+      const maxAllowedScale = Math.min(maxScaleX, maxScaleY);
       
-      // Scale from 20% to 500% of canvas coverage
-      const minScale = 1.0; // This represents the base scale (20% of canvas)
-      const maxScale = 25.0; // This allows up to 500% of canvas coverage
-      const normalizedScale = minScale + (chakraScale * (maxScale - minScale));
-      const finalScale = normalizedScale * baseScale;
+      // Scale range: minimum 10% to maximum that fits within canvas
+      const minScale = maxAllowedScale * 0.1; // 10% of max allowed
+      const maxScale = maxAllowedScale; // Full canvas coverage with margin
+      
+      // Apply user's scale preference within safe bounds
+      const finalScale = minScale + (chakraScale * (maxScale - minScale));
 
-      console.log("Scale calculation:", {
+      console.log("Safe scale calculation:", {
         canvasWidth, canvasHeight, imgWidth, imgHeight,
-        minCanvasDimension, maxImgDimension, baseScale,
-        chakraScale, normalizedScale, finalScale
+        effectiveCanvasWidth, effectiveCanvasHeight,
+        maxScaleX, maxScaleY, maxAllowedScale,
+        minScale, maxScale, chakraScale, finalScale
       });
 
       // Configure chakra image
@@ -287,7 +291,7 @@ export const VastuCanvas = ({
 
       fabricCanvas.add(img);
       setChakraImageObject(img);
-      console.log("Chakra added at center:", center, "with scale:", finalScale);
+      console.log("Chakra added at center:", center, "with safe scale:", finalScale);
       fabricCanvas.renderAll();
     }).catch((error) => {
       console.error("Failed to load chakra image:", error);
