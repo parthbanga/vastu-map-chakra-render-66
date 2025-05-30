@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Canvas as FabricCanvas, FabricImage, Polygon, Circle } from "fabric";
 import { Button } from "@/components/ui/button";
@@ -38,20 +37,36 @@ export const VastuCanvas = ({
   const [polygonObject, setPolygonObject] = useState<Polygon | null>(null);
   const [chakraImageObject, setChakraImageObject] = useState<FabricImage | null>(null);
   const [centerPointObject, setCenterPointObject] = useState<Circle | null>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 1200, height: 900 });
+  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
 
-  // Calculate responsive canvas size
+  // Calculate responsive canvas size for mobile
   const calculateCanvasSize = useCallback(() => {
-    if (!containerRef.current) return { width: 1200, height: 900 };
+    if (!containerRef.current) return { width: 800, height: 600 };
     
     const container = containerRef.current;
-    const containerWidth = container.clientWidth - 32; // Account for padding
-    const maxWidth = Math.min(containerWidth, 1200);
-    const aspectRatio = 4/3; // 1200/900
-    const height = Math.min(maxWidth / aspectRatio, 900);
-    const width = height * aspectRatio;
+    const containerWidth = container.clientWidth;
+    const viewportWidth = window.innerWidth;
     
-    return { width: Math.floor(width), height: Math.floor(height) };
+    // Mobile-first responsive sizing
+    let maxWidth: number;
+    if (viewportWidth < 640) {
+      // Mobile phones
+      maxWidth = Math.min(containerWidth - 16, viewportWidth - 32);
+    } else if (viewportWidth < 1024) {
+      // Tablets
+      maxWidth = Math.min(containerWidth - 32, 700);
+    } else {
+      // Desktop
+      maxWidth = Math.min(containerWidth - 48, 1200);
+    }
+    
+    const aspectRatio = 4/3;
+    const height = Math.floor(maxWidth / aspectRatio);
+    const width = Math.floor(maxWidth);
+    
+    console.log("Canvas size calculated:", { width, height, viewportWidth, containerWidth });
+    
+    return { width, height };
   }, []);
 
   // Handle window resize
@@ -210,7 +225,7 @@ export const VastuCanvas = ({
     fabricCanvas.renderAll();
   }, [fabricCanvas, center]);
 
-  // Load and update Shakti Chakra with unlimited scaling
+  // Load and update Shakti Chakra
   useEffect(() => {
     console.log("Chakra effect triggered", { center, fabricCanvas: !!fabricCanvas });
     
@@ -236,14 +251,14 @@ export const VastuCanvas = ({
       const imgWidth = img.width || 1;
       const imgHeight = img.height || 1;
 
-      // Calculate much more generous scale limits for complete coverage
+      // Calculate scale with unlimited scaling capability
       const canvasDiagonal = Math.sqrt(canvasWidth * canvasWidth + canvasHeight * canvasHeight);
       const imgDiagonal = Math.sqrt(imgWidth * imgWidth + imgHeight * imgHeight);
       const baseScale = canvasDiagonal / imgDiagonal;
       
-      // Allow scaling from 10% to 300% of full coverage for maximum flexibility
+      // Allow unlimited scaling from 0.1x to 10x of full coverage
       const minScale = 0.1;
-      const maxScale = 3.0;  // Increased from 1.5 to 3.0
+      const maxScale = 10.0;
       const normalizedScale = minScale + (chakraScale * (maxScale - minScale));
       const finalScale = normalizedScale * baseScale;
 
@@ -299,7 +314,7 @@ export const VastuCanvas = ({
   }, [fabricCanvas, exportCanvasData]);
 
   return (
-    <div className="w-full" ref={containerRef}>
+    <div className="w-full max-w-full overflow-hidden" ref={containerRef}>
       <div className="bg-white rounded-lg shadow-lg p-2 sm:p-4 border-2 border-gray-200">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
           <h3 className="text-base sm:text-lg font-semibold text-gray-800">
@@ -323,15 +338,17 @@ export const VastuCanvas = ({
           </div>
         </div>
         
-        <div className="relative overflow-auto rounded-lg border border-gray-300 bg-gray-50">
-          <div className="min-w-fit">
+        <div className="w-full overflow-hidden rounded-lg border border-gray-300 bg-gray-50">
+          <div className="w-full flex justify-center">
             <canvas
               ref={canvasRef}
-              className="block border-0"
+              className="block border-0 max-w-full h-auto"
               style={{ 
                 cursor: isSelectingPolygon ? "crosshair" : "default",
+                width: `${canvasSize.width}px`,
+                height: `${canvasSize.height}px`,
                 maxWidth: "100%",
-                height: "auto"
+                display: "block"
               }}
             />
           </div>
