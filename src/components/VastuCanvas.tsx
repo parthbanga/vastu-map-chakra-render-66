@@ -1,6 +1,8 @@
+
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Canvas as FabricCanvas, FabricImage, Polygon, Circle } from "fabric";
 import { Button } from "@/components/ui/button";
+import { MathematicalChakra } from "./MathematicalChakra";
 
 interface Point {
   x: number;
@@ -35,7 +37,6 @@ export const VastuCanvas = ({
   const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
   const [mapImageObject, setMapImageObject] = useState<FabricImage | null>(null);
   const [polygonObject, setPolygonObject] = useState<Polygon | null>(null);
-  const [chakraImageObject, setChakraImageObject] = useState<FabricImage | null>(null);
   const [centerPointObject, setCenterPointObject] = useState<Circle | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
 
@@ -225,79 +226,6 @@ export const VastuCanvas = ({
     fabricCanvas.renderAll();
   }, [fabricCanvas, center]);
 
-  // Load and update Shakti Chakra with proper boundary constraints
-  useEffect(() => {
-    console.log("Chakra effect triggered", { center, fabricCanvas: !!fabricCanvas });
-    
-    if (!fabricCanvas || !center) {
-      console.log("Skipping chakra - no canvas or center");
-      return;
-    }
-
-    const chakraUrl = "/lovable-uploads/e824cac3-4bde-4c8d-831a-eb96d1098e85.png";
-    console.log("Loading chakra from:", chakraUrl);
-
-    FabricImage.fromURL(chakraUrl).then((img) => {
-      console.log("Chakra image loaded successfully");
-      
-      // Remove existing chakra
-      if (chakraImageObject) {
-        fabricCanvas.remove(chakraImageObject);
-        console.log("Removed existing chakra");
-      }
-
-      const canvasWidth = fabricCanvas.width || canvasSize.width;
-      const canvasHeight = fabricCanvas.height || canvasSize.height;
-      const imgWidth = img.width || 1;
-      const imgHeight = img.height || 1;
-
-      // Calculate scale ensuring chakra always stays within canvas bounds
-      const canvasMargin = 20; // Minimum margin from canvas edges
-      const effectiveCanvasWidth = canvasWidth - (canvasMargin * 2);
-      const effectiveCanvasHeight = canvasHeight - (canvasMargin * 2);
-      
-      // Maximum scale that keeps the chakra within canvas bounds
-      const maxScaleX = effectiveCanvasWidth / imgWidth;
-      const maxScaleY = effectiveCanvasHeight / imgHeight;
-      const maxAllowedScale = Math.min(maxScaleX, maxScaleY);
-      
-      // Scale range: minimum 10% to maximum that fits within canvas
-      const minScale = maxAllowedScale * 0.1; // 10% of max allowed
-      const maxScale = maxAllowedScale; // Full canvas coverage with margin
-      
-      // Apply user's scale preference within safe bounds
-      const finalScale = minScale + (chakraScale * (maxScale - minScale));
-
-      console.log("Safe scale calculation:", {
-        canvasWidth, canvasHeight, imgWidth, imgHeight,
-        effectiveCanvasWidth, effectiveCanvasHeight,
-        maxScaleX, maxScaleY, maxAllowedScale,
-        minScale, maxScale, chakraScale, finalScale
-      });
-
-      // Configure chakra image
-      img.set({
-        left: center.x,
-        top: center.y,
-        originX: "center",
-        originY: "center",
-        scaleX: finalScale,
-        scaleY: finalScale,
-        angle: chakraRotation,
-        opacity: chakraOpacity,
-        selectable: false,
-        evented: false,
-      });
-
-      fabricCanvas.add(img);
-      setChakraImageObject(img);
-      console.log("Chakra added at center:", center, "with safe scale:", finalScale);
-      fabricCanvas.renderAll();
-    }).catch((error) => {
-      console.error("Failed to load chakra image:", error);
-    });
-  }, [fabricCanvas, center, chakraRotation, chakraScale, chakraOpacity, canvasSize]);
-
   const handleFinishSelection = () => {
     if (polygonPoints.length >= 3) {
       onPolygonComplete(polygonPoints);
@@ -326,6 +254,9 @@ export const VastuCanvas = ({
     }
   }, [fabricCanvas, exportCanvasData]);
 
+  // Calculate chakra radius based on canvas size
+  const chakraRadius = Math.min(canvasSize.width, canvasSize.height) * 0.15;
+
   return (
     <div className="w-full max-w-full overflow-hidden" ref={containerRef}>
       <div className="bg-white rounded-lg shadow-lg p-2 sm:p-4 border-2 border-gray-200">
@@ -351,7 +282,7 @@ export const VastuCanvas = ({
           </div>
         </div>
         
-        <div className="w-full overflow-hidden rounded-lg border border-gray-300 bg-gray-50">
+        <div className="w-full overflow-hidden rounded-lg border border-gray-300 bg-gray-50 relative">
           <div className="w-full flex justify-center">
             <canvas
               ref={canvasRef}
@@ -364,6 +295,17 @@ export const VastuCanvas = ({
                 display: "block"
               }}
             />
+            
+            {/* Mathematical Chakra Overlay */}
+            {center && (
+              <MathematicalChakra
+                center={center}
+                radius={chakraRadius}
+                rotation={chakraRotation}
+                opacity={chakraOpacity}
+                scale={chakraScale}
+              />
+            )}
           </div>
         </div>
 
@@ -384,8 +326,7 @@ export const VastuCanvas = ({
         {/* Debug info */}
         {center && (
           <div className="mt-2 text-xs text-gray-500">
-            Canvas: {canvasSize.width}×{canvasSize.height} | Center: ({Math.round(center.x)}, {Math.round(center.y)})
-            {chakraImageObject && " | Shakti Chakra loaded"}
+            Canvas: {canvasSize.width}×{canvasSize.height} | Center: ({Math.round(center.x)}, {Math.round(center.y)}) | Rotation: {chakraRotation}°
           </div>
         )}
       </div>
