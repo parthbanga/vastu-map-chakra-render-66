@@ -35,11 +35,72 @@ export class DirectionCalculator {
     { name: 'North-NW', angle: 337.5, color: '#009688' }
   ];
 
-  // 32 Entrance positions (traditional Vastu entrances)
-  private entrancePositions = Array.from({ length: 32 }, (_, i) => ({
-    angle: i * (360 / 32),
-    name: `E${i + 1}`
-  }));
+  // 32 Entrance positions with traditional Vastu names
+  private entrancePositions = [
+    // North direction (0°) - N4, N5
+    { angle: 348.75, name: 'N4' },
+    { angle: 11.25, name: 'N5' },
+    
+    // North-NE - N6, N7
+    { angle: 33.75, name: 'N6' },
+    { angle: 56.25, name: 'N7' },
+    
+    // NE - N8, E1
+    { angle: 78.75, name: 'N8' },
+    { angle: 101.25, name: 'E1' },
+    
+    // East-NE - E2, E3
+    { angle: 123.75, name: 'E2' },
+    { angle: 146.25, name: 'E3' },
+    
+    // East (90°) - E4, E5
+    { angle: 168.75, name: 'E4' },
+    { angle: 191.25, name: 'E5' },
+    
+    // East-SE - E6, E7
+    { angle: 213.75, name: 'E6' },
+    { angle: 236.25, name: 'E7' },
+    
+    // SE - E8, S1
+    { angle: 258.75, name: 'E8' },
+    { angle: 281.25, name: 'S1' },
+    
+    // South-SE - S2, S3
+    { angle: 303.75, name: 'S2' },
+    { angle: 326.25, name: 'S3' },
+    
+    // South (180°) - S4, S5
+    { angle: 348.75, name: 'S4' },
+    { angle: 11.25, name: 'S5' },
+    
+    // South-SW - S6, S7
+    { angle: 33.75, name: 'S6' },
+    { angle: 56.25, name: 'S7' },
+    
+    // SW - S8, W1
+    { angle: 78.75, name: 'S8' },
+    { angle: 101.25, name: 'W1' },
+    
+    // West-SW - W2, W3
+    { angle: 123.75, name: 'W2' },
+    { angle: 146.25, name: 'W3' },
+    
+    // West (270°) - W4, W5
+    { angle: 168.75, name: 'W4' },
+    { angle: 191.25, name: 'W5' },
+    
+    // West-NW - W6, W7
+    { angle: 213.75, name: 'W6' },
+    { angle: 236.25, name: 'W7' },
+    
+    // NW - W8, N1
+    { angle: 258.75, name: 'W8' },
+    { angle: 281.25, name: 'N1' },
+    
+    // North-NW - N2, N3
+    { angle: 303.75, name: 'N2' },
+    { angle: 326.25, name: 'N3' }
+  ];
 
   constructor({ center, radius, rotation }: DirectionCalculatorProps) {
     this.center = center;
@@ -78,7 +139,7 @@ export class DirectionCalculator {
     });
   }
 
-  // Get entrance points
+  // Get entrance points with traditional names
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
     return this.entrancePositions.map(entrance => ({
       point: this.getPointOnCircle(entrance.angle, 0.95),

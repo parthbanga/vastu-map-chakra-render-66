@@ -117,17 +117,28 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* Entrance points (32 small circles) */}
+      {/* 32 Entrance points with labels */}
       {entrancePoints.map((entrance, index) => (
-        <circle
-          key={`entrance-${index}`}
-          cx={entrance.point.x}
-          cy={entrance.point.y}
-          r="3"
-          fill="#ff6b6b"
-          stroke="#fff"
-          strokeWidth="1"
-        />
+        <g key={`entrance-${index}`}>
+          <circle
+            cx={entrance.point.x}
+            cy={entrance.point.y}
+            r="4"
+            fill="#ff6b6b"
+            stroke="#fff"
+            strokeWidth="1"
+          />
+          <text
+            x={entrance.point.x}
+            y={entrance.point.y - 8}
+            textAnchor="middle"
+            fontSize="8"
+            fontWeight="bold"
+            fill="#ff6b6b"
+          >
+            {entrance.entrance.name}
+          </text>
+        </g>
       ))}
 
       {/* Main compass directions */}
