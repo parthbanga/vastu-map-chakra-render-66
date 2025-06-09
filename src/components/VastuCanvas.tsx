@@ -1,7 +1,5 @@
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { Canvas as FabricCanvas, FabricImage, Polygon, Circle } from "fabric";
-import { Button } from "@/components/ui/button";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 
 interface Point {
@@ -19,8 +17,8 @@ interface VastuCanvasProps {
   chakraRotation: number;
   chakraScale: number;
   chakraOpacity: number;
-  showDirections?: boolean;
-  showEntrances?: boolean;
+  showDirections: boolean;
+  showEntrances: boolean;
 }
 
 export const VastuCanvas = ({
@@ -33,321 +31,235 @@ export const VastuCanvas = ({
   chakraRotation,
   chakraScale,
   chakraOpacity,
-  showDirections = true,
-  showEntrances = true
+  showDirections,
+  showEntrances,
 }: VastuCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
-  const [mapImageObject, setMapImageObject] = useState<FabricImage | null>(null);
-  const [polygonObject, setPolygonObject] = useState<Polygon | null>(null);
-  const [centerPointObject, setCenterPointObject] = useState<Circle | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageNaturalSize, setImageNaturalSize] = useState({ width: 0, height: 0 });
 
-  // Calculate responsive canvas size for mobile
-  const calculateCanvasSize = useCallback(() => {
-    if (!containerRef.current) return { width: 800, height: 600 };
-    
-    const container = containerRef.current;
-    const containerWidth = container.clientWidth;
-    const viewportWidth = window.innerWidth;
-    
-    // Mobile-first responsive sizing
-    let maxWidth: number;
-    if (viewportWidth < 640) {
-      // Mobile phones
-      maxWidth = Math.min(containerWidth - 16, viewportWidth - 32);
-    } else if (viewportWidth < 1024) {
-      // Tablets
-      maxWidth = Math.min(containerWidth - 32, 700);
-    } else {
-      // Desktop
-      maxWidth = Math.min(containerWidth - 48, 1200);
-    }
-    
-    const aspectRatio = 4/3;
-    const height = Math.floor(maxWidth / aspectRatio);
-    const width = Math.floor(maxWidth);
-    
-    console.log("Canvas size calculated:", { width, height, viewportWidth, containerWidth });
-    
-    return { width, height };
+  // Calculate canvas dimensions based on container
+  useEffect(() => {
+    const updateCanvasSize = () => {
+      if (containerRef.current) {
+        const container = containerRef.current;
+        const rect = container.getBoundingClientRect();
+        const width = Math.max(800, rect.width - 32); // 32px for padding
+        const height = Math.max(600, rect.height - 32);
+        setCanvasSize({ width, height });
+      }
+    };
+
+    updateCanvasSize();
+    window.addEventListener('resize', updateCanvasSize);
+    return () => window.removeEventListener('resize', updateCanvasSize);
   }, []);
 
-  // Handle window resize
+  // Load and draw the map image
   useEffect(() => {
-    const handleResize = () => {
-      const newSize = calculateCanvasSize();
-      setCanvasSize(newSize);
+    if (!mapImage || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const img = new Image();
+    img.onload = () => {
+      setImageNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
       
-      if (fabricCanvas) {
-        fabricCanvas.setDimensions(newSize);
-        fabricCanvas.renderAll();
-      }
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Calculate scaling to fit image in canvas while maintaining aspect ratio
+      const scaleX = canvas.width / img.naturalWidth;
+      const scaleY = canvas.height / img.naturalHeight;
+      const scale = Math.min(scaleX, scaleY);
+      
+      const scaledWidth = img.naturalWidth * scale;
+      const scaledHeight = img.naturalHeight * scale;
+      
+      // Center the image
+      const x = (canvas.width - scaledWidth) / 2;
+      const y = (canvas.height - scaledHeight) / 2;
+      
+      ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+      setImageLoaded(true);
     };
+    img.src = mapImage;
+  }, [mapImage, canvasSize]);
 
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Initial size calculation
-    
-    return () => window.removeEventListener('resize', handleResize);
-  }, [calculateCanvasSize, fabricCanvas]);
-
-  // Initialize canvas with responsive dimensions
+  // Draw polygon points and lines
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !imageLoaded) return;
 
-    const initialSize = calculateCanvasSize();
-    setCanvasSize(initialSize);
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    const canvas = new FabricCanvas(canvasRef.current, {
-      width: initialSize.width,
-      height: initialSize.height,
-      backgroundColor: "#f8fafc",
-      selection: false,
-    });
+    // Redraw the background image first
+    if (mapImage) {
+      const img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const scaleX = canvas.width / img.naturalWidth;
+        const scaleY = canvas.height / img.naturalHeight;
+        const scale = Math.min(scaleX, scaleY);
+        
+        const scaledWidth = img.naturalWidth * scale;
+        const scaledHeight = img.naturalHeight * scale;
+        
+        const x = (canvas.width - scaledWidth) / 2;
+        const y = (canvas.height - scaledHeight) / 2;
+        
+        ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+        
+        // Draw polygon
+        if (polygonPoints.length > 0) {
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 3;
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+          
+          ctx.beginPath();
+          ctx.moveTo(polygonPoints[0].x, polygonPoints[0].y);
+          
+          for (let i = 1; i < polygonPoints.length; i++) {
+            ctx.lineTo(polygonPoints[i].x, polygonPoints[i].y);
+          }
+          
+          if (polygonPoints.length > 2) {
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.stroke();
+          
+          // Draw points
+          polygonPoints.forEach((point, index) => {
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw point numbers
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText((index + 1).toString(), point.x, point.y + 4);
+          });
+        }
 
-    // Mouse event handlers
-    const handleMouseDown = (e: any) => {
-      console.log("Mouse down event triggered", { isSelectingPolygon, event: e });
-      
-      if (!isSelectingPolygon) return;
-      
-      // Get the pointer position relative to the canvas
-      const pointer = canvas.getPointer(e.e);
-      console.log("Pointer position:", pointer);
-      
-      const point = { x: pointer.x, y: pointer.y };
-      onPolygonPointAdd(point);
-    };
-
-    canvas.on("mouse:down", handleMouseDown);
-
-    setFabricCanvas(canvas);
-
-    return () => {
-      canvas.off("mouse:down", handleMouseDown);
-      canvas.dispose();
-    };
-  }, [isSelectingPolygon, onPolygonPointAdd, calculateCanvasSize]);
-
-  // Load map image
-  useEffect(() => {
-    if (!fabricCanvas || !mapImage) return;
-
-    FabricImage.fromURL(mapImage).then((img) => {
-      // Clear existing map image
-      if (mapImageObject) {
-        fabricCanvas.remove(mapImageObject);
-      }
-
-      // Scale image to fit canvas while maintaining aspect ratio
-      const canvasWidth = fabricCanvas.width || canvasSize.width;
-      const canvasHeight = fabricCanvas.height || canvasSize.height;
-      const imgWidth = img.width || 1;
-      const imgHeight = img.height || 1;
-      
-      const scaleX = canvasWidth / imgWidth;
-      const scaleY = canvasHeight / imgHeight;
-      const scale = Math.min(scaleX, scaleY, 1); // Don't upscale
-
-      img.set({
-        scaleX: scale,
-        scaleY: scale,
-        selectable: false,
-        evented: false,
-        left: (canvasWidth - imgWidth * scale) / 2,
-        top: (canvasHeight - imgHeight * scale) / 2,
-      });
-
-      fabricCanvas.add(img);
-      fabricCanvas.sendObjectToBack(img);
-      setMapImageObject(img);
-      fabricCanvas.renderAll();
-    });
-  }, [fabricCanvas, mapImage, canvasSize]);
-
-  // Update polygon display
-  useEffect(() => {
-    if (!fabricCanvas) return;
-
-    // Remove existing polygon
-    if (polygonObject) {
-      fabricCanvas.remove(polygonObject);
-      setPolygonObject(null);
+        // Draw center point if it exists
+        if (center) {
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath();
+          ctx.arc(center.x, center.y, 8, 0, 2 * Math.PI);
+          ctx.fill();
+          
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      };
+      img.src = mapImage;
     }
+  }, [polygonPoints, center, mapImage, imageLoaded]);
 
-    if (polygonPoints.length >= 3) {
-      const polygon = new Polygon(polygonPoints, {
-        fill: "rgba(59, 130, 246, 0.2)",
-        stroke: "#3b82f6",
-        strokeWidth: 2,
-        selectable: false,
-        evented: false,
-      });
+  // Handle canvas clicks
+  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isSelectingPolygon) return;
 
-      fabricCanvas.add(polygon);
-      setPolygonObject(polygon);
-      console.log("Polygon added with points:", polygonPoints);
-    }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    fabricCanvas.renderAll();
-  }, [fabricCanvas, polygonPoints]);
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
 
-  // Update center point indicator
-  useEffect(() => {
-    console.log("Center point effect triggered", { center, fabricCanvas: !!fabricCanvas });
-    
-    if (!fabricCanvas) return;
+    onPolygonPointAdd({ x, y });
+  }, [isSelectingPolygon, onPolygonPointAdd]);
 
-    // Remove existing center point
-    if (centerPointObject) {
-      fabricCanvas.remove(centerPointObject);
-      setCenterPointObject(null);
-      console.log("Removed existing center point");
-    }
-
-    if (center) {
-      console.log("Creating center point at:", center);
-      
-      const centerPoint = new Circle({
-        left: center.x,
-        top: center.y,
-        radius: 8,
-        fill: "#ef4444",
-        stroke: "#ffffff",
-        strokeWidth: 3,
-        originX: "center",
-        originY: "center",
-        selectable: false,
-        evented: false,
-      });
-
-      fabricCanvas.add(centerPoint);
-      setCenterPointObject(centerPoint);
-      console.log("Center point added successfully");
-    }
-
-    fabricCanvas.renderAll();
-  }, [fabricCanvas, center]);
-
-  const handleFinishSelection = () => {
-    if (polygonPoints.length >= 3) {
+  // Handle polygon completion (double-click or right-click)
+  const handleCanvasDoubleClick = useCallback(() => {
+    if (isSelectingPolygon && polygonPoints.length >= 3) {
       onPolygonComplete(polygonPoints);
     }
-  };
+  }, [isSelectingPolygon, polygonPoints, onPolygonComplete]);
 
-  // Export function for high-quality PDF
-  const exportCanvasData = useCallback(() => {
-    if (!fabricCanvas) return null;
-    
-    return {
-      dataURL: fabricCanvas.toDataURL({
-        format: 'png',
-        quality: 1,
-        multiplier: 3 // Higher resolution for PDF export
-      }),
-      width: fabricCanvas.width,
-      height: fabricCanvas.height
-    };
-  }, [fabricCanvas]);
-
-  // Expose export function to parent
-  useEffect(() => {
-    if (fabricCanvas) {
-      (window as any).exportVastuCanvas = exportCanvasData;
+  const handleCanvasRightClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    event.preventDefault();
+    if (isSelectingPolygon && polygonPoints.length >= 3) {
+      onPolygonComplete(polygonPoints);
     }
-  }, [fabricCanvas, exportCanvasData]);
+  }, [isSelectingPolygon, polygonPoints, onPolygonComplete]);
 
-  // Calculate chakra radius based on canvas size
-  const chakraRadius = Math.min(canvasSize.width, canvasSize.height) * 0.15;
+  // Calculate radius for chakra based on polygon
+  const calculateRadius = useCallback(() => {
+    if (!center || polygonPoints.length < 3) return 100;
+
+    // Find the minimum distance from center to any polygon edge
+    let minDistance = Infinity;
+    
+    polygonPoints.forEach((point) => {
+      const distance = Math.sqrt(
+        Math.pow(point.x - center.x, 2) + Math.pow(point.y - center.y, 2)
+      );
+      minDistance = Math.min(minDistance, distance);
+    });
+
+    return Math.max(50, minDistance * 0.8); // Ensure minimum radius and some padding
+  }, [center, polygonPoints]);
 
   return (
-    <div className="w-full max-w-full overflow-hidden" ref={containerRef}>
-      <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-6 border-0">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">
-              Vastu Analysis Canvas
-            </h3>
-            <p className="text-gray-600">Interactive workspace for your Vastu calculations</p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
-            {isSelectingPolygon && (
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                Click to add points
-              </div>
-            )}
-            {isSelectingPolygon && polygonPoints.length >= 3 && (
-              <Button
-                onClick={handleFinishSelection}
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
-              >
-                Finish Selection
-              </Button>
-            )}
+    <div ref={containerRef} className="relative w-full h-[600px] border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+      {!mapImage ? (
+        <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+          <div className="text-center">
+            <div className="text-6xl mb-4">🗺️</div>
+            <p className="text-lg font-medium">Upload a map to get started</p>
+            <p className="text-sm text-gray-400 mt-2">JPG or PNG format supported</p>
           </div>
         </div>
-        
-        <div className="w-full overflow-hidden rounded-2xl border-2 border-gray-200 bg-gray-50 relative shadow-inner">
-          <div className="w-full flex justify-center">
-            <canvas
-              ref={canvasRef}
-              className="block border-0 max-w-full h-auto rounded-xl"
-              style={{ 
-                cursor: isSelectingPolygon ? "crosshair" : "default",
-                width: `${canvasSize.width}px`,
-                height: `${canvasSize.height}px`,
-                maxWidth: "100%",
-                display: "block"
-              }}
+      ) : (
+        <>
+          <canvas
+            ref={canvasRef}
+            width={canvasSize.width}
+            height={canvasSize.height}
+            onClick={handleCanvasClick}
+            onDoubleClick={handleCanvasDoubleClick}
+            onContextMenu={handleCanvasRightClick}
+            className={`absolute inset-0 ${isSelectingPolygon ? 'cursor-crosshair' : 'cursor-default'}`}
+            style={{ maxWidth: '100%', maxHeight: '100%' }}
+          />
+          
+          {center && (
+            <MathematicalChakra
+              center={center}
+              radius={calculateRadius()}
+              rotation={chakraRotation}
+              opacity={chakraOpacity}
+              scale={chakraScale}
+              showDirections={showDirections}
+              showEntrances={showEntrances}
             />
-            
-            {/* Mathematical Chakra Overlay */}
-            {center && (
-              <MathematicalChakra
-                center={center}
-                radius={chakraRadius}
-                rotation={chakraRotation}
-                opacity={chakraOpacity}
-                scale={chakraScale}
-                showDirections={showDirections}
-                showEntrances={showEntrances}
-              />
-            )}
-          </div>
+          )}
+        </>
+      )}
+      
+      {isSelectingPolygon && (
+        <div className="absolute bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
+          <p className="text-sm font-medium">
+            Click to add points • Double-click or right-click to finish
+          </p>
+          {polygonPoints.length > 0 && (
+            <p className="text-xs opacity-90 mt-1">
+              Points added: {polygonPoints.length}
+            </p>
+          )}
         </div>
-
-        {polygonPoints.length > 0 && (
-          <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-            <div className="flex flex-wrap gap-4 text-sm">
-              <div className="inline-flex items-center gap-2">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span className="font-medium">Points: {polygonPoints.length}</span>
-              </div>
-              {center && (
-                <div className="inline-flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="font-medium">Center: ({Math.round(center.x)}, {Math.round(center.y)})</span>
-                </div>
-              )}
-              {polygonPoints.length >= 3 && !isSelectingPolygon && (
-                <div className="inline-flex items-center gap-2">
-                  <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                  <span className="text-emerald-700 font-medium">✓ Area defined</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Debug info */}
-        {center && (
-          <div className="mt-4 text-xs text-gray-400 bg-gray-100 rounded-lg p-3">
-            Canvas: {canvasSize.width}×{canvasSize.height} | Center: ({Math.round(center.x)}, {Math.round(center.y)}) | Rotation: {chakraRotation}° | Directions: {showDirections ? 'ON' : 'OFF'} | Entrances: {showEntrances ? 'ON' : 'OFF'}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };

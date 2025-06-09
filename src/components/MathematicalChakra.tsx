@@ -13,6 +13,8 @@ interface MathematicalChakraProps {
   rotation: number;
   opacity: number;
   scale: number;
+  showDirections?: boolean;
+  showEntrances?: boolean;
 }
 
 export const MathematicalChakra = ({ 
@@ -20,7 +22,9 @@ export const MathematicalChakra = ({
   radius, 
   rotation, 
   opacity, 
-  scale 
+  scale,
+  showDirections = true,
+  showEntrances = true
 }: MathematicalChakraProps) => {
   const [calculator, setCalculator] = useState<DirectionCalculator | null>(null);
 
@@ -118,23 +122,25 @@ export const MathematicalChakra = ({
       })}
 
       {/* 32 Entrance points with labels */}
-      {entrancePoints.map((entrance, index) => (
+      {showEntrances && entrancePoints.map((entrance, index) => (
         <g key={`entrance-${index}`}>
           <circle
             cx={entrance.point.x}
             cy={entrance.point.y}
-            r="4"
+            r="6"
             fill="#ff6b6b"
             stroke="#fff"
-            strokeWidth="1"
+            strokeWidth="2"
           />
           <text
             x={entrance.point.x}
-            y={entrance.point.y - 8}
+            y={entrance.point.y - 12}
             textAnchor="middle"
-            fontSize="8"
+            fontSize="10"
             fontWeight="bold"
             fill="#ff6b6b"
+            stroke="#fff"
+            strokeWidth="0.5"
           >
             {entrance.entrance.name}
           </text>
@@ -147,7 +153,7 @@ export const MathematicalChakra = ({
           <circle
             cx={dir.point.x}
             cy={dir.point.y}
-            r="8"
+            r="10"
             fill="#fff"
             stroke="#333"
             strokeWidth="2"
@@ -156,7 +162,7 @@ export const MathematicalChakra = ({
             x={dir.point.x}
             y={dir.point.y + 4}
             textAnchor="middle"
-            fontSize="12"
+            fontSize="14"
             fontWeight="bold"
             fill="#333"
           >
@@ -166,15 +172,17 @@ export const MathematicalChakra = ({
       ))}
 
       {/* Zone labels */}
-      {directionLabels.map((label, index) => (
+      {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}
           x={label.point.x}
           y={label.point.y}
           textAnchor="middle"
-          fontSize="10"
+          fontSize="11"
           fill="#333"
-          fontWeight="500"
+          fontWeight="600"
+          stroke="#fff"
+          strokeWidth="0.3"
           transform={`rotate(${label.angle > 90 && label.angle < 270 ? label.angle + 180 : label.angle}, ${label.point.x}, ${label.point.y})`}
         >
           {label.label}
@@ -185,7 +193,7 @@ export const MathematicalChakra = ({
       <circle
         cx={center.x}
         cy={center.y}
-        r="4"
+        r="6"
         fill="#333"
         stroke="#fff"
         strokeWidth="2"
