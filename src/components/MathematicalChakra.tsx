@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -121,7 +120,7 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* 32 Entrance points with labels */}
+      {/* 32 Entrance points with labels - made more visible */}
       {showEntrances && entrancePoints.map((entrance, index) => (
         <g key={`entrance-${index}`}>
           <circle
@@ -153,7 +152,7 @@ export const MathematicalChakra = ({
           <circle
             cx={dir.point.x}
             cy={dir.point.y}
-            r="10"
+            r="8"
             fill="#fff"
             stroke="#333"
             strokeWidth="2"
@@ -162,7 +161,7 @@ export const MathematicalChakra = ({
             x={dir.point.x}
             y={dir.point.y + 4}
             textAnchor="middle"
-            fontSize="14"
+            fontSize="12"
             fontWeight="bold"
             fill="#333"
           >
@@ -178,11 +177,9 @@ export const MathematicalChakra = ({
           x={label.point.x}
           y={label.point.y}
           textAnchor="middle"
-          fontSize="11"
+          fontSize="10"
           fill="#333"
-          fontWeight="600"
-          stroke="#fff"
-          strokeWidth="0.3"
+          fontWeight="500"
           transform={`rotate(${label.angle > 90 && label.angle < 270 ? label.angle + 180 : label.angle}, ${label.point.x}, ${label.point.y})`}
         >
           {label.label}
@@ -193,7 +190,7 @@ export const MathematicalChakra = ({
       <circle
         cx={center.x}
         cy={center.y}
-        r="6"
+        r="4"
         fill="#333"
         stroke="#fff"
         strokeWidth="2"
