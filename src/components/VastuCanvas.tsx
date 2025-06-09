@@ -19,6 +19,8 @@ interface VastuCanvasProps {
   chakraRotation: number;
   chakraScale: number;
   chakraOpacity: number;
+  showDirections?: boolean;
+  showEntrances?: boolean;
 }
 
 export const VastuCanvas = ({
@@ -30,7 +32,9 @@ export const VastuCanvas = ({
   center,
   chakraRotation,
   chakraScale,
-  chakraOpacity
+  chakraOpacity,
+  showDirections = true,
+  showEntrances = true
 }: VastuCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -259,22 +263,25 @@ export const VastuCanvas = ({
 
   return (
     <div className="w-full max-w-full overflow-hidden" ref={containerRef}>
-      <div className="bg-white rounded-lg shadow-lg p-2 sm:p-4 border-2 border-gray-200">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-800">
-            Vastu Analysis Canvas
-          </h3>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+      <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-6 border-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+              Vastu Analysis Canvas
+            </h3>
+            <p className="text-gray-600">Interactive workspace for your Vastu calculations</p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
             {isSelectingPolygon && (
-              <div className="text-xs sm:text-sm text-blue-600 font-medium">
+              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                 Click to add points
               </div>
             )}
             {isSelectingPolygon && polygonPoints.length >= 3 && (
               <Button
                 onClick={handleFinishSelection}
-                className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
-                size="sm"
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
               >
                 Finish Selection
               </Button>
@@ -282,11 +289,11 @@ export const VastuCanvas = ({
           </div>
         </div>
         
-        <div className="w-full overflow-hidden rounded-lg border border-gray-300 bg-gray-50 relative">
+        <div className="w-full overflow-hidden rounded-2xl border-2 border-gray-200 bg-gray-50 relative shadow-inner">
           <div className="w-full flex justify-center">
             <canvas
               ref={canvasRef}
-              className="block border-0 max-w-full h-auto"
+              className="block border-0 max-w-full h-auto rounded-xl"
               style={{ 
                 cursor: isSelectingPolygon ? "crosshair" : "default",
                 width: `${canvasSize.width}px`,
@@ -304,20 +311,31 @@ export const VastuCanvas = ({
                 rotation={chakraRotation}
                 opacity={chakraOpacity}
                 scale={chakraScale}
+                showDirections={showDirections}
+                showEntrances={showEntrances}
               />
             )}
           </div>
         </div>
 
         {polygonPoints.length > 0 && (
-          <div className="mt-4 text-xs sm:text-sm text-gray-600">
-            <div className="flex flex-wrap gap-2 sm:gap-4">
-              <span>Points: {polygonPoints.length}</span>
+          <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+            <div className="flex flex-wrap gap-4 text-sm">
+              <div className="inline-flex items-center gap-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="font-medium">Points: {polygonPoints.length}</span>
+              </div>
               {center && (
-                <span>Center: ({Math.round(center.x)}, {Math.round(center.y)})</span>
+                <div className="inline-flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="font-medium">Center: ({Math.round(center.x)}, {Math.round(center.y)})</span>
+                </div>
               )}
               {polygonPoints.length >= 3 && !isSelectingPolygon && (
-                <span className="text-green-600 font-medium">✓ Area defined</span>
+                <div className="inline-flex items-center gap-2">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                  <span className="text-emerald-700 font-medium">✓ Area defined</span>
+                </div>
               )}
             </div>
           </div>
@@ -325,8 +343,8 @@ export const VastuCanvas = ({
 
         {/* Debug info */}
         {center && (
-          <div className="mt-2 text-xs text-gray-500">
-            Canvas: {canvasSize.width}×{canvasSize.height} | Center: ({Math.round(center.x)}, {Math.round(center.y)}) | Rotation: {chakraRotation}°
+          <div className="mt-4 text-xs text-gray-400 bg-gray-100 rounded-lg p-3">
+            Canvas: {canvasSize.width}×{canvasSize.height} | Center: ({Math.round(center.x)}, {Math.round(center.y)}) | Rotation: {chakraRotation}° | Directions: {showDirections ? 'ON' : 'OFF'} | Entrances: {showEntrances ? 'ON' : 'OFF'}
           </div>
         )}
       </div>
