@@ -165,54 +165,102 @@ export const VastuCanvas = ({
     }
   }, [polygonPoints, center, mapImage, imageLoaded]);
 
-  // Handle canvas clicks with proper coordinate calculation for mobile
-  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isSelectingPolygon) return;
-
+  // Get accurate coordinates from touch/mouse events
+  const getEventCoordinates = useCallback((event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
 
-    event.preventDefault();
-    
     // Get the canvas bounding rect
     const rect = canvas.getBoundingClientRect();
     
-    // Handle both mouse and touch events
     let clientX: number, clientY: number;
     
-    if ('touches' in event && event.touches.length > 0) {
-      // Touch event
-      clientX = event.touches[0].clientX;
-      clientY = event.touches[0].clientY;
-    } else if ('changedTouches' in event && event.changedTouches.length > 0) {
-      // Touch end event
-      clientX = event.changedTouches[0].clientX;
-      clientY = event.changedTouches[0].clientY;
+    if ('touches' in event) {
+      // Touch event - use the first touch point
+      if (event.touches.length > 0) {
+        clientX = event.touches[0].clientX;
+        clientY = event.touches[0].clientY;
+      } else if (event.changedTouches && event.changedTouches.length > 0) {
+        // For touchend events
+        clientX = event.changedTouches[0].clientX;
+        clientY = event.changedTouches[0].clientY;
+      } else {
+        return null;
+      }
     } else {
       // Mouse event
-      const mouseEvent = event as React.MouseEvent<HTMLCanvasElement>;
-      clientX = mouseEvent.clientX;
-      clientY = mouseEvent.clientY;
+      clientX = event.clientX;
+      clientY = event.clientY;
     }
     
-    // Calculate the actual canvas dimensions vs displayed dimensions
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    // Calculate coordinates relative to the canvas element
+    const canvasX = clientX - rect.left;
+    const canvasY = clientY - rect.top;
     
-    // Calculate coordinates relative to canvas
-    const x = (clientX - rect.left) * scaleX;
-    const y = (clientY - rect.top) * scaleY;
+    // Get the actual canvas internal dimensions
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    
+    // Get the displayed canvas dimensions
+    const displayWidth = rect.width;
+    const displayHeight = rect.height;
+    
+    // Calculate the scale factors
+    const scaleX = canvasWidth / displayWidth;
+    const scaleY = canvasHeight / displayHeight;
+    
+    // Convert to canvas coordinates
+    const x = canvasX * scaleX;
+    const y = canvasY * scaleY;
 
-    console.log('Canvas click coordinates:', { x, y, clientX, clientY, rect, scaleX, scaleY });
+    console.log('Touch coordinates:', {
+      clientX, clientY,
+      canvasX, canvasY,
+      rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+      canvas: { width: canvasWidth, height: canvasHeight },
+      scale: { x: scaleX, y: scaleY },
+      final: { x, y }
+    });
 
-    onPolygonPointAdd({ x, y });
-  }, [isSelectingPolygon, onPolygonPointAdd]);
+    return { x, y };
+  }, []);
+
+  // Handle canvas clicks with proper coordinate calculation for mobile
+  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isSelectingPolygon) return;
+
+    event.preventDefault();
+    const coords = getEventCoordinates(event);
+    
+    if (coords) {
+      onPolygonPointAdd(coords);
+    }
+  }, [isSelectingPolygon, onPolygonPointAdd, getEventCoordinates]);
 
   // Handle touch events specifically
+  const handleTouchEnd = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isSelectingPolygon) return;
+    
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const coords = getEventCoordinates(event);
+    
+    if (coords) {
+      onPolygonPointAdd(coords);
+    }
+  }, [isSelectingPolygon, onPolygonPointAdd, getEventCoordinates]);
+
+  // Prevent default touch behaviors
   const handleTouchStart = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
     if (!isSelectingPolygon) return;
-    handleCanvasClick(event);
-  }, [isSelectingPolygon, handleCanvasClick]);
+    event.preventDefault();
+  }, [isSelectingPolygon]);
+
+  const handleTouchMove = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isSelectingPolygon) return;
+    event.preventDefault();
+  }, [isSelectingPolygon]);
 
   // Handle polygon completion (double-click or right-click)
   const handleCanvasDoubleClick = useCallback(() => {
@@ -263,10 +311,18 @@ export const VastuCanvas = ({
             height={canvasSize.height}
             onClick={handleCanvasClick}
             onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             onDoubleClick={handleCanvasDoubleClick}
             onContextMenu={handleCanvasRightClick}
             className={`absolute inset-0 ${isSelectingPolygon ? 'cursor-crosshair' : 'cursor-default'}`}
-            style={{ maxWidth: '100%', maxHeight: '100%', touchAction: 'none' }}
+            style={{ 
+              maxWidth: '100%', 
+              maxHeight: '100%', 
+              touchAction: 'none',
+              userSelect: 'none',
+              WebkitUserSelect: 'none'
+            }}
           />
           
           {center && (
