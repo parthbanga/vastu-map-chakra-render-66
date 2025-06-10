@@ -236,11 +236,11 @@ export class DirectionCalculator {
     }));
   }
 
-  // Get direction labels - positioned between radial lines (at zone centers)
+  // Get direction labels - positioned between radial lines at zone centers with better spacing
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
-    // Position labels at the center of each zone (between radial lines)
-    const labelRadius = 0.6; // Position labels safely inside the map boundary
-    console.log('Direction labels radius:', labelRadius, 'positioned between radial lines');
+    // Position labels closer to center to avoid overlapping and ensure they fit within zones
+    const labelRadius = 0.45; // Reduced radius to prevent overlapping
+    console.log('Direction labels radius:', labelRadius, 'positioned between radial lines with better spacing');
     
     return this.vastuZones.map(zone => {
       // Use the zone's center angle (which is between the radial lines)

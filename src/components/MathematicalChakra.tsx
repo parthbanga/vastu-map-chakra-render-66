@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -113,18 +112,16 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* Direction labels - positioned between radial lines at zone centers */}
+      {/* Direction labels - smaller, black, bold text positioned between radial lines */}
       {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}
           x={label.point.x}
           y={label.point.y}
           textAnchor="middle"
-          fontSize="14"
+          fontSize="10"
           fill="#000"
           fontWeight="bold"
-          stroke="#fff"
-          strokeWidth="2"
           dominantBaseline="middle"
         >
           {label.label}
