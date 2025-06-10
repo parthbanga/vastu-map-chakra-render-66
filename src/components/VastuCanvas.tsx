@@ -1,5 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
+import { Button } from "@/components/ui/button";
+import { CheckCircle } from "lucide-react";
 
 interface Point {
   x: number;
@@ -39,15 +41,16 @@ export const VastuCanvas = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageNaturalSize, setImageNaturalSize] = useState({ width: 0, height: 0 });
 
-  // Calculate canvas dimensions based on container
+  // Calculate canvas dimensions based on container with larger minimum size for mobile
   useEffect(() => {
     const updateCanvasSize = () => {
       if (containerRef.current) {
         const container = containerRef.current;
         const rect = container.getBoundingClientRect();
-        const width = Math.max(800, rect.width - 32); // 32px for padding
-        const height = Math.max(600, rect.height - 32);
-        setCanvasSize({ width, height });
+        const isMobile = window.innerWidth < 768;
+        const minWidth = isMobile ? Math.max(rect.width - 16, 360) : Math.max(800, rect.width - 32);
+        const minHeight = isMobile ? Math.max(rect.height - 16, 500) : Math.max(600, rect.height - 32);
+        setCanvasSize({ width: minWidth, height: minHeight });
       }
     };
 
@@ -170,64 +173,46 @@ export const VastuCanvas = ({
     const canvas = canvasRef.current;
     if (!canvas) return null;
 
-    // Get the canvas bounding rect
     const rect = canvas.getBoundingClientRect();
     
     let clientX: number, clientY: number;
     
     if ('touches' in event) {
-      // Touch event - use the first touch point
       if (event.touches.length > 0) {
         clientX = event.touches[0].clientX;
         clientY = event.touches[0].clientY;
       } else if (event.changedTouches && event.changedTouches.length > 0) {
-        // For touchend events
         clientX = event.changedTouches[0].clientX;
         clientY = event.changedTouches[0].clientY;
       } else {
         return null;
       }
     } else {
-      // Mouse event
       clientX = event.clientX;
       clientY = event.clientY;
     }
     
-    // Calculate coordinates relative to the canvas element
     const canvasX = clientX - rect.left;
     const canvasY = clientY - rect.top;
     
-    // Get the actual canvas internal dimensions
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
     
-    // Get the displayed canvas dimensions
     const displayWidth = rect.width;
     const displayHeight = rect.height;
     
-    // Calculate the scale factors
     const scaleX = canvasWidth / displayWidth;
     const scaleY = canvasHeight / displayHeight;
     
-    // Convert to canvas coordinates
     const x = canvasX * scaleX;
     const y = canvasY * scaleY;
-
-    console.log('Touch coordinates:', {
-      clientX, clientY,
-      canvasX, canvasY,
-      rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
-      canvas: { width: canvasWidth, height: canvasHeight },
-      scale: { x: scaleX, y: scaleY },
-      final: { x, y }
-    });
 
     return { x, y };
   }, []);
 
-  // Handle canvas clicks with proper coordinate calculation for mobile
+  // Handle canvas clicks - always allow polygon selection when map is loaded
   const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isSelectingPolygon) return;
+    if (!mapImage || center) return; // Don't allow selection if chakra is already placed
 
     event.preventDefault();
     const coords = getEventCoordinates(event);
@@ -235,11 +220,11 @@ export const VastuCanvas = ({
     if (coords) {
       onPolygonPointAdd(coords);
     }
-  }, [isSelectingPolygon, onPolygonPointAdd, getEventCoordinates]);
+  }, [mapImage, center, onPolygonPointAdd, getEventCoordinates]);
 
-  // Handle touch events specifically
+  // Handle touch events - always allow polygon selection when map is loaded
   const handleTouchEnd = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isSelectingPolygon) return;
+    if (!mapImage || center) return; // Don't allow selection if chakra is already placed
     
     event.preventDefault();
     event.stopPropagation();
@@ -249,38 +234,29 @@ export const VastuCanvas = ({
     if (coords) {
       onPolygonPointAdd(coords);
     }
-  }, [isSelectingPolygon, onPolygonPointAdd, getEventCoordinates]);
+  }, [mapImage, center, onPolygonPointAdd, getEventCoordinates]);
 
-  // Prevent default touch behaviors
   const handleTouchStart = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isSelectingPolygon) return;
+    if (!mapImage || center) return;
     event.preventDefault();
-  }, [isSelectingPolygon]);
+  }, [mapImage, center]);
 
   const handleTouchMove = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isSelectingPolygon) return;
+    if (!mapImage || center) return;
     event.preventDefault();
-  }, [isSelectingPolygon]);
+  }, [mapImage, center]);
 
-  // Handle polygon completion (double-click or right-click)
+  // Handle polygon completion (double-click for desktop)
   const handleCanvasDoubleClick = useCallback(() => {
-    if (isSelectingPolygon && polygonPoints.length >= 3) {
+    if (polygonPoints.length >= 3) {
       onPolygonComplete(polygonPoints);
     }
-  }, [isSelectingPolygon, polygonPoints, onPolygonComplete]);
-
-  const handleCanvasRightClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
-    event.preventDefault();
-    if (isSelectingPolygon && polygonPoints.length >= 3) {
-      onPolygonComplete(polygonPoints);
-    }
-  }, [isSelectingPolygon, polygonPoints, onPolygonComplete]);
+  }, [polygonPoints, onPolygonComplete]);
 
   // Calculate radius for chakra based on polygon
   const calculateRadius = useCallback(() => {
     if (!center || polygonPoints.length < 3) return 100;
 
-    // Find the minimum distance from center to any polygon edge
     let minDistance = Infinity;
     
     polygonPoints.forEach((point) => {
@@ -290,11 +266,11 @@ export const VastuCanvas = ({
       minDistance = Math.min(minDistance, distance);
     });
 
-    return Math.max(50, minDistance * 0.8); // Ensure minimum radius and some padding
+    return Math.max(50, minDistance * 0.8);
   }, [center, polygonPoints]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-[600px] border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+    <div ref={containerRef} className="relative w-full min-h-[500px] md:h-[600px] border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50">
       {!mapImage ? (
         <div className="absolute inset-0 flex items-center justify-center text-gray-500">
           <div className="text-center">
@@ -314,11 +290,8 @@ export const VastuCanvas = ({
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onDoubleClick={handleCanvasDoubleClick}
-            onContextMenu={handleCanvasRightClick}
-            className={`absolute inset-0 ${isSelectingPolygon ? 'cursor-crosshair' : 'cursor-default'}`}
+            className={`absolute inset-0 w-full h-full ${!center ? 'cursor-crosshair' : 'cursor-default'}`}
             style={{ 
-              maxWidth: '100%', 
-              maxHeight: '100%', 
               touchAction: 'none',
               userSelect: 'none',
               WebkitUserSelect: 'none'
@@ -339,15 +312,30 @@ export const VastuCanvas = ({
         </>
       )}
       
-      {isSelectingPolygon && (
-        <div className="absolute bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
-          <p className="text-sm font-medium">
-            Tap to add points • Double-tap to finish
-          </p>
-          {polygonPoints.length > 0 && (
-            <p className="text-xs opacity-90 mt-1">
-              Points added: {polygonPoints.length}
+      {/* Instructions and finish button for mobile */}
+      {mapImage && !center && (
+        <div className="absolute bottom-4 left-4 right-4 space-y-2">
+          <div className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
+            <p className="text-sm font-medium">
+              Tap to add corner points of your plot area
             </p>
+            {polygonPoints.length > 0 && (
+              <p className="text-xs opacity-90 mt-1">
+                Points added: {polygonPoints.length}
+              </p>
+            )}
+          </div>
+          
+          {/* Mobile finish button */}
+          {polygonPoints.length >= 3 && (
+            <Button
+              onClick={() => onPolygonComplete(polygonPoints)}
+              className="w-full bg-green-600 hover:bg-green-700 text-white shadow-lg"
+              size="lg"
+            >
+              <CheckCircle className="w-5 h-5 mr-2" />
+              Finish Selection
+            </Button>
           )}
         </div>
       )}

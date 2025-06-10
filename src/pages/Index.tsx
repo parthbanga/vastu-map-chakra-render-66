@@ -1,11 +1,9 @@
 import { useState, useRef, useCallback } from "react";
-import { Upload, RotateCw, Download, Trash2, Move, MousePointer, Sparkles } from "lucide-react";
+import { Upload, RotateCw, Download, Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { VastuCanvas } from "@/components/VastuCanvas";
-import { PolygonSelector } from "@/components/PolygonSelector";
 import { ChakraControls } from "@/components/ChakraControls";
 import { PDFExporter } from "@/components/PDFExporter";
 
@@ -17,7 +15,6 @@ interface Point {
 const Index = () => {
   const [mapImage, setMapImage] = useState<string | null>(null);
   const [polygonPoints, setPolygonPoints] = useState<Point[]>([]);
-  const [isSelectingPolygon, setIsSelectingPolygon] = useState(false);
   const [chakraRotation, setChakraRotation] = useState(0);
   const [chakraScale, setChakraScale] = useState(1);
   const [chakraOpacity, setChakraOpacity] = useState(0.7);
@@ -41,7 +38,7 @@ const Index = () => {
       setMapImage(imageData);
       setPolygonPoints([]);
       setCenter(null);
-      toast.success("Map uploaded successfully!");
+      toast.success("Map uploaded successfully! Tap on the map to select your plot area.");
     };
     reader.readAsDataURL(file);
   }, []);
@@ -105,15 +102,13 @@ const Index = () => {
     setPolygonPoints(points);
     const calculatedCenter = calculateCenter(points);
     setCenter(calculatedCenter);
-    setIsSelectingPolygon(false);
-    toast.success(`Polygon area selected! Center calculated at (${Math.round(calculatedCenter.x)}, ${Math.round(calculatedCenter.y)})`);
+    toast.success(`Plot area selected! Chakra positioned at center (${Math.round(calculatedCenter.x)}, ${Math.round(calculatedCenter.y)})`);
   }, [calculateCenter]);
 
   const handleClearPolygon = useCallback(() => {
     setPolygonPoints([]);
     setCenter(null);
-    setIsSelectingPolygon(false);
-    toast.info("Polygon selection cleared");
+    toast.info("Plot selection cleared. You can now select a new area.");
   }, []);
 
   const handleRotationChange = useCallback((rotation: number) => {
@@ -149,8 +144,8 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Modern Controls Panel */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-10">
+        {/* Simplified Controls Panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
           {/* Upload Section */}
           <Card className="p-8 bg-gradient-to-br from-white to-blue-50/50 border-0 shadow-xl hover:shadow-2xl transition-all duration-300">
             <div className="text-center">
@@ -174,52 +169,29 @@ const Index = () => {
                 Choose Image
               </Button>
               {mapImage && (
-                <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-medium">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  Map loaded successfully
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-medium">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    Map loaded successfully
+                  </div>
+                  {!center && (
+                    <p className="text-xs text-blue-600 font-medium">
+                      Now tap on the map to select your plot area
+                    </p>
+                  )}
+                  {polygonPoints.length > 0 && (
+                    <Button
+                      onClick={handleClearPolygon}
+                      variant="outline"
+                      className="w-full border-2 hover:bg-gray-50 mt-2"
+                      size="sm"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Clear Selection ({polygonPoints.length} points)
+                    </Button>
+                  )}
                 </div>
               )}
-            </div>
-          </Card>
-
-          {/* Polygon Selection */}
-          <Card className="p-8 bg-gradient-to-br from-white to-purple-50/50 border-0 shadow-xl hover:shadow-2xl transition-all duration-300">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <MousePointer className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-6">Plot Area</h3>
-              <div className="space-y-4">
-                <Button
-                  onClick={() => setIsSelectingPolygon(!isSelectingPolygon)}
-                  className={`w-full shadow-lg hover:shadow-xl transition-all duration-300 ${
-                    isSelectingPolygon 
-                      ? "bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700" 
-                      : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                  } text-white`}
-                  size="lg"
-                  disabled={!mapImage}
-                >
-                  {isSelectingPolygon ? "Cancel Selection" : "Select Plot Area"}
-                </Button>
-                {polygonPoints.length > 0 && (
-                  <Button
-                    onClick={handleClearPolygon}
-                    variant="outline"
-                    className="w-full border-2 hover:bg-gray-50"
-                    size="lg"
-                  >
-                    <Trash2 className="w-5 h-5 mr-2" />
-                    Clear Selection
-                  </Button>
-                )}
-                {center && (
-                  <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-medium">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    Center: ({Math.round(center.x)}, {Math.round(center.y)})
-                  </div>
-                )}
-              </div>
             </div>
           </Card>
 
@@ -258,13 +230,13 @@ const Index = () => {
         </div>
 
         {/* Main Canvas Area */}
-        <Card className="p-8 bg-white/80 backdrop-blur-sm border-0 shadow-2xl">
+        <Card className="p-4 md:p-8 bg-white/80 backdrop-blur-sm border-0 shadow-2xl">
           <VastuCanvas
             mapImage={mapImage}
             polygonPoints={polygonPoints}
-            isSelectingPolygon={isSelectingPolygon}
+            isSelectingPolygon={!center} // Always allow selection until center is set
             onPolygonPointAdd={(point) => {
-              if (isSelectingPolygon) {
+              if (!center) { // Only add points if chakra is not placed yet
                 const newPoints = [...polygonPoints, point];
                 setPolygonPoints(newPoints);
               }
@@ -279,7 +251,7 @@ const Index = () => {
           />
         </Card>
 
-        {/* Modern Instructions */}
+        {/* Updated Instructions */}
         <Card className="p-8 mt-8 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-0 shadow-xl">
           <div className="text-center mb-6">
             <h3 className="text-2xl font-bold text-gray-800 mb-2">How to Use</h3>
@@ -296,9 +268,9 @@ const Index = () => {
               },
               {
                 step: "2", 
-                title: "Define Area",
-                description: "Click 'Select Plot Area' and define the building outline by clicking corners",
-                icon: MousePointer,
+                title: "Select Plot Area",
+                description: "Tap corners to outline your building. Use 'Finish Selection' button to complete",
+                icon: Upload,
                 color: "from-purple-500 to-pink-600"
               },
               {
