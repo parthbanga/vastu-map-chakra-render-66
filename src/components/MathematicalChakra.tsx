@@ -112,14 +112,14 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* Direction labels - very small, compact text positioned within zones to prevent overlap */}
+      {/* Direction labels - abbreviated names positioned near boundary for better visibility */}
       {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}
           x={label.point.x}
           y={label.point.y}
           textAnchor="middle"
-          fontSize="8"
+          fontSize="10"
           fill="#000"
           fontWeight="bold"
           dominantBaseline="middle"

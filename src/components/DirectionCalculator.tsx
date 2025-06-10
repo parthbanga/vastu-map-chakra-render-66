@@ -18,24 +18,24 @@ export class DirectionCalculator {
   private scale: number;
   private polygonPoints: Point[];
 
-  // 16 Vastu zones with their traditional positions (0° = North)
+  // 16 Vastu zones with their traditional positions and abbreviated names (0° = North)
   private vastuZones = [
-    { name: 'North', angle: 0, color: '#4CAF50' },
-    { name: 'North-NE', angle: 22.5, color: '#8BC34A' },
-    { name: 'North-East', angle: 45, color: '#CDDC39' },
-    { name: 'East-NE', angle: 67.5, color: '#FFEB3B' },
-    { name: 'East', angle: 90, color: '#FFC107' },
-    { name: 'East-SE', angle: 112.5, color: '#FF9800' },
-    { name: 'South-East', angle: 135, color: '#FF5722' },
-    { name: 'South-SE', angle: 157.5, color: '#F44336' },
-    { name: 'South', angle: 180, color: '#E91E63' },
-    { name: 'South-SW', angle: 202.5, color: '#9C27B0' },
-    { name: 'South-West', angle: 225, color: '#673AB7' },
-    { name: 'West-SW', angle: 247.5, color: '#3F51B5' },
-    { name: 'West', angle: 270, color: '#2196F3' },
-    { name: 'West-NW', angle: 292.5, color: '#03A9F4' },
-    { name: 'North-West', angle: 315, color: '#00BCD4' },
-    { name: 'North-NW', angle: 337.5, color: '#009688' }
+    { name: 'N', angle: 0, color: '#4CAF50' },
+    { name: 'NNE', angle: 22.5, color: '#8BC34A' },
+    { name: 'NE', angle: 45, color: '#CDDC39' },
+    { name: 'ENE', angle: 67.5, color: '#FFEB3B' },
+    { name: 'E', angle: 90, color: '#FFC107' },
+    { name: 'ESE', angle: 112.5, color: '#FF9800' },
+    { name: 'SE', angle: 135, color: '#FF5722' },
+    { name: 'SSE', angle: 157.5, color: '#F44336' },
+    { name: 'S', angle: 180, color: '#E91E63' },
+    { name: 'SSW', angle: 202.5, color: '#9C27B0' },
+    { name: 'SW', angle: 225, color: '#673AB7' },
+    { name: 'WSW', angle: 247.5, color: '#3F51B5' },
+    { name: 'W', angle: 270, color: '#2196F3' },
+    { name: 'WNW', angle: 292.5, color: '#03A9F4' },
+    { name: 'NW', angle: 315, color: '#00BCD4' },
+    { name: 'NNW', angle: 337.5, color: '#009688' }
   ];
 
   // 32 Entrance positions - accurately positioned with 11.25° spacing
@@ -236,18 +236,18 @@ export class DirectionCalculator {
     }));
   }
 
-  // Get direction labels - positioned precisely within each zone to avoid overlapping
+  // Get direction labels - positioned near boundary for better visibility and spacing
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
-    // Position labels much closer to center and ensure they stay within their zone boundaries
-    const labelRadius = 0.35; // Much smaller radius to keep labels compact and non-overlapping
-    console.log('Direction labels radius:', labelRadius, 'positioned precisely within zones to avoid overlap');
+    // Position labels closer to boundary (85% of distance) for better visibility and spacing
+    const labelRadius = 0.85; // Much closer to boundary for better spacing
+    console.log('Direction labels radius:', labelRadius, 'positioned near boundary for better visibility');
     
     return this.vastuZones.map(zone => {
       // Use the zone's center angle (which is between the radial lines)
       const centerAngle = zone.angle;
       const boundaryPoint = this.getPolygonIntersection(centerAngle);
       
-      // If we have a valid boundary intersection, use it with reduced radius
+      // If we have a valid boundary intersection, use it with the label radius
       // Otherwise fall back to circle calculation
       let labelPoint: Point;
       if (boundaryPoint) {
