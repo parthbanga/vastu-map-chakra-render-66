@@ -66,19 +66,18 @@ export const MathematicalChakra = ({
         overflow: 'visible'
       }}
     >
-      {/* Zone sectors for coloring - no circles, just sectors */}
+      {/* Zone sectors for coloring - triangular sectors from center to boundary */}
       {zoneSectors.map((sector, index) => (
         <path
           key={`sector-${index}`}
           d={sector.path}
           fill={sector.color}
           fillOpacity="0.3"
-          stroke="#333"
-          strokeWidth="1"
+          stroke="none"
         />
       ))}
 
-      {/* Radial lines for 16 zones - extending from center to map boundary */}
+      {/* Radial lines from center to map boundary - 16 main direction lines */}
       {Array.from({ length: 16 }, (_, i) => {
         const angle = i * (360 / 16) + rotation;
         const radian = (angle * Math.PI) / 180;
@@ -100,7 +99,7 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* 32 Entrance points - just text labels positioned along radial lines */}
+      {/* 32 Entrance points - text labels positioned along radial lines */}
       {showEntrances && entrancePoints.map((entrance, index) => {
         return (
           <text
@@ -119,7 +118,7 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* Zone labels - just text labels, no circles */}
+      {/* Direction labels - positioned along the radial lines */}
       {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}
