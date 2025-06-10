@@ -8,6 +8,7 @@ interface DirectionCalculatorProps {
   radius: number;
   rotation: number; // in degrees
   scale: number; // scale factor for adaptive positioning
+  polygonPoints?: Point[]; // Add polygon points for boundary calculation
 }
 
 export class DirectionCalculator {
@@ -15,6 +16,7 @@ export class DirectionCalculator {
   private radius: number;
   private rotation: number;
   private scale: number;
+  private polygonPoints: Point[];
 
   // 16 Vastu zones with their traditional positions (0° = North)
   private vastuZones = [
@@ -103,16 +105,80 @@ export class DirectionCalculator {
     { angle: 343.125, name: 'N3' }  // 337.5° + 5.625°
   ];
 
-  constructor({ center, radius, rotation, scale }: DirectionCalculatorProps) {
+  constructor({ center, radius, rotation, scale, polygonPoints = [] }: DirectionCalculatorProps) {
     this.center = center;
     this.radius = radius;
     this.rotation = rotation;
     this.scale = scale;
+    this.polygonPoints = polygonPoints;
   }
 
   // Convert angle to radians
   private toRadians(degrees: number): number {
     return (degrees * Math.PI) / 180;
+  }
+
+  // Calculate intersection of a line from center with polygon boundary
+  private getPolygonIntersection(angle: number): Point | null {
+    if (this.polygonPoints.length < 3) {
+      // Fallback to circle if no valid polygon
+      return this.getPointOnCircle(angle, 1);
+    }
+
+    const adjustedAngle = angle + this.rotation;
+    const radian = this.toRadians(adjustedAngle);
+    
+    // Direction vector from center
+    const dirX = Math.sin(radian);
+    const dirY = -Math.cos(radian);
+    
+    let closestIntersection: Point | null = null;
+    let closestDistance = Infinity;
+    
+    // Check intersection with each polygon edge
+    for (let i = 0; i < this.polygonPoints.length; i++) {
+      const p1 = this.polygonPoints[i];
+      const p2 = this.polygonPoints[(i + 1) % this.polygonPoints.length];
+      
+      const intersection = this.lineIntersection(
+        this.center.x, this.center.y,
+        this.center.x + dirX * 10000, this.center.y + dirY * 10000,
+        p1.x, p1.y, p2.x, p2.y
+      );
+      
+      if (intersection) {
+        const distance = Math.sqrt(
+          Math.pow(intersection.x - this.center.x, 2) + 
+          Math.pow(intersection.y - this.center.y, 2)
+        );
+        
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIntersection = intersection;
+        }
+      }
+    }
+    
+    return closestIntersection || this.getPointOnCircle(angle, 1);
+  }
+
+  // Calculate intersection between two line segments
+  private lineIntersection(x1: number, y1: number, x2: number, y2: number,
+                          x3: number, y3: number, x4: number, y4: number): Point | null {
+    const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+    if (Math.abs(denom) < 1e-10) return null;
+    
+    const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
+    const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom;
+    
+    if (t >= 0 && u >= 0 && u <= 1) {
+      return {
+        x: x1 + t * (x2 - x1),
+        y: y1 + t * (y2 - y1)
+      };
+    }
+    
+    return null;
   }
 
   // Calculate point on circle for given angle
@@ -125,6 +191,27 @@ export class DirectionCalculator {
       x: this.center.x + Math.sin(radian) * effectiveRadius,
       y: this.center.y - Math.cos(radian) * effectiveRadius
     };
+  }
+
+  // Get radial line endpoints that stop at polygon boundary
+  getRadialLineEndpoints(): Array<{ start: Point; end: Point; angle: number }> {
+    const lines = [];
+    
+    // Generate 16 main direction lines
+    for (let i = 0; i < 16; i++) {
+      const angle = i * (360 / 16);
+      const endPoint = this.getPolygonIntersection(angle);
+      
+      if (endPoint) {
+        lines.push({
+          start: this.center,
+          end: endPoint,
+          angle: angle
+        });
+      }
+    }
+    
+    return lines;
   }
 
   // Get all 16 zone boundaries

@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 import { Button } from "@/components/ui/button";
@@ -114,7 +113,6 @@ export const VastuCanvas = ({
         
         ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
         
-        // Draw polygon
         if (polygonPoints.length > 0) {
           ctx.strokeStyle = '#3b82f6';
           ctx.lineWidth = 3;
@@ -133,7 +131,6 @@ export const VastuCanvas = ({
           }
           ctx.stroke();
           
-          // Draw points with better mobile visibility
           polygonPoints.forEach((point, index) => {
             ctx.fillStyle = '#3b82f6';
             ctx.beginPath();
@@ -147,7 +144,6 @@ export const VastuCanvas = ({
           });
         }
 
-        // Draw center point
         if (center) {
           ctx.fillStyle = '#ef4444';
           ctx.beginPath();
@@ -290,6 +286,7 @@ export const VastuCanvas = ({
               scale={chakraScale}
               showDirections={showDirections}
               showEntrances={showEntrances}
+              polygonPoints={polygonPoints}
             />
           )}
           

@@ -15,6 +15,7 @@ interface MathematicalChakraProps {
   scale: number;
   showDirections?: boolean;
   showEntrances?: boolean;
+  polygonPoints?: Point[]; // Add polygon points prop
 }
 
 export const MathematicalChakra = ({ 
@@ -24,7 +25,8 @@ export const MathematicalChakra = ({
   opacity, 
   scale,
   showDirections = true,
-  showEntrances = true
+  showEntrances = true,
+  polygonPoints = []
 }: MathematicalChakraProps) => {
   const [calculator, setCalculator] = useState<DirectionCalculator | null>(null);
 
@@ -34,16 +36,18 @@ export const MathematicalChakra = ({
       center,
       radius: scaledRadius,
       rotation,
-      scale
+      scale,
+      polygonPoints
     });
     setCalculator(calc);
-  }, [center, radius, rotation, scale]);
+  }, [center, radius, rotation, scale, polygonPoints]);
 
   if (!calculator) return null;
 
   const zoneSectors = calculator.getZoneSectors();
   const directionLabels = calculator.getDirectionLabels();
   const entrancePoints = calculator.getEntrancePoints();
+  const radialLines = calculator.getRadialLineEndpoints();
 
   const scaledRadius = radius * scale;
   
@@ -77,27 +81,18 @@ export const MathematicalChakra = ({
         />
       ))}
 
-      {/* Radial lines from center to map boundary - 16 main direction lines */}
-      {Array.from({ length: 16 }, (_, i) => {
-        const angle = i * (360 / 16) + rotation;
-        const radian = (angle * Math.PI) / 180;
-        const outerPoint = {
-          x: center.x + Math.sin(radian) * scaledRadius,
-          y: center.y - Math.cos(radian) * scaledRadius
-        };
-        
-        return (
-          <line
-            key={`radial-${i}`}
-            x1={center.x}
-            y1={center.y}
-            x2={outerPoint.x}
-            y2={outerPoint.y}
-            stroke="#333"
-            strokeWidth="2"
-          />
-        );
-      })}
+      {/* Radial lines from center to polygon boundary */}
+      {radialLines.map((line, index) => (
+        <line
+          key={`radial-${index}`}
+          x1={line.start.x}
+          y1={line.start.y}
+          x2={line.end.x}
+          y2={line.end.y}
+          stroke="#333"
+          strokeWidth="2"
+        />
+      ))}
 
       {/* 32 Entrance points - text labels positioned along radial lines */}
       {showEntrances && entrancePoints.map((entrance, index) => {
