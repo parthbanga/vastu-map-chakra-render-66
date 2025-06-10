@@ -42,13 +42,11 @@ export const MathematicalChakra = ({
   if (!calculator) return null;
 
   const zoneSectors = calculator.getZoneSectors();
-  const compassDirections = calculator.getCompassDirections();
   const directionLabels = calculator.getDirectionLabels();
   const entrancePoints = calculator.getEntrancePoints();
 
   const scaledRadius = radius * scale;
   
-  // Reduced viewBox size since we're only showing lines within map boundary
   const maxPossibleRadius = scaledRadius * 1.1;
   const textPadding = 30;
   const viewBoxSize = (maxPossibleRadius + textPadding) * 2;
@@ -102,87 +100,49 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* 32 Entrance points - positioned along radial lines */}
+      {/* 32 Entrance points - positioned along radial lines, NO CIRCLES */}
       {showEntrances && entrancePoints.map((entrance, index) => {
         return (
-          <g key={`entrance-${index}`}>
-            {/* Entrance circle */}
-            <circle
-              cx={entrance.point.x}
-              cy={entrance.point.y}
-              r="4"
-              fill="#ff0000"
-              stroke="#ffffff"
-              strokeWidth="1.5"
-            />
-            
-            {/* Entrance label - larger and bolder */}
-            <text
-              x={entrance.point.x}
-              y={entrance.point.y - 10}
-              textAnchor="middle"
-              fontSize="8"
-              fontWeight="bold"
-              fill="#000"
-              stroke="#fff"
-              strokeWidth="0.8"
-            >
-              {entrance.entrance.name}
-            </text>
-          </g>
+          <text
+            key={`entrance-${index}`}
+            x={entrance.point.x}
+            y={entrance.point.y}
+            textAnchor="middle"
+            fontSize="10"
+            fontWeight="bold"
+            fill="#000"
+            stroke="#fff"
+            strokeWidth="1"
+          >
+            {entrance.entrance.name}
+          </text>
         );
       })}
 
-      {/* Main compass directions */}
-      {compassDirections.map((dir, index) => (
-        <g key={`compass-${index}`}>
-          <circle
-            cx={dir.point.x}
-            cy={dir.point.y}
-            r="10"
-            fill="#fff"
-            stroke="#333"
-            strokeWidth="2"
-          />
-          <text
-            x={dir.point.x}
-            y={dir.point.y + 4}
-            textAnchor="middle"
-            fontSize="14"
-            fontWeight="bold"
-            fill="#333"
-          >
-            {dir.direction}
-          </text>
-        </g>
-      ))}
-
-      {/* Zone labels - darker, bigger, and bolder */}
+      {/* Zone labels - darker, bigger, and bolder, NO CIRCLES */}
       {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}
           x={label.point.x}
           y={label.point.y}
           textAnchor="middle"
-          fontSize="12"
+          fontSize="16"
           fill="#000"
           fontWeight="bold"
           stroke="#fff"
-          strokeWidth="1"
+          strokeWidth="1.5"
           transform={`rotate(${label.angle > 90 && label.angle < 270 ? label.angle + 180 : label.angle}, ${label.point.x}, ${label.point.y})`}
         >
           {label.label}
         </text>
       ))}
 
-      {/* Center point */}
+      {/* Center point - small dot only */}
       <circle
         cx={center.x}
         cy={center.y}
-        r="4"
+        r="3"
         fill="#333"
-        stroke="#fff"
-        strokeWidth="2"
       />
     </svg>
   );
