@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 
@@ -166,19 +165,54 @@ export const VastuCanvas = ({
     }
   }, [polygonPoints, center, mapImage, imageLoaded]);
 
-  // Handle canvas clicks
-  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+  // Handle canvas clicks with proper coordinate calculation for mobile
+  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!isSelectingPolygon) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    event.preventDefault();
+    
+    // Get the canvas bounding rect
     const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    
+    // Handle both mouse and touch events
+    let clientX: number, clientY: number;
+    
+    if ('touches' in event && event.touches.length > 0) {
+      // Touch event
+      clientX = event.touches[0].clientX;
+      clientY = event.touches[0].clientY;
+    } else if ('changedTouches' in event && event.changedTouches.length > 0) {
+      // Touch end event
+      clientX = event.changedTouches[0].clientX;
+      clientY = event.changedTouches[0].clientY;
+    } else {
+      // Mouse event
+      const mouseEvent = event as React.MouseEvent<HTMLCanvasElement>;
+      clientX = mouseEvent.clientX;
+      clientY = mouseEvent.clientY;
+    }
+    
+    // Calculate the actual canvas dimensions vs displayed dimensions
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    // Calculate coordinates relative to canvas
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
+
+    console.log('Canvas click coordinates:', { x, y, clientX, clientY, rect, scaleX, scaleY });
 
     onPolygonPointAdd({ x, y });
   }, [isSelectingPolygon, onPolygonPointAdd]);
+
+  // Handle touch events specifically
+  const handleTouchStart = useCallback((event: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isSelectingPolygon) return;
+    handleCanvasClick(event);
+  }, [isSelectingPolygon, handleCanvasClick]);
 
   // Handle polygon completion (double-click or right-click)
   const handleCanvasDoubleClick = useCallback(() => {
@@ -228,10 +262,11 @@ export const VastuCanvas = ({
             width={canvasSize.width}
             height={canvasSize.height}
             onClick={handleCanvasClick}
+            onTouchStart={handleTouchStart}
             onDoubleClick={handleCanvasDoubleClick}
             onContextMenu={handleCanvasRightClick}
             className={`absolute inset-0 ${isSelectingPolygon ? 'cursor-crosshair' : 'cursor-default'}`}
-            style={{ maxWidth: '100%', maxHeight: '100%' }}
+            style={{ maxWidth: '100%', maxHeight: '100%', touchAction: 'none' }}
           />
           
           {center && (
@@ -251,7 +286,7 @@ export const VastuCanvas = ({
       {isSelectingPolygon && (
         <div className="absolute bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
           <p className="text-sm font-medium">
-            Click to add points • Double-click or right-click to finish
+            Tap to add points • Double-tap to finish
           </p>
           {polygonPoints.length > 0 && (
             <p className="text-xs opacity-90 mt-1">
