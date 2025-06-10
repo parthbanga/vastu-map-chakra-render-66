@@ -113,19 +113,19 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* Direction labels - positioned along the radial lines */}
+      {/* Direction labels - positioned between radial lines at zone centers */}
       {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}
           x={label.point.x}
           y={label.point.y}
           textAnchor="middle"
-          fontSize="16"
+          fontSize="14"
           fill="#000"
           fontWeight="bold"
           stroke="#fff"
-          strokeWidth="1.5"
-          transform={`rotate(${label.angle > 90 && label.angle < 270 ? label.angle + 180 : label.angle}, ${label.point.x}, ${label.point.y})`}
+          strokeWidth="2"
+          dominantBaseline="middle"
         >
           {label.label}
         </text>

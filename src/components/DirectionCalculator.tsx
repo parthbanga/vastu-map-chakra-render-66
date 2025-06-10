@@ -236,16 +236,44 @@ export class DirectionCalculator {
     }));
   }
 
-  // Get direction labels - positioned safely inside the map boundary
+  // Get direction labels - positioned between radial lines (at zone centers)
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
-    // Position labels well inside the map boundary to ensure they don't go outside
-    const labelRadius = 0.7; // Fixed radius that keeps labels inside map boundary
-    console.log('Direction labels radius:', labelRadius, 'keeping inside map boundary');
-    return this.vastuZones.map(zone => ({
-      point: this.getPointOnCircle(zone.angle, labelRadius),
-      label: zone.name,
-      angle: zone.angle + this.rotation
-    }));
+    // Position labels at the center of each zone (between radial lines)
+    const labelRadius = 0.6; // Position labels safely inside the map boundary
+    console.log('Direction labels radius:', labelRadius, 'positioned between radial lines');
+    
+    return this.vastuZones.map(zone => {
+      // Use the zone's center angle (which is between the radial lines)
+      const centerAngle = zone.angle;
+      const boundaryPoint = this.getPolygonIntersection(centerAngle);
+      
+      // If we have a valid boundary intersection, use it with reduced radius
+      // Otherwise fall back to circle calculation
+      let labelPoint: Point;
+      if (boundaryPoint) {
+        const distance = Math.sqrt(
+          Math.pow(boundaryPoint.x - this.center.x, 2) + 
+          Math.pow(boundaryPoint.y - this.center.y, 2)
+        );
+        const labelDistance = distance * labelRadius;
+        
+        const adjustedAngle = centerAngle + this.rotation;
+        const radian = this.toRadians(adjustedAngle);
+        
+        labelPoint = {
+          x: this.center.x + Math.sin(radian) * labelDistance,
+          y: this.center.y - Math.cos(radian) * labelDistance
+        };
+      } else {
+        labelPoint = this.getPointOnCircle(centerAngle, labelRadius);
+      }
+      
+      return {
+        point: labelPoint,
+        label: zone.name,
+        angle: centerAngle + this.rotation
+      };
+    });
   }
 
   // Get zone sectors for coloring
