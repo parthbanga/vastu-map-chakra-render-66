@@ -34,71 +34,71 @@ export class DirectionCalculator {
     { name: 'North-NW', angle: 337.5, color: '#009688' }
   ];
 
-  // 32 Entrance positions - 2 per direction, properly distributed
+  // 32 Entrance positions - exactly as specified, positioned at the boundaries between zones
   private entrancePositions = [
-    // North (0°) - N4, N5
-    { angle: 354.375, name: 'N4' }, // -5.625°
-    { angle: 5.625, name: 'N5' },   // +5.625°
+    // North (0°) - N4, N5 (positioned around 0°)
+    { angle: 348.75, name: 'N4' },  // 11.25° before North
+    { angle: 11.25, name: 'N5' },   // 11.25° after North
     
-    // North-NE (22.5°) - N6, N7  
-    { angle: 16.875, name: 'N6' },  // 22.5° - 5.625°
-    { angle: 28.125, name: 'N7' },  // 22.5° + 5.625°
+    // NNE (22.5°) - N6, N7
+    { angle: 16.875, name: 'N6' },  // Between N and NNE
+    { angle: 28.125, name: 'N7' },  // Between NNE and NE
     
-    // North-East (45°) - N8, E1
-    { angle: 39.375, name: 'N8' },  // 45° - 5.625°
-    { angle: 50.625, name: 'E1' },  // 45° + 5.625°
+    // NE (45°) - N8, E1
+    { angle: 39.375, name: 'N8' },  // Between NNE and NE
+    { angle: 50.625, name: 'E1' },  // Between NE and ENE
     
-    // East-NE (67.5°) - E2, E3
-    { angle: 61.875, name: 'E2' },  // 67.5° - 5.625°
-    { angle: 73.125, name: 'E3' },  // 67.5° + 5.625°
+    // ENE (67.5°) - E2, E3
+    { angle: 61.875, name: 'E2' },  // Between NE and ENE
+    { angle: 73.125, name: 'E3' },  // Between ENE and E
     
     // East (90°) - E4, E5
-    { angle: 84.375, name: 'E4' },  // 90° - 5.625°
-    { angle: 95.625, name: 'E5' },  // 90° + 5.625°
+    { angle: 78.75, name: 'E4' },   // 11.25° before East
+    { angle: 101.25, name: 'E5' },  // 11.25° after East
     
-    // East-SE (112.5°) - E6, E7
-    { angle: 106.875, name: 'E6' }, // 112.5° - 5.625°
-    { angle: 118.125, name: 'E7' }, // 112.5° + 5.625°
+    // ESE (112.5°) - E6, E7
+    { angle: 106.875, name: 'E6' }, // Between E and ESE
+    { angle: 118.125, name: 'E7' }, // Between ESE and SE
     
-    // South-East (135°) - E8, S1
-    { angle: 129.375, name: 'E8' }, // 135° - 5.625°
-    { angle: 140.625, name: 'S1' }, // 135° + 5.625°
+    // SE (135°) - E8, S1
+    { angle: 129.375, name: 'E8' }, // Between ESE and SE
+    { angle: 140.625, name: 'S1' }, // Between SE and SSE
     
-    // South-SE (157.5°) - S2, S3
-    { angle: 151.875, name: 'S2' }, // 157.5° - 5.625°
-    { angle: 163.125, name: 'S3' }, // 157.5° + 5.625°
+    // SSE (157.5°) - S2, S3
+    { angle: 151.875, name: 'S2' }, // Between SE and SSE
+    { angle: 163.125, name: 'S3' }, // Between SSE and S
     
     // South (180°) - S4, S5
-    { angle: 174.375, name: 'S4' }, // 180° - 5.625°
-    { angle: 185.625, name: 'S5' }, // 180° + 5.625°
+    { angle: 168.75, name: 'S4' },  // 11.25° before South
+    { angle: 191.25, name: 'S5' },  // 11.25° after South
     
-    // South-SW (202.5°) - S6, S7
-    { angle: 196.875, name: 'S6' }, // 202.5° - 5.625°
-    { angle: 208.125, name: 'S7' }, // 202.5° + 5.625°
+    // SSW (202.5°) - S6, S7
+    { angle: 196.875, name: 'S6' }, // Between S and SSW
+    { angle: 208.125, name: 'S7' }, // Between SSW and SW
     
-    // South-West (225°) - S8, W1
-    { angle: 219.375, name: 'S8' }, // 225° - 5.625°
-    { angle: 230.625, name: 'W1' }, // 225° + 5.625°
+    // SW (225°) - S8, W1
+    { angle: 219.375, name: 'S8' }, // Between SSW and SW
+    { angle: 230.625, name: 'W1' }, // Between SW and WSW
     
-    // West-SW (247.5°) - W2, W3
-    { angle: 241.875, name: 'W2' }, // 247.5° - 5.625°
-    { angle: 253.125, name: 'W3' }, // 247.5° + 5.625°
+    // WSW (247.5°) - W2, W3
+    { angle: 241.875, name: 'W2' }, // Between SW and WSW
+    { angle: 253.125, name: 'W3' }, // Between WSW and W
     
     // West (270°) - W4, W5
-    { angle: 264.375, name: 'W4' }, // 270° - 5.625°
-    { angle: 275.625, name: 'W5' }, // 270° + 5.625°
+    { angle: 258.75, name: 'W4' },  // 11.25° before West
+    { angle: 281.25, name: 'W5' },  // 11.25° after West
     
-    // West-NW (292.5°) - W6, W7
-    { angle: 286.875, name: 'W6' }, // 292.5° - 5.625°
-    { angle: 298.125, name: 'W7' }, // 292.5° + 5.625°
+    // WNW (292.5°) - W6, W7
+    { angle: 286.875, name: 'W6' }, // Between W and WNW
+    { angle: 298.125, name: 'W7' }, // Between WNW and NW
     
-    // North-West (315°) - W8, N1
-    { angle: 309.375, name: 'W8' }, // 315° - 5.625°
-    { angle: 320.625, name: 'N1' }, // 315° + 5.625°
+    // NW (315°) - W8, N1
+    { angle: 309.375, name: 'W8' }, // Between WNW and NW
+    { angle: 320.625, name: 'N1' }, // Between NW and NNW
     
-    // North-NW (337.5°) - N2, N3
-    { angle: 331.875, name: 'N2' }, // 337.5° - 5.625°
-    { angle: 343.125, name: 'N3' }  // 337.5° + 5.625°
+    // NNW (337.5°) - N2, N3
+    { angle: 331.875, name: 'N2' }, // Between NW and NNW
+    { angle: 343.125, name: 'N3' }  // Between NNW and N
   ];
 
   constructor({ center, radius, rotation }: DirectionCalculatorProps) {
@@ -127,7 +127,7 @@ export class DirectionCalculator {
   // Get all 16 zone boundaries
   getZoneBoundaries(): Array<{ start: Point; end: Point; zone: any }> {
     return this.vastuZones.map((zone, index) => {
-      const startAngle = zone.angle - 11.25; // Half zone width
+      const startAngle = zone.angle - 11.25;
       const endAngle = zone.angle + 11.25;
       
       return {
@@ -141,7 +141,7 @@ export class DirectionCalculator {
   // Get entrance points with traditional names
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
     return this.entrancePositions.map(entrance => ({
-      point: this.getPointOnCircle(entrance.angle, 0.95),
+      point: this.getPointOnCircle(entrance.angle, 0.98),
       entrance
     }));
   }

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -120,26 +121,39 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* 32 Entrance points with labels - made more visible */}
+      {/* 32 Entrance points with labels - improved visibility */}
       {showEntrances && entrancePoints.map((entrance, index) => (
         <g key={`entrance-${index}`}>
+          {/* Entrance circle with better contrast */}
           <circle
             cx={entrance.point.x}
             cy={entrance.point.y}
-            r="6"
-            fill="#ff6b6b"
-            stroke="#fff"
-            strokeWidth="2"
+            r="8"
+            fill="#ff4444"
+            stroke="#ffffff"
+            strokeWidth="3"
           />
+          
+          {/* Background for text to improve readability */}
+          <rect
+            x={entrance.point.x - 12}
+            y={entrance.point.y - 25}
+            width="24"
+            height="16"
+            fill="rgba(255, 255, 255, 0.9)"
+            stroke="#333"
+            strokeWidth="1"
+            rx="2"
+          />
+          
+          {/* Entrance label */}
           <text
             x={entrance.point.x}
             y={entrance.point.y - 12}
             textAnchor="middle"
-            fontSize="10"
+            fontSize="11"
             fontWeight="bold"
-            fill="#ff6b6b"
-            stroke="#fff"
-            strokeWidth="0.5"
+            fill="#333"
           >
             {entrance.entrance.name}
           </text>
