@@ -33,7 +33,8 @@ export const MathematicalChakra = ({
     const calc = new DirectionCalculator({
       center,
       radius: scaledRadius,
-      rotation
+      rotation,
+      scale
     });
     setCalculator(calc);
   }, [center, radius, rotation, scale]);
@@ -47,10 +48,11 @@ export const MathematicalChakra = ({
 
   const scaledRadius = radius * scale;
   
-  // Calculate viewBox to contain all elements with proper padding
-  // Account for the furthest elements (compass directions at 1.10 * scaledRadius)
-  const maxElementRadius = scaledRadius * 1.15; // Slightly more than compass radius of 1.10
-  const padding = scaledRadius * 0.3; // Reduced base padding since we account for max element radius
+  // Calculate viewBox to contain all elements with adaptive sizing
+  // Account for the furthest elements with scale-aware positioning
+  const maxCompassRadius = Math.max(1.05, 1.15 - (scale - 1) * 0.03);
+  const maxElementRadius = scaledRadius * maxCompassRadius;
+  const padding = scaledRadius * 0.2; // Reduced padding for tighter bounds
   const viewBoxSize = (maxElementRadius + padding) * 2;
   const viewBoxOffset = viewBoxSize / 2;
 
@@ -131,7 +133,7 @@ export const MathematicalChakra = ({
         const angle = entrance.entrance.angle + rotation;
         const radian = (angle * Math.PI) / 180;
         const entranceRadius = scaledRadius * 0.98; // Closer to circle edge
-        const labelRadius = scaledRadius * 1.05; // Reduced for better scaling
+        const labelRadius = scaledRadius * Math.max(1.02, 1.08 - (scale - 1) * 0.02); // Adaptive positioning
         
         const entrancePoint = {
           x: center.x + Math.sin(radian) * entranceRadius,

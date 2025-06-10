@@ -7,12 +7,14 @@ interface DirectionCalculatorProps {
   center: Point;
   radius: number;
   rotation: number; // in degrees
+  scale: number; // scale factor for adaptive positioning
 }
 
 export class DirectionCalculator {
   private center: Point;
   private radius: number;
   private rotation: number;
+  private scale: number;
 
   // 16 Vastu zones with their traditional positions (0° = North)
   private vastuZones = [
@@ -101,10 +103,11 @@ export class DirectionCalculator {
     { angle: 343.125, name: 'N3' }  // 337.5° + 5.625°
   ];
 
-  constructor({ center, radius, rotation }: DirectionCalculatorProps) {
+  constructor({ center, radius, rotation, scale }: DirectionCalculatorProps) {
     this.center = center;
     this.radius = radius;
     this.rotation = rotation;
+    this.scale = scale;
   }
 
   // Convert angle to radians
@@ -146,10 +149,12 @@ export class DirectionCalculator {
     }));
   }
 
-  // Get direction labels - positioned closer to circle
+  // Get direction labels - positioned adaptively based on scale
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
+    // Adaptive radius: as scale increases, move labels closer to circle
+    const labelRadius = Math.max(1.02, 1.08 - (this.scale - 1) * 0.02);
     return this.vastuZones.map(zone => ({
-      point: this.getPointOnCircle(zone.angle, 1.05), // Further reduced for better scaling
+      point: this.getPointOnCircle(zone.angle, labelRadius),
       label: zone.name,
       angle: zone.angle + this.rotation
     }));
@@ -184,7 +189,7 @@ export class DirectionCalculator {
     });
   }
 
-  // Get compass directions - positioned closer
+  // Get compass directions - positioned adaptively based on scale
   getCompassDirections(): Array<{ point: Point; direction: string; angle: number }> {
     const mainDirections = [
       { direction: 'N', angle: 0 },
@@ -193,8 +198,10 @@ export class DirectionCalculator {
       { direction: 'W', angle: 270 }
     ];
 
+    // Adaptive radius: as scale increases, move compass closer to circle
+    const compassRadius = Math.max(1.05, 1.15 - (this.scale - 1) * 0.03);
     return mainDirections.map(dir => ({
-      point: this.getPointOnCircle(dir.angle, 1.10), // Further reduced for better scaling
+      point: this.getPointOnCircle(dir.angle, compassRadius),
       direction: dir.direction,
       angle: dir.angle + this.rotation
     }));
