@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -47,16 +48,11 @@ export const MathematicalChakra = ({
 
   const scaledRadius = radius * scale;
   
-  // DEBUG: Log scale and radius values
-  console.log('Scale:', scale, 'Radius:', radius, 'ScaledRadius:', scaledRadius);
-  
-  // Reduced viewBox size since labels are now positioned inside the map boundary
-  const maxPossibleRadius = scaledRadius * 1.1; // Reduced since labels stay inside
-  const textPadding = 30; // Reduced padding since labels don't extend outside
+  // Reduced viewBox size since we're only showing lines within map boundary
+  const maxPossibleRadius = scaledRadius * 1.1;
+  const textPadding = 30;
   const viewBoxSize = (maxPossibleRadius + textPadding) * 2;
   const viewBoxOffset = viewBoxSize / 2;
-  
-  console.log('ViewBox calculation:', { maxPossibleRadius, textPadding, viewBoxSize });
 
   return (
     <svg
@@ -72,27 +68,7 @@ export const MathematicalChakra = ({
         overflow: 'visible'
       }}
     >
-      {/* Outer circle */}
-      <circle
-        cx={center.x}
-        cy={center.y}
-        r={scaledRadius}
-        fill="none"
-        stroke="#333"
-        strokeWidth="2"
-      />
-
-      {/* Inner circle */}
-      <circle
-        cx={center.x}
-        cy={center.y}
-        r={scaledRadius * 0.3}
-        fill="none"
-        stroke="#333"
-        strokeWidth="1"
-      />
-
-      {/* Zone sectors */}
+      {/* Zone sectors for coloring - no circles, just sectors */}
       {zoneSectors.map((sector, index) => (
         <path
           key={`sector-${index}`}
@@ -104,14 +80,10 @@ export const MathematicalChakra = ({
         />
       ))}
 
-      {/* Radial lines for 16 zones */}
+      {/* Radial lines for 16 zones - extending from center to map boundary */}
       {Array.from({ length: 16 }, (_, i) => {
         const angle = i * (360 / 16) + rotation;
         const radian = (angle * Math.PI) / 180;
-        const innerPoint = {
-          x: center.x + Math.sin(radian) * scaledRadius * 0.3,
-          y: center.y - Math.cos(radian) * scaledRadius * 0.3
-        };
         const outerPoint = {
           x: center.x + Math.sin(radian) * scaledRadius,
           y: center.y - Math.cos(radian) * scaledRadius
@@ -120,40 +92,40 @@ export const MathematicalChakra = ({
         return (
           <line
             key={`radial-${i}`}
-            x1={innerPoint.x}
-            y1={innerPoint.y}
+            x1={center.x}
+            y1={center.y}
             x2={outerPoint.x}
             y2={outerPoint.y}
             stroke="#333"
-            strokeWidth="1"
+            strokeWidth="2"
           />
         );
       })}
 
-      {/* 32 Entrance points - positioned inside map boundary */}
+      {/* 32 Entrance points - positioned along radial lines */}
       {showEntrances && entrancePoints.map((entrance, index) => {
         return (
           <g key={`entrance-${index}`}>
-            {/* Entrance circle - positioned inside map boundary */}
+            {/* Entrance circle */}
             <circle
               cx={entrance.point.x}
               cy={entrance.point.y}
-              r="3"
+              r="4"
               fill="#ff0000"
               stroke="#ffffff"
-              strokeWidth="1"
+              strokeWidth="1.5"
             />
             
-            {/* Entrance label - positioned inside map boundary */}
+            {/* Entrance label - larger and bolder */}
             <text
               x={entrance.point.x}
-              y={entrance.point.y - 8}
+              y={entrance.point.y - 10}
               textAnchor="middle"
-              fontSize="6"
+              fontSize="8"
               fontWeight="bold"
               fill="#000"
               stroke="#fff"
-              strokeWidth="0.5"
+              strokeWidth="0.8"
             >
               {entrance.entrance.name}
             </text>
@@ -161,13 +133,13 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* Main compass directions - positioned inside map boundary */}
+      {/* Main compass directions */}
       {compassDirections.map((dir, index) => (
         <g key={`compass-${index}`}>
           <circle
             cx={dir.point.x}
             cy={dir.point.y}
-            r="8"
+            r="10"
             fill="#fff"
             stroke="#333"
             strokeWidth="2"
@@ -176,7 +148,7 @@ export const MathematicalChakra = ({
             x={dir.point.x}
             y={dir.point.y + 4}
             textAnchor="middle"
-            fontSize="12"
+            fontSize="14"
             fontWeight="bold"
             fill="#333"
           >
@@ -185,18 +157,18 @@ export const MathematicalChakra = ({
         </g>
       ))}
 
-      {/* Zone labels - positioned inside map boundary */}
+      {/* Zone labels - darker, bigger, and bolder */}
       {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}
           x={label.point.x}
           y={label.point.y}
           textAnchor="middle"
-          fontSize="8"
-          fill="#333"
-          fontWeight="600"
+          fontSize="12"
+          fill="#000"
+          fontWeight="bold"
           stroke="#fff"
-          strokeWidth="0.5"
+          strokeWidth="1"
           transform={`rotate(${label.angle > 90 && label.angle < 270 ? label.angle + 180 : label.angle}, ${label.point.x}, ${label.point.y})`}
         >
           {label.label}
@@ -207,10 +179,10 @@ export const MathematicalChakra = ({
       <circle
         cx={center.x}
         cy={center.y}
-        r="3"
+        r="4"
         fill="#333"
         stroke="#fff"
-        strokeWidth="1.5"
+        strokeWidth="2"
       />
     </svg>
   );
