@@ -100,7 +100,7 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* 32 Entrance points - positioned along radial lines, NO CIRCLES */}
+      {/* 32 Entrance points - just text labels positioned along radial lines */}
       {showEntrances && entrancePoints.map((entrance, index) => {
         return (
           <text
@@ -108,7 +108,7 @@ export const MathematicalChakra = ({
             x={entrance.point.x}
             y={entrance.point.y}
             textAnchor="middle"
-            fontSize="10"
+            fontSize="12"
             fontWeight="bold"
             fill="#000"
             stroke="#fff"
@@ -119,7 +119,7 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* Zone labels - darker, bigger, and bolder, NO CIRCLES */}
+      {/* Zone labels - just text labels, no circles */}
       {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}
@@ -136,14 +136,6 @@ export const MathematicalChakra = ({
           {label.label}
         </text>
       ))}
-
-      {/* Center point - small dot only */}
-      <circle
-        cx={center.x}
-        cy={center.y}
-        r="3"
-        fill="#333"
-      />
     </svg>
   );
 };
