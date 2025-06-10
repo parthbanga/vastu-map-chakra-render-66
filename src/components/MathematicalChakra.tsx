@@ -48,10 +48,11 @@ export const MathematicalChakra = ({
 
   const scaledRadius = radius * scale;
   
-  // Calculate viewBox to contain all elements - fixed sizing to prevent cutoff
-  // Use conservative positioning that ensures elements stay within bounds
-  const maxElementRadius = scaledRadius * 1.25; // Fixed ratio to ensure all elements fit
-  const padding = scaledRadius * 0.4; // Generous padding to prevent cutoff
+  // Calculate viewBox to contain all elements at all scales
+  // At high scales, elements are positioned closer to circle, so less padding needed
+  const maxCompassRadius = Math.max(1.03, 1.15 - (scale - 1) * 0.12);
+  const maxElementRadius = scaledRadius * maxCompassRadius;
+  const padding = scaledRadius * Math.max(0.15, 0.5 - (scale - 1) * 0.15); // Reduce padding at high scales
   const viewBoxSize = (maxElementRadius + padding) * 2;
   const viewBoxOffset = viewBoxSize / 2;
 
@@ -132,7 +133,7 @@ export const MathematicalChakra = ({
         const angle = entrance.entrance.angle + rotation;
         const radian = (angle * Math.PI) / 180;
         const entranceRadius = scaledRadius * 0.98; // Closer to circle edge
-        const labelRadius = scaledRadius * Math.max(1.02, 1.06 - (scale - 1) * 0.04); // Conservative positioning
+        const labelRadius = scaledRadius * Math.max(1.0, 1.08 - (scale - 1) * 0.08); // Aggressive scaling to stay in bounds
         
         const entrancePoint = {
           x: center.x + Math.sin(radian) * entranceRadius,
