@@ -121,44 +121,62 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* 32 Entrance points with labels - improved visibility */}
-      {showEntrances && entrancePoints.map((entrance, index) => (
-        <g key={`entrance-${index}`}>
-          {/* Entrance circle with better contrast */}
-          <circle
-            cx={entrance.point.x}
-            cy={entrance.point.y}
-            r="8"
-            fill="#ff4444"
-            stroke="#ffffff"
-            strokeWidth="3"
-          />
-          
-          {/* Background for text to improve readability */}
-          <rect
-            x={entrance.point.x - 12}
-            y={entrance.point.y - 25}
-            width="24"
-            height="16"
-            fill="rgba(255, 255, 255, 0.9)"
-            stroke="#333"
-            strokeWidth="1"
-            rx="2"
-          />
-          
-          {/* Entrance label */}
-          <text
-            x={entrance.point.x}
-            y={entrance.point.y - 12}
-            textAnchor="middle"
-            fontSize="11"
-            fontWeight="bold"
-            fill="#333"
-          >
-            {entrance.entrance.name}
-          </text>
-        </g>
-      ))}
+      {/* 32 Entrance points - positioned on outer circle with better visibility */}
+      {showEntrances && entrancePoints.map((entrance, index) => {
+        // Calculate position slightly outside the circle for better visibility
+        const angle = entrance.entrance.angle + rotation;
+        const radian = (angle * Math.PI) / 180;
+        const entranceRadius = scaledRadius * 1.02; // Slightly outside
+        const labelRadius = scaledRadius * 1.15; // Further out for labels
+        
+        const entrancePoint = {
+          x: center.x + Math.sin(radian) * entranceRadius,
+          y: center.y - Math.cos(radian) * entranceRadius
+        };
+        
+        const labelPoint = {
+          x: center.x + Math.sin(radian) * labelRadius,
+          y: center.y - Math.cos(radian) * labelRadius
+        };
+        
+        return (
+          <g key={`entrance-${index}`}>
+            {/* Entrance circle with high contrast */}
+            <circle
+              cx={entrancePoint.x}
+              cy={entrancePoint.y}
+              r="6"
+              fill="#ff0000"
+              stroke="#ffffff"
+              strokeWidth="2"
+            />
+            
+            {/* White background for label */}
+            <rect
+              x={labelPoint.x - 10}
+              y={labelPoint.y - 18}
+              width="20"
+              height="14"
+              fill="rgba(255, 255, 255, 0.95)"
+              stroke="#000"
+              strokeWidth="0.5"
+              rx="2"
+            />
+            
+            {/* Entrance label */}
+            <text
+              x={labelPoint.x}
+              y={labelPoint.y - 8}
+              textAnchor="middle"
+              fontSize="9"
+              fontWeight="bold"
+              fill="#000"
+            >
+              {entrance.entrance.name}
+            </text>
+          </g>
+        );
+      })}
 
       {/* Main compass directions */}
       {compassDirections.map((dir, index) => (
