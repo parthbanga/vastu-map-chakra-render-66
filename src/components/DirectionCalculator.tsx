@@ -138,18 +138,18 @@ export class DirectionCalculator {
     });
   }
 
-  // Get entrance points with traditional names - positioned on outer circle
+  // Get entrance points - positioned on outer circle
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
     return this.entrancePositions.map(entrance => ({
-      point: this.getPointOnCircle(entrance.angle, 1.0), // On the outer circle
+      point: this.getPointOnCircle(entrance.angle, 0.98), // Closer to circle
       entrance
     }));
   }
 
-  // Get direction labels with their positions
+  // Get direction labels - positioned closer to circle
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
     return this.vastuZones.map(zone => ({
-      point: this.getPointOnCircle(zone.angle, 1.15),
+      point: this.getPointOnCircle(zone.angle, 1.08), // Reduced from 1.15
       label: zone.name,
       angle: zone.angle + this.rotation
     }));
@@ -184,7 +184,7 @@ export class DirectionCalculator {
     });
   }
 
-  // Get compass directions (N, E, S, W)
+  // Get compass directions - positioned closer
   getCompassDirections(): Array<{ point: Point; direction: string; angle: number }> {
     const mainDirections = [
       { direction: 'N', angle: 0 },
@@ -194,7 +194,7 @@ export class DirectionCalculator {
     ];
 
     return mainDirections.map(dir => ({
-      point: this.getPointOnCircle(dir.angle, 1.25),
+      point: this.getPointOnCircle(dir.angle, 1.15), // Reduced from 1.25
       direction: dir.direction,
       angle: dir.angle + this.rotation
     }));

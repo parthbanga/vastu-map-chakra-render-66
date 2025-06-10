@@ -46,7 +46,10 @@ export const MathematicalChakra = ({
   const entrancePoints = calculator.getEntrancePoints();
 
   const scaledRadius = radius * scale;
-  const viewBoxSize = scaledRadius * 2.5;
+  
+  // Calculate viewBox to contain all elements with proper padding
+  const padding = scaledRadius * 0.4; // Increased padding to ensure labels fit
+  const viewBoxSize = (scaledRadius + padding) * 2;
   const viewBoxOffset = viewBoxSize / 2;
 
   return (
@@ -121,13 +124,12 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* 32 Entrance points - positioned on outer circle with better visibility */}
+      {/* 32 Entrance points - positioned closer to outer circle */}
       {showEntrances && entrancePoints.map((entrance, index) => {
-        // Calculate position slightly outside the circle for better visibility
         const angle = entrance.entrance.angle + rotation;
         const radian = (angle * Math.PI) / 180;
-        const entranceRadius = scaledRadius * 1.02; // Slightly outside
-        const labelRadius = scaledRadius * 1.15; // Further out for labels
+        const entranceRadius = scaledRadius * 0.98; // Closer to circle edge
+        const labelRadius = scaledRadius * 1.08; // Minimal distance for labels
         
         const entrancePoint = {
           x: center.x + Math.sin(radian) * entranceRadius,
@@ -141,34 +143,34 @@ export const MathematicalChakra = ({
         
         return (
           <g key={`entrance-${index}`}>
-            {/* Entrance circle with high contrast */}
+            {/* Entrance circle - smaller for better mobile visibility */}
             <circle
               cx={entrancePoint.x}
               cy={entrancePoint.y}
-              r="6"
+              r="4"
               fill="#ff0000"
               stroke="#ffffff"
-              strokeWidth="2"
+              strokeWidth="1"
             />
             
-            {/* White background for label */}
+            {/* Compact label background */}
             <rect
-              x={labelPoint.x - 10}
-              y={labelPoint.y - 18}
-              width="20"
-              height="14"
-              fill="rgba(255, 255, 255, 0.95)"
+              x={labelPoint.x - 8}
+              y={labelPoint.y - 12}
+              width="16"
+              height="10"
+              fill="rgba(255, 255, 255, 0.9)"
               stroke="#000"
-              strokeWidth="0.5"
-              rx="2"
+              strokeWidth="0.3"
+              rx="1"
             />
             
-            {/* Entrance label */}
+            {/* Entrance label - smaller font */}
             <text
               x={labelPoint.x}
-              y={labelPoint.y - 8}
+              y={labelPoint.y - 5}
               textAnchor="middle"
-              fontSize="9"
+              fontSize="7"
               fontWeight="bold"
               fill="#000"
             >
@@ -178,22 +180,22 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* Main compass directions */}
+      {/* Main compass directions - positioned closer */}
       {compassDirections.map((dir, index) => (
         <g key={`compass-${index}`}>
           <circle
             cx={dir.point.x}
             cy={dir.point.y}
-            r="8"
+            r="6"
             fill="#fff"
             stroke="#333"
-            strokeWidth="2"
+            strokeWidth="1.5"
           />
           <text
             x={dir.point.x}
-            y={dir.point.y + 4}
+            y={dir.point.y + 3}
             textAnchor="middle"
-            fontSize="12"
+            fontSize="10"
             fontWeight="bold"
             fill="#333"
           >
@@ -202,14 +204,14 @@ export const MathematicalChakra = ({
         </g>
       ))}
 
-      {/* Zone labels */}
+      {/* Zone labels - positioned closer to circle */}
       {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}
           x={label.point.x}
           y={label.point.y}
           textAnchor="middle"
-          fontSize="10"
+          fontSize="8"
           fill="#333"
           fontWeight="500"
           transform={`rotate(${label.angle > 90 && label.angle < 270 ? label.angle + 180 : label.angle}, ${label.point.x}, ${label.point.y})`}
@@ -222,10 +224,10 @@ export const MathematicalChakra = ({
       <circle
         cx={center.x}
         cy={center.y}
-        r="4"
+        r="3"
         fill="#333"
         stroke="#fff"
-        strokeWidth="2"
+        strokeWidth="1.5"
       />
     </svg>
   );
