@@ -48,13 +48,18 @@ export const MathematicalChakra = ({
 
   const scaledRadius = radius * scale;
   
-  // Calculate viewBox to contain all elements at all scales
-  // At high scales, elements are positioned closer to circle, so less padding needed
-  const maxCompassRadius = Math.max(1.03, 1.15 - (scale - 1) * 0.12);
-  const maxElementRadius = scaledRadius * maxCompassRadius;
-  const padding = scaledRadius * Math.max(0.15, 0.5 - (scale - 1) * 0.15); // Reduce padding at high scales
-  const viewBoxSize = (maxElementRadius + padding) * 2;
+  // DEBUG: Log scale and radius values
+  console.log('Scale:', scale, 'Radius:', radius, 'ScaledRadius:', scaledRadius);
+  
+  // Fixed approach: Use generous viewBox that accounts for worst-case positioning
+  // The issue is elements can be positioned at up to 1.15x radius at scale 1
+  // Plus we need padding for text labels that extend beyond their anchor points
+  const maxPossibleRadius = scaledRadius * 1.2; // Account for any positioning
+  const textPadding = Math.max(60, scaledRadius * 0.3); // Fixed minimum padding for text
+  const viewBoxSize = (maxPossibleRadius + textPadding) * 2;
   const viewBoxOffset = viewBoxSize / 2;
+  
+  console.log('ViewBox calculation:', { maxPossibleRadius, textPadding, viewBoxSize });
 
   return (
     <svg
@@ -133,7 +138,7 @@ export const MathematicalChakra = ({
         const angle = entrance.entrance.angle + rotation;
         const radian = (angle * Math.PI) / 180;
         const entranceRadius = scaledRadius * 0.98; // Closer to circle edge
-        const labelRadius = scaledRadius * Math.max(1.0, 1.08 - (scale - 1) * 0.08); // Aggressive scaling to stay in bounds
+        const labelRadius = scaledRadius * Math.max(0.95, 1.05 - (scale - 1) * 0.15); // Match DirectionCalculator logic
         
         const entrancePoint = {
           x: center.x + Math.sin(radian) * entranceRadius,

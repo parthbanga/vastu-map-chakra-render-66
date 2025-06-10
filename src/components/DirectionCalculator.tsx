@@ -149,10 +149,11 @@ export class DirectionCalculator {
     }));
   }
 
-  // Get direction labels - positioned to stay within bounds at all scales
+  // Get direction labels - positioned conservatively to stay within bounds
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
-    // Much more aggressive scaling: at scale 3, labels should be at 1.0 (on circle edge)
-    const labelRadius = Math.max(1.0, 1.08 - (this.scale - 1) * 0.08);
+    // Keep labels at safe distance - reduce radius at higher scales more aggressively
+    const labelRadius = Math.max(0.95, 1.05 - (this.scale - 1) * 0.15);
+    console.log('Direction labels radius:', labelRadius, 'at scale:', this.scale);
     return this.vastuZones.map(zone => ({
       point: this.getPointOnCircle(zone.angle, labelRadius),
       label: zone.name,
@@ -189,7 +190,7 @@ export class DirectionCalculator {
     });
   }
 
-  // Get compass directions - positioned to stay within bounds at all scales
+  // Get compass directions - positioned conservatively to stay within bounds
   getCompassDirections(): Array<{ point: Point; direction: string; angle: number }> {
     const mainDirections = [
       { direction: 'N', angle: 0 },
@@ -198,8 +199,9 @@ export class DirectionCalculator {
       { direction: 'W', angle: 270 }
     ];
 
-    // Much more aggressive scaling: at scale 3, compass should be at 1.03 (very close to circle)
-    const compassRadius = Math.max(1.03, 1.15 - (this.scale - 1) * 0.12);
+    // More aggressive scaling to keep compass within bounds
+    const compassRadius = Math.max(1.0, 1.1 - (this.scale - 1) * 0.15);
+    console.log('Compass radius:', compassRadius, 'at scale:', this.scale);
     return mainDirections.map(dir => ({
       point: this.getPointOnCircle(dir.angle, compassRadius),
       direction: dir.direction,
