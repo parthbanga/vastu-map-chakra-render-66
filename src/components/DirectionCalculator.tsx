@@ -149,7 +149,7 @@ export class DirectionCalculator {
   // Get direction labels - positioned closer to circle
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
     return this.vastuZones.map(zone => ({
-      point: this.getPointOnCircle(zone.angle, 1.08), // Reduced from 1.15
+      point: this.getPointOnCircle(zone.angle, 1.05), // Further reduced for better scaling
       label: zone.name,
       angle: zone.angle + this.rotation
     }));
@@ -194,7 +194,7 @@ export class DirectionCalculator {
     ];
 
     return mainDirections.map(dir => ({
-      point: this.getPointOnCircle(dir.angle, 1.15), // Reduced from 1.25
+      point: this.getPointOnCircle(dir.angle, 1.10), // Further reduced for better scaling
       direction: dir.direction,
       angle: dir.angle + this.rotation
     }));
