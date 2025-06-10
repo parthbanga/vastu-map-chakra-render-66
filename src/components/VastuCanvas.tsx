@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 import { Button } from "@/components/ui/button";
@@ -42,15 +41,17 @@ export const VastuCanvas = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageNaturalSize, setImageNaturalSize] = useState({ width: 0, height: 0 });
 
-  // Calculate canvas dimensions for mobile-first design
+  // Calculate canvas dimensions to fill the available space
   useEffect(() => {
     const updateCanvasSize = () => {
       if (containerRef.current) {
         const container = containerRef.current;
         const rect = container.getBoundingClientRect();
-        const width = Math.max(rect.width - 16, 320);
-        const height = Math.max(rect.height - 16, 400);
-        setCanvasSize({ width, height });
+        // Use the full available space
+        setCanvasSize({ 
+          width: rect.width, 
+          height: rect.height 
+        });
       }
     };
 
@@ -254,7 +255,7 @@ export const VastuCanvas = ({
   }, [center, polygonPoints]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full min-h-[400px] bg-gray-50 rounded-lg overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-full bg-gray-50 overflow-hidden">
       {!mapImage ? (
         <div className="absolute inset-0 flex items-center justify-center text-gray-500">
           <div className="text-center p-8">
@@ -273,7 +274,7 @@ export const VastuCanvas = ({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className={`absolute inset-0 w-full h-full ${!center ? 'cursor-crosshair' : 'cursor-default'}`}
+            className={`w-full h-full ${!center ? 'cursor-crosshair' : 'cursor-default'}`}
             style={{ 
               touchAction: 'none',
               userSelect: 'none',
@@ -293,25 +294,25 @@ export const VastuCanvas = ({
             />
           )}
           
-          {/* Simple mobile instructions */}
+          {/* Compact mobile instructions */}
           {!center && (
-            <div className="absolute top-4 left-4 right-4">
-              <div className="bg-white/90 backdrop-blur-sm px-4 py-3 rounded-lg shadow-lg border">
+            <div className="absolute top-2 left-2 right-2">
+              <div className="bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg border">
                 <p className="text-sm font-medium text-gray-800 text-center">
-                  Tap corners to outline your plot area
+                  Tap corners to outline plot area
                 </p>
                 {polygonPoints.length > 0 && (
                   <p className="text-xs text-blue-600 text-center mt-1">
-                    {polygonPoints.length} points added
+                    {polygonPoints.length} points • Need {Math.max(0, 3 - polygonPoints.length)} more
                   </p>
                 )}
               </div>
             </div>
           )}
           
-          {/* Finish button */}
+          {/* Finish button - positioned to not interfere with bottom tabs */}
           {polygonPoints.length >= 3 && !center && (
-            <div className="absolute bottom-4 left-4 right-4">
+            <div className="absolute bottom-2 left-2 right-2">
               <Button
                 onClick={() => onPolygonComplete(polygonPoints)}
                 className="w-full bg-green-600 hover:bg-green-700 text-white shadow-lg"

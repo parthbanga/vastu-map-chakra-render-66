@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback } from "react";
 import { Upload, RotateCw, Download, Trash2, Sparkles, Settings, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -113,9 +112,9 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* App Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
+    <div className="h-screen w-screen overflow-hidden bg-gray-50 flex flex-col">
+      {/* Fixed App Header */}
+      <div className="flex-none bg-white border-b border-gray-200 px-4 py-3 shadow-sm z-10">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-pink-600 rounded-lg flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
@@ -127,36 +126,34 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Main Canvas Area */}
-      <div className="flex-1 p-4">
-        <Card className="h-full bg-white shadow-sm border-gray-200">
-          <VastuCanvas
-            mapImage={mapImage}
-            polygonPoints={polygonPoints}
-            isSelectingPolygon={!center}
-            onPolygonPointAdd={(point) => {
-              if (!center) {
-                const newPoints = [...polygonPoints, point];
-                setPolygonPoints(newPoints);
-              }
-            }}
-            onPolygonComplete={handlePolygonComplete}
-            center={center}
-            chakraRotation={chakraRotation}
-            chakraScale={chakraScale}
-            chakraOpacity={chakraOpacity}
-            showDirections={showDirections}
-            showEntrances={showEntrances}
-          />
-        </Card>
+      {/* Main Canvas Area - Takes remaining space */}
+      <div className="flex-1 overflow-hidden">
+        <VastuCanvas
+          mapImage={mapImage}
+          polygonPoints={polygonPoints}
+          isSelectingPolygon={!center}
+          onPolygonPointAdd={(point) => {
+            if (!center) {
+              const newPoints = [...polygonPoints, point];
+              setPolygonPoints(newPoints);
+            }
+          }}
+          onPolygonComplete={handlePolygonComplete}
+          center={center}
+          chakraRotation={chakraRotation}
+          chakraScale={chakraScale}
+          chakraOpacity={chakraOpacity}
+          showDirections={showDirections}
+          showEntrances={showEntrances}
+        />
       </div>
 
-      {/* Bottom Tab Bar */}
-      <div className="bg-white border-t border-gray-200 px-4 py-2 shadow-lg">
-        <div className="flex justify-around">
+      {/* Fixed Bottom Navigation */}
+      <div className="flex-none bg-white border-t border-gray-200 shadow-lg z-10">
+        <div className="flex justify-around px-2 py-1">
           <button
             onClick={() => setActiveTab('upload')}
-            className={`flex flex-col items-center py-2 px-4 rounded-lg transition-colors ${
+            className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
               activeTab === 'upload' 
                 ? 'bg-blue-50 text-blue-600' 
                 : 'text-gray-500'
@@ -168,7 +165,7 @@ const Index = () => {
           
           <button
             onClick={() => setActiveTab('controls')}
-            className={`flex flex-col items-center py-2 px-4 rounded-lg transition-colors ${
+            className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
               activeTab === 'controls' 
                 ? 'bg-blue-50 text-blue-600' 
                 : 'text-gray-500'
@@ -180,7 +177,7 @@ const Index = () => {
           
           <button
             onClick={() => setActiveTab('export')}
-            className={`flex flex-col items-center py-2 px-4 rounded-lg transition-colors ${
+            className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
               activeTab === 'export' 
                 ? 'bg-blue-50 text-blue-600' 
                 : 'text-gray-500'
@@ -190,97 +187,97 @@ const Index = () => {
             <span className="text-xs font-medium">Export</span>
           </button>
         </div>
-      </div>
 
-      {/* Bottom Sheet Content */}
-      <div className="bg-white border-t border-gray-200">
-        {activeTab === 'upload' && (
-          <div className="p-4">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Upload className="w-6 h-6 text-blue-600" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Upload Map</h3>
-              <p className="text-sm text-gray-600 mb-4">Upload your house plan to get started</p>
-              
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/jpg,image/png"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full mb-3 bg-blue-600 hover:bg-blue-700"
-                size="lg"
-              >
-                <Upload className="w-5 h-5 mr-2" />
-                Choose Image
-              </Button>
-              
-              {mapImage && (
-                <div className="space-y-2">
-                  <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg text-sm">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    Map loaded successfully
-                  </div>
-                  {polygonPoints.length > 0 && (
-                    <Button
-                      onClick={handleClearPolygon}
-                      variant="outline"
-                      className="w-full"
-                      size="sm"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Clear Selection ({polygonPoints.length} points)
-                    </Button>
-                  )}
+        {/* Scrollable Bottom Panel Content */}
+        <div className="max-h-80 overflow-y-auto bg-white border-t border-gray-100">
+          {activeTab === 'upload' && (
+            <div className="p-4">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Upload className="w-6 h-6 text-blue-600" />
                 </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'controls' && (
-          <div className="p-4">
-            <ChakraControls
-              rotation={chakraRotation}
-              scale={chakraScale}
-              opacity={chakraOpacity}
-              showDirections={showDirections}
-              showEntrances={showEntrances}
-              onRotationChange={handleRotationChange}
-              onScaleChange={setChakraScale}
-              onOpacityChange={setChakraOpacity}
-              onShowDirectionsChange={setShowDirections}
-              onShowEntrancesChange={setShowEntrances}
-              disabled={!center}
-            />
-          </div>
-        )}
-
-        {activeTab === 'export' && (
-          <div className="p-4">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Download className="w-6 h-6 text-green-600" />
+                <h3 className="text-lg font-semibold mb-2">Upload Map</h3>
+                <p className="text-sm text-gray-600 mb-4">Upload your house plan to get started</p>
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full mb-3 bg-blue-600 hover:bg-blue-700"
+                  size="lg"
+                >
+                  <Upload className="w-5 h-5 mr-2" />
+                  Choose Image
+                </Button>
+                
+                {mapImage && (
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg text-sm">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      Map loaded successfully
+                    </div>
+                    {polygonPoints.length > 0 && (
+                      <Button
+                        onClick={handleClearPolygon}
+                        variant="outline"
+                        className="w-full"
+                        size="sm"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Clear Selection ({polygonPoints.length} points)
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
-              <h3 className="text-lg font-semibold mb-2">Export Analysis</h3>
-              <p className="text-sm text-gray-600 mb-4">Download your Vastu analysis as PDF</p>
-              
-              <PDFExporter
-                mapImage={mapImage}
-                polygonPoints={polygonPoints}
-                center={center}
-                chakraRotation={chakraRotation}
-                chakraScale={chakraScale}
-                chakraOpacity={chakraOpacity}
+            </div>
+          )}
+
+          {activeTab === 'controls' && (
+            <div className="p-4">
+              <ChakraControls
+                rotation={chakraRotation}
+                scale={chakraScale}
+                opacity={chakraOpacity}
+                showDirections={showDirections}
+                showEntrances={showEntrances}
+                onRotationChange={handleRotationChange}
+                onScaleChange={setChakraScale}
+                onOpacityChange={setChakraOpacity}
+                onShowDirectionsChange={setShowDirections}
+                onShowEntrancesChange={setShowEntrances}
+                disabled={!center}
               />
             </div>
-          </div>
-        )}
+          )}
+
+          {activeTab === 'export' && (
+            <div className="p-4">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Download className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Export Analysis</h3>
+                <p className="text-sm text-gray-600 mb-4">Download your Vastu analysis as PDF</p>
+                
+                <PDFExporter
+                  mapImage={mapImage}
+                  polygonPoints={polygonPoints}
+                  center={center}
+                  chakraRotation={chakraRotation}
+                  chakraScale={chakraScale}
+                  chakraOpacity={chakraOpacity}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
