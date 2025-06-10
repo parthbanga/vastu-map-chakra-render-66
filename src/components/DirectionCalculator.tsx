@@ -149,10 +149,10 @@ export class DirectionCalculator {
     }));
   }
 
-  // Get direction labels - positioned adaptively based on scale
+  // Get direction labels - positioned conservatively to stay within bounds
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
-    // Adaptive radius: as scale increases, move labels closer to circle
-    const labelRadius = Math.max(1.02, 1.08 - (this.scale - 1) * 0.02);
+    // Conservative radius that scales down more aggressively to prevent cutoff
+    const labelRadius = Math.max(1.02, 1.06 - (this.scale - 1) * 0.04);
     return this.vastuZones.map(zone => ({
       point: this.getPointOnCircle(zone.angle, labelRadius),
       label: zone.name,
@@ -189,7 +189,7 @@ export class DirectionCalculator {
     });
   }
 
-  // Get compass directions - positioned adaptively based on scale
+  // Get compass directions - positioned conservatively to stay within bounds
   getCompassDirections(): Array<{ point: Point; direction: string; angle: number }> {
     const mainDirections = [
       { direction: 'N', angle: 0 },
@@ -198,8 +198,8 @@ export class DirectionCalculator {
       { direction: 'W', angle: 270 }
     ];
 
-    // Adaptive radius: as scale increases, move compass closer to circle
-    const compassRadius = Math.max(1.05, 1.15 - (this.scale - 1) * 0.03);
+    // Conservative radius that scales down aggressively to prevent cutoff
+    const compassRadius = Math.max(1.05, 1.12 - (this.scale - 1) * 0.05);
     return mainDirections.map(dir => ({
       point: this.getPointOnCircle(dir.angle, compassRadius),
       direction: dir.direction,
