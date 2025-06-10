@@ -141,19 +141,19 @@ export class DirectionCalculator {
     });
   }
 
-  // Get entrance points - positioned on outer circle
+  // Get entrance points - positioned well inside the map boundary
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
     return this.entrancePositions.map(entrance => ({
-      point: this.getPointOnCircle(entrance.angle, 0.98), // Closer to circle
+      point: this.getPointOnCircle(entrance.angle, 0.85), // Positioned inside map boundary
       entrance
     }));
   }
 
-  // Get direction labels - positioned conservatively to stay within bounds
+  // Get direction labels - positioned safely inside the map boundary
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
-    // Keep labels at safe distance - reduce radius at higher scales more aggressively
-    const labelRadius = Math.max(0.95, 1.05 - (this.scale - 1) * 0.15);
-    console.log('Direction labels radius:', labelRadius, 'at scale:', this.scale);
+    // Position labels well inside the map boundary to ensure they don't go outside
+    const labelRadius = 0.7; // Fixed radius that keeps labels inside map boundary
+    console.log('Direction labels radius:', labelRadius, 'keeping inside map boundary');
     return this.vastuZones.map(zone => ({
       point: this.getPointOnCircle(zone.angle, labelRadius),
       label: zone.name,
@@ -190,7 +190,7 @@ export class DirectionCalculator {
     });
   }
 
-  // Get compass directions - positioned conservatively to stay within bounds
+  // Get compass directions - positioned safely inside the map boundary
   getCompassDirections(): Array<{ point: Point; direction: string; angle: number }> {
     const mainDirections = [
       { direction: 'N', angle: 0 },
@@ -199,9 +199,9 @@ export class DirectionCalculator {
       { direction: 'W', angle: 270 }
     ];
 
-    // More aggressive scaling to keep compass within bounds
-    const compassRadius = Math.max(1.0, 1.1 - (this.scale - 1) * 0.15);
-    console.log('Compass radius:', compassRadius, 'at scale:', this.scale);
+    // Position compass directions well inside the map boundary
+    const compassRadius = 0.9; // Fixed radius that keeps compass inside map boundary
+    console.log('Compass radius:', compassRadius, 'keeping inside map boundary');
     return mainDirections.map(dir => ({
       point: this.getPointOnCircle(dir.angle, compassRadius),
       direction: dir.direction,

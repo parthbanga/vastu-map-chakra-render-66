@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -51,11 +50,9 @@ export const MathematicalChakra = ({
   // DEBUG: Log scale and radius values
   console.log('Scale:', scale, 'Radius:', radius, 'ScaledRadius:', scaledRadius);
   
-  // Fixed approach: Use generous viewBox that accounts for worst-case positioning
-  // The issue is elements can be positioned at up to 1.15x radius at scale 1
-  // Plus we need padding for text labels that extend beyond their anchor points
-  const maxPossibleRadius = scaledRadius * 1.2; // Account for any positioning
-  const textPadding = Math.max(60, scaledRadius * 0.3); // Fixed minimum padding for text
+  // Reduced viewBox size since labels are now positioned inside the map boundary
+  const maxPossibleRadius = scaledRadius * 1.1; // Reduced since labels stay inside
+  const textPadding = 30; // Reduced padding since labels don't extend outside
   const viewBoxSize = (maxPossibleRadius + textPadding) * 2;
   const viewBoxOffset = viewBoxSize / 2;
   
@@ -133,55 +130,30 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* 32 Entrance points - positioned closer to outer circle */}
+      {/* 32 Entrance points - positioned inside map boundary */}
       {showEntrances && entrancePoints.map((entrance, index) => {
-        const angle = entrance.entrance.angle + rotation;
-        const radian = (angle * Math.PI) / 180;
-        const entranceRadius = scaledRadius * 0.98; // Closer to circle edge
-        const labelRadius = scaledRadius * Math.max(0.95, 1.05 - (scale - 1) * 0.15); // Match DirectionCalculator logic
-        
-        const entrancePoint = {
-          x: center.x + Math.sin(radian) * entranceRadius,
-          y: center.y - Math.cos(radian) * entranceRadius
-        };
-        
-        const labelPoint = {
-          x: center.x + Math.sin(radian) * labelRadius,
-          y: center.y - Math.cos(radian) * labelRadius
-        };
-        
         return (
           <g key={`entrance-${index}`}>
-            {/* Entrance circle - smaller for better mobile visibility */}
+            {/* Entrance circle - positioned inside map boundary */}
             <circle
-              cx={entrancePoint.x}
-              cy={entrancePoint.y}
-              r="4"
+              cx={entrance.point.x}
+              cy={entrance.point.y}
+              r="3"
               fill="#ff0000"
               stroke="#ffffff"
               strokeWidth="1"
             />
             
-            {/* Compact label background */}
-            <rect
-              x={labelPoint.x - 8}
-              y={labelPoint.y - 12}
-              width="16"
-              height="10"
-              fill="rgba(255, 255, 255, 0.9)"
-              stroke="#000"
-              strokeWidth="0.3"
-              rx="1"
-            />
-            
-            {/* Entrance label - smaller font */}
+            {/* Entrance label - positioned inside map boundary */}
             <text
-              x={labelPoint.x}
-              y={labelPoint.y - 5}
+              x={entrance.point.x}
+              y={entrance.point.y - 8}
               textAnchor="middle"
-              fontSize="7"
+              fontSize="6"
               fontWeight="bold"
               fill="#000"
+              stroke="#fff"
+              strokeWidth="0.5"
             >
               {entrance.entrance.name}
             </text>
@@ -189,22 +161,22 @@ export const MathematicalChakra = ({
         );
       })}
 
-      {/* Main compass directions - positioned closer */}
+      {/* Main compass directions - positioned inside map boundary */}
       {compassDirections.map((dir, index) => (
         <g key={`compass-${index}`}>
           <circle
             cx={dir.point.x}
             cy={dir.point.y}
-            r="6"
+            r="8"
             fill="#fff"
             stroke="#333"
-            strokeWidth="1.5"
+            strokeWidth="2"
           />
           <text
             x={dir.point.x}
-            y={dir.point.y + 3}
+            y={dir.point.y + 4}
             textAnchor="middle"
-            fontSize="10"
+            fontSize="12"
             fontWeight="bold"
             fill="#333"
           >
@@ -213,7 +185,7 @@ export const MathematicalChakra = ({
         </g>
       ))}
 
-      {/* Zone labels - positioned closer to circle */}
+      {/* Zone labels - positioned inside map boundary */}
       {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}
@@ -222,7 +194,9 @@ export const MathematicalChakra = ({
           textAnchor="middle"
           fontSize="8"
           fill="#333"
-          fontWeight="500"
+          fontWeight="600"
+          stroke="#fff"
+          strokeWidth="0.5"
           transform={`rotate(${label.angle > 90 && label.angle < 270 ? label.angle + 180 : label.angle}, ${label.point.x}, ${label.point.y})`}
         >
           {label.label}
