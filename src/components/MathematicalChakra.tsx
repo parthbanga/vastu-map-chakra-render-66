@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -80,8 +81,8 @@ export const MathematicalChakra = ({
         />
       ))}
 
-      {/* Radial lines from center to polygon boundary */}
-      {radialLines.map((line, index) => (
+      {/* Radial lines from center to polygon boundary - only show when directions are enabled */}
+      {showDirections && radialLines.map((line, index) => (
         <line
           key={`radial-${index}`}
           x1={line.start.x}
@@ -93,7 +94,7 @@ export const MathematicalChakra = ({
         />
       ))}
 
-      {/* 32 Entrance points - text labels positioned along radial lines */}
+      {/* 32 Entrance points - positioned optimally to avoid overlapping */}
       {showEntrances && entrancePoints.map((entrance, index) => {
         return (
           <text
@@ -101,18 +102,19 @@ export const MathematicalChakra = ({
             x={entrance.point.x}
             y={entrance.point.y}
             textAnchor="middle"
-            fontSize="12"
+            fontSize="11"
             fontWeight="bold"
             fill="#000"
             stroke="#fff"
             strokeWidth="1"
+            dominantBaseline="middle"
           >
             {entrance.entrance.name}
           </text>
         );
       })}
 
-      {/* Direction labels - abbreviated names positioned near boundary for better visibility */}
+      {/* Direction labels - abbreviated names positioned in center of zone sectors */}
       {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}

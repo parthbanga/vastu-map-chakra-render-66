@@ -38,71 +38,71 @@ export class DirectionCalculator {
     { name: 'NNW', angle: 337.5, color: '#009688' }
   ];
 
-  // 32 Entrance positions - accurately positioned with 11.25° spacing
+  // 32 Entrance positions - positioned strategically to avoid overlapping
   private entrancePositions = [
-    // North (0°) - N4, N5
-    { angle: 348.75, name: 'N4' },  // -11.25° from North
-    { angle: 11.25, name: 'N5' },   // +11.25° from North
+    // North zone entrances
+    { angle: 348.75, name: 'N4', radiusMultiplier: 0.75 },  
+    { angle: 11.25, name: 'N5', radiusMultiplier: 0.75 },   
     
-    // North-NE (22.5°) - N6, N7  
-    { angle: 16.875, name: 'N6' },  // 22.5° - 5.625°
-    { angle: 28.125, name: 'N7' },  // 22.5° + 5.625°
+    // North-NE zone entrances  
+    { angle: 16.875, name: 'N6', radiusMultiplier: 0.8 },  
+    { angle: 28.125, name: 'N7', radiusMultiplier: 0.8 },  
     
-    // North-East (45°) - N8, E1
-    { angle: 39.375, name: 'N8' },  // 45° - 5.625°
-    { angle: 50.625, name: 'E1' },  // 45° + 5.625°
+    // North-East zone entrances
+    { angle: 39.375, name: 'N8', radiusMultiplier: 0.85 },  
+    { angle: 50.625, name: 'E1', radiusMultiplier: 0.85 },  
     
-    // East-NE (67.5°) - E2, E3
-    { angle: 61.875, name: 'E2' },  // 67.5° - 5.625°
-    { angle: 73.125, name: 'E3' },  // 67.5° + 5.625°
+    // East-NE zone entrances
+    { angle: 61.875, name: 'E2', radiusMultiplier: 0.8 },  
+    { angle: 73.125, name: 'E3', radiusMultiplier: 0.8 },  
     
-    // East (90°) - E4, E5
-    { angle: 78.75, name: 'E4' },   // 90° - 11.25°
-    { angle: 101.25, name: 'E5' },  // 90° + 11.25°
+    // East zone entrances
+    { angle: 78.75, name: 'E4', radiusMultiplier: 0.75 },   
+    { angle: 101.25, name: 'E5', radiusMultiplier: 0.75 },  
     
-    // East-SE (112.5°) - E6, E7
-    { angle: 106.875, name: 'E6' }, // 112.5° - 5.625°
-    { angle: 118.125, name: 'E7' }, // 112.5° + 5.625°
+    // East-SE zone entrances
+    { angle: 106.875, name: 'E6', radiusMultiplier: 0.8 }, 
+    { angle: 118.125, name: 'E7', radiusMultiplier: 0.8 }, 
     
-    // South-East (135°) - E8, S1
-    { angle: 129.375, name: 'E8' }, // 135° - 5.625°
-    { angle: 140.625, name: 'S1' }, // 135° + 5.625°
+    // South-East zone entrances
+    { angle: 129.375, name: 'E8', radiusMultiplier: 0.85 }, 
+    { angle: 140.625, name: 'S1', radiusMultiplier: 0.85 }, 
     
-    // South-SE (157.5°) - S2, S3
-    { angle: 151.875, name: 'S2' }, // 157.5° - 5.625°
-    { angle: 163.125, name: 'S3' }, // 157.5° + 5.625°
+    // South-SE zone entrances
+    { angle: 151.875, name: 'S2', radiusMultiplier: 0.8 }, 
+    { angle: 163.125, name: 'S3', radiusMultiplier: 0.8 }, 
     
-    // South (180°) - S4, S5
-    { angle: 168.75, name: 'S4' },  // 180° - 11.25°
-    { angle: 191.25, name: 'S5' },  // 180° + 11.25°
+    // South zone entrances
+    { angle: 168.75, name: 'S4', radiusMultiplier: 0.75 },  
+    { angle: 191.25, name: 'S5', radiusMultiplier: 0.75 },  
     
-    // South-SW (202.5°) - S6, S7
-    { angle: 196.875, name: 'S6' }, // 202.5° - 5.625°
-    { angle: 208.125, name: 'S7' }, // 202.5° + 5.625°
+    // South-SW zone entrances
+    { angle: 196.875, name: 'S6', radiusMultiplier: 0.8 }, 
+    { angle: 208.125, name: 'S7', radiusMultiplier: 0.8 }, 
     
-    // South-West (225°) - S8, W1
-    { angle: 219.375, name: 'S8' }, // 225° - 5.625°
-    { angle: 230.625, name: 'W1' }, // 225° + 5.625°
+    // South-West zone entrances
+    { angle: 219.375, name: 'S8', radiusMultiplier: 0.85 }, 
+    { angle: 230.625, name: 'W1', radiusMultiplier: 0.85 }, 
     
-    // West-SW (247.5°) - W2, W3
-    { angle: 241.875, name: 'W2' }, // 247.5° - 5.625°
-    { angle: 253.125, name: 'W3' }, // 247.5° + 5.625°
+    // West-SW zone entrances
+    { angle: 241.875, name: 'W2', radiusMultiplier: 0.8 }, 
+    { angle: 253.125, name: 'W3', radiusMultiplier: 0.8 }, 
     
-    // West (270°) - W4, W5
-    { angle: 258.75, name: 'W4' },  // 270° - 11.25°
-    { angle: 281.25, name: 'W5' },  // 270° + 11.25°
+    // West zone entrances
+    { angle: 258.75, name: 'W4', radiusMultiplier: 0.75 },  
+    { angle: 281.25, name: 'W5', radiusMultiplier: 0.75 },  
     
-    // West-NW (292.5°) - W6, W7
-    { angle: 286.875, name: 'W6' }, // 292.5° - 5.625°
-    { angle: 298.125, name: 'W7' }, // 292.5° + 5.625°
+    // West-NW zone entrances
+    { angle: 286.875, name: 'W6', radiusMultiplier: 0.8 }, 
+    { angle: 298.125, name: 'W7', radiusMultiplier: 0.8 }, 
     
-    // North-West (315°) - W8, N1
-    { angle: 309.375, name: 'W8' }, // 315° - 5.625°
-    { angle: 320.625, name: 'N1' }, // 315° + 5.625°
+    // North-West zone entrances
+    { angle: 309.375, name: 'W8', radiusMultiplier: 0.85 }, 
+    { angle: 320.625, name: 'N1', radiusMultiplier: 0.85 }, 
     
-    // North-NW (337.5°) - N2, N3
-    { angle: 331.875, name: 'N2' }, // 337.5° - 5.625°
-    { angle: 343.125, name: 'N3' }  // 337.5° + 5.625°
+    // North-NW zone entrances
+    { angle: 331.875, name: 'N2', radiusMultiplier: 0.8 }, 
+    { angle: 343.125, name: 'N3', radiusMultiplier: 0.8 }  
   ];
 
   constructor({ center, radius, rotation, scale, polygonPoints = [] }: DirectionCalculatorProps) {
@@ -228,10 +228,10 @@ export class DirectionCalculator {
     });
   }
 
-  // Get entrance points - positioned well inside the map boundary
+  // Get entrance points with optimized positioning to prevent overlapping
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
     return this.entrancePositions.map(entrance => ({
-      point: this.getPointOnCircle(entrance.angle, 0.85), // Positioned inside map boundary
+      point: this.getPointOnCircle(entrance.angle, entrance.radiusMultiplier),
       entrance
     }));
   }
