@@ -165,33 +165,70 @@ export const PDFExporter = ({
 
       const scaledRadius = radius * chakraScale;
 
-      // Draw 16 direction lines
-      ctx.strokeStyle = '#4ade80';
+      // Calculate intersection points with polygon for 16 directions
+      const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+      
+      // Draw 16 direction lines to polygon boundary
+      ctx.strokeStyle = '#333333';
       ctx.lineWidth = 2;
       for (let i = 0; i < 16; i++) {
         const angle = (i * 22.5 + chakraRotation) * Math.PI / 180;
-        const x1 = center.x + Math.cos(angle) * scaledRadius * 0.3;
-        const y1 = center.y + Math.sin(angle) * scaledRadius * 0.3;
-        const x2 = center.x + Math.cos(angle) * scaledRadius;
-        const y2 = center.y + Math.sin(angle) * scaledRadius;
         
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
+        // Find intersection with polygon
+        const rayEnd = {
+          x: center.x + Math.cos(angle) * 10000,
+          y: center.y + Math.sin(angle) * 10000
+        };
+        
+        let intersectionPoint = null;
+        let maxDistance = 0;
+        
+        for (let j = 0; j < polygonPoints.length; j++) {
+          const p1 = polygonPoints[j];
+          const p2 = polygonPoints[(j + 1) % polygonPoints.length];
+          
+          const intersection = lineIntersection(
+            center.x, center.y, rayEnd.x, rayEnd.y,
+            p1.x, p1.y, p2.x, p2.y
+          );
+          
+          if (intersection) {
+            const distance = Math.sqrt(
+              Math.pow(intersection.x - center.x, 2) + 
+              Math.pow(intersection.y - center.y, 2)
+            );
+            if (distance > maxDistance) {
+              maxDistance = distance;
+              intersectionPoint = intersection;
+            }
+          }
+        }
+        
+        if (intersectionPoint) {
+          ctx.beginPath();
+          ctx.moveTo(center.x, center.y);
+          ctx.lineTo(intersectionPoint.x, intersectionPoint.y);
+          ctx.stroke();
+        }
       }
 
-      // Draw direction labels
-      ctx.fillStyle = '#059669';
-      ctx.font = 'bold 14px Arial';
+      // Draw direction labels at center of sectors
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 12px Arial';
       ctx.textAlign = 'center';
-      const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
       
       for (let i = 0; i < 16; i++) {
-        const angle = (i * 22.5 + chakraRotation) * Math.PI / 180;
+        const angle = (i * 22.5 + chakraRotation + 11.25) * Math.PI / 180; // Center of sector
         const labelRadius = scaledRadius * 0.6;
         const x = center.x + Math.cos(angle) * labelRadius;
-        const y = center.y + Math.sin(angle) * labelRadius + 5;
+        const y = center.y + Math.sin(angle) * labelRadius + 4;
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x, y - 2, 8, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.fillStyle = '#000000';
         ctx.fillText(directions[i], x, y);
       }
 
@@ -210,6 +247,25 @@ export const PDFExporter = ({
       console.error('Error creating directions canvas:', error);
       throw error;
     }
+  };
+
+  // Helper function for line intersection
+  const lineIntersection = (x1: number, y1: number, x2: number, y2: number,
+                           x3: number, y3: number, x4: number, y4: number) => {
+    const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+    if (Math.abs(denom) < 1e-10) return null;
+    
+    const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
+    const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom;
+    
+    if (t >= 0 && u >= 0 && u <= 1) {
+      return {
+        x: x1 + t * (x2 - x1),
+        y: y1 + t * (y2 - y1)
+      };
+    }
+    
+    return null;
   };
 
   const createCanvasWithEntrances = async (): Promise<{ dataURL: string; width: number; height: number }> => {
@@ -276,17 +332,89 @@ export const PDFExporter = ({
 
       const scaledRadius = radius * chakraScale;
 
-      // Draw 32 entrance points
-      ctx.fillStyle = '#f59e0b';
+      // 32 entrance names with proper positioning
+      const entranceNames = [
+        'Shweta', 'Airawat', 'Airawat', 'Shweta',
+        'Parjanya', 'Parjanya', 'Parjanya', 'Parjanya',
+        'Jayant', 'Mahendra', 'Mahendra', 'Jayant',
+        'Aditya', 'Satyak', 'Satyak', 'Aditya',
+        'Bhrisha', 'Antariksh', 'Antariksh', 'Bhrisha',
+        'Agni', 'Purush', 'Purush', 'Agni',
+        'Vitath', 'Grihakshata', 'Grihakshata', 'Vitath',
+        'Yama', 'Gandharva', 'Gandharva', 'Yama'
+      ];
+
+      // Draw 32 entrance points with dashed lines and deity names
+      ctx.strokeStyle = '#666666';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      
       for (let i = 0; i < 32; i++) {
         const angle = (i * 11.25 + chakraRotation) * Math.PI / 180;
-        const x = center.x + Math.cos(angle) * scaledRadius;
-        const y = center.y + Math.sin(angle) * scaledRadius;
         
-        ctx.beginPath();
-        ctx.arc(x, y, 6, 0, 2 * Math.PI);
-        ctx.fill();
+        // Find intersection with polygon for entrance lines
+        const rayEnd = {
+          x: center.x + Math.cos(angle) * 10000,
+          y: center.y + Math.sin(angle) * 10000
+        };
+        
+        let intersectionPoint = null;
+        let maxDistance = 0;
+        
+        for (let j = 0; j < polygonPoints.length; j++) {
+          const p1 = polygonPoints[j];
+          const p2 = polygonPoints[(j + 1) % polygonPoints.length];
+          
+          const intersection = lineIntersection(
+            center.x, center.y, rayEnd.x, rayEnd.y,
+            p1.x, p1.y, p2.x, p2.y
+          );
+          
+          if (intersection) {
+            const distance = Math.sqrt(
+              Math.pow(intersection.x - center.x, 2) + 
+              Math.pow(intersection.y - center.y, 2)
+            );
+            if (distance > maxDistance) {
+              maxDistance = distance;
+              intersectionPoint = intersection;
+            }
+          }
+        }
+        
+        if (intersectionPoint) {
+          // Draw dashed line
+          ctx.beginPath();
+          ctx.moveTo(center.x, center.y);
+          ctx.lineTo(intersectionPoint.x, intersectionPoint.y);
+          ctx.stroke();
+          
+          // Draw entrance point
+          ctx.setLineDash([]);
+          ctx.fillStyle = '#f59e0b';
+          ctx.beginPath();
+          ctx.arc(intersectionPoint.x, intersectionPoint.y, 6, 0, 2 * Math.PI);
+          ctx.fill();
+          
+          // Draw deity name
+          const nameRadius = maxDistance * 0.8;
+          const nameX = center.x + Math.cos(angle) * nameRadius;
+          const nameY = center.y + Math.sin(angle) * nameRadius;
+          
+          ctx.fillStyle = '#ffffff';
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 1;
+          ctx.font = 'bold 8px Arial';
+          ctx.textAlign = 'center';
+          ctx.strokeText(entranceNames[i], nameX, nameY);
+          ctx.fillText(entranceNames[i], nameX, nameY);
+          
+          ctx.setLineDash([3, 3]);
+        }
       }
+
+      // Reset line dash
+      ctx.setLineDash([]);
 
       // Draw center point
       ctx.fillStyle = '#ef4444';
@@ -415,13 +543,47 @@ export const PDFExporter = ({
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Calculate directional data (simplified version for PDF)
+      // Calculate actual directional data based on polygon
       const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+      const directionalData: number[] = [];
+
+      // Calculate extension for each direction
+      for (let i = 0; i < 16; i++) {
+        const angle = (i * 22.5 + chakraRotation) * Math.PI / 180;
+        const rayEnd = {
+          x: center.x + Math.cos(angle) * 10000,
+          y: center.y + Math.sin(angle) * 10000
+        };
+        
+        let maxDistance = 0;
+        
+        for (let j = 0; j < polygonPoints.length; j++) {
+          const p1 = polygonPoints[j];
+          const p2 = polygonPoints[(j + 1) % polygonPoints.length];
+          
+          const intersection = lineIntersection(
+            center.x, center.y, rayEnd.x, rayEnd.y,
+            p1.x, p1.y, p2.x, p2.y
+          );
+          
+          if (intersection) {
+            const distance = Math.sqrt(
+              Math.pow(intersection.x - center.x, 2) + 
+              Math.pow(intersection.y - center.y, 2)
+            );
+            maxDistance = Math.max(maxDistance, distance);
+          }
+        }
+        
+        directionalData.push(Math.round(maxDistance));
+      }
+
       const barWidth = 40;
       const maxBarHeight = 300;
-      const spacing = 10;
+      const spacing = 5;
       const startX = 50;
       const startY = 500;
+      const maxValue = Math.max(...directionalData);
 
       // Draw title
       ctx.fillStyle = '#000000';
@@ -432,20 +594,23 @@ export const PDFExporter = ({
       // Draw bars and labels
       directions.forEach((direction, index) => {
         const x = startX + index * (barWidth + spacing);
-        const height = Math.random() * maxBarHeight + 50; // Random data for demo
+        const value = directionalData[index];
+        const height = (value / maxValue) * maxBarHeight;
         
-        // Draw bar
-        ctx.fillStyle = `hsl(${index * 22.5}, 70%, 50%)`;
+        // Color based on direction
+        const hue = index * 22.5;
+        ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
         ctx.fillRect(x, startY - height, barWidth, height);
         
         // Draw direction label
         ctx.fillStyle = '#000000';
-        ctx.font = '12px Arial';
+        ctx.font = '10px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(direction, x + barWidth / 2, startY + 20);
         
         // Draw value
-        ctx.fillText(Math.round(height).toString(), x + barWidth / 2, startY - height - 10);
+        ctx.font = '8px Arial';
+        ctx.fillText(value.toString(), x + barWidth / 2, startY - height - 5);
       });
 
       // Draw Y-axis label
