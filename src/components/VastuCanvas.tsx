@@ -252,6 +252,12 @@ export const VastuCanvas = ({
     return Math.max(50, minDistance * 0.8);
   }, [center, polygonPoints]);
 
+  const handleFinishPolygon = useCallback(() => {
+    if (polygonPoints.length >= 3) {
+      onPolygonComplete(polygonPoints);
+    }
+  }, [polygonPoints, onPolygonComplete]);
+
   return (
     <div ref={containerRef} className="relative w-full h-full min-h-[400px] bg-gray-50 rounded-lg overflow-hidden">
       {!mapImage ? (
@@ -279,6 +285,20 @@ export const VastuCanvas = ({
               WebkitUserSelect: 'none'
             }}
           />
+          
+          {/* Finish Button - appears when selecting polygon and have 3+ points */}
+          {isSelectingPolygon && polygonPoints.length >= 3 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+              <Button
+                onClick={handleFinishPolygon}
+                className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
+                size="lg"
+              >
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Finish Polygon ({polygonPoints.length} points)
+              </Button>
+            </div>
+          )}
           
           {center && (
             <>
