@@ -1,11 +1,9 @@
 
-import { RotateCw, ZoomIn, Eye, Settings2 } from "lucide-react";
+import { RotateCw, Eye, EyeOff, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Card } from "@/components/ui/card";
 
 interface ChakraControlsProps {
   rotation: number;
@@ -14,12 +12,14 @@ interface ChakraControlsProps {
   showDirections: boolean;
   showEntrances: boolean;
   showShaktiChakra: boolean;
+  showBarChart: boolean;
   onRotationChange: (rotation: number) => void;
   onScaleChange: (scale: number) => void;
   onOpacityChange: (opacity: number) => void;
   onShowDirectionsChange: (show: boolean) => void;
   onShowEntrancesChange: (show: boolean) => void;
   onShowShaktiChakraChange: (show: boolean) => void;
+  onShowBarChartChange: (show: boolean) => void;
   disabled?: boolean;
 }
 
@@ -30,198 +30,136 @@ export const ChakraControls = ({
   showDirections,
   showEntrances,
   showShaktiChakra,
+  showBarChart,
   onRotationChange,
   onScaleChange,
   onOpacityChange,
   onShowDirectionsChange,
   onShowEntrancesChange,
   onShowShaktiChakraChange,
+  onShowBarChartChange,
   disabled = false
 }: ChakraControlsProps) => {
-  return (
-    <div className="space-y-4">
-      <div className="text-center">
-        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-          <Settings2 className="w-6 h-6 text-white" />
+  if (disabled) {
+    return (
+      <div className="text-center py-8">
+        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <RotateCw className="w-6 h-6 text-gray-400" />
         </div>
-        <h3 className="text-lg font-bold text-gray-800">Chakra Controls</h3>
+        <h3 className="text-lg font-semibold text-gray-400 mb-2">No Chakra Active</h3>
+        <p className="text-sm text-gray-500">Select your plot area first to enable controls</p>
       </div>
-      
-      {/* Visibility Controls */}
-      <Card className="p-4">
-        <Label className="text-sm font-semibold text-gray-800 mb-3 block">Visibility Options</Label>
-        
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="show-directions" className="text-sm text-gray-700">
-              16 Zone Directions
-            </Label>
-            <Switch
-              id="show-directions"
-              checked={showDirections}
-              onCheckedChange={onShowDirectionsChange}
-              disabled={disabled}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <Label htmlFor="show-entrances" className="text-sm text-gray-700">
-              32 Entrances
-            </Label>
-            <Switch
-              id="show-entrances"
-              checked={showEntrances}
-              onCheckedChange={onShowEntrancesChange}
-              disabled={disabled}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <Label htmlFor="show-shakti-chakra" className="text-sm text-gray-700">
-              Shakti Chakra
-            </Label>
-            <Switch
-              id="show-shakti-chakra"
-              checked={showShaktiChakra}
-              onCheckedChange={onShowShaktiChakraChange}
-              disabled={disabled}
-            />
-          </div>
-        </div>
-      </Card>
+    );
+  }
 
-      {/* Rotation Control */}
-      <Card className="p-4">
-        <Label htmlFor="rotation" className="text-sm font-semibold text-gray-800 mb-3 block">
-          Rotation
-        </Label>
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <Input
-              id="rotation"
-              type="number"
-              min="0"
-              max="360"
-              value={rotation}
-              onChange={(e) => onRotationChange(Number(e.target.value))}
-              className="flex-1 h-9 text-sm"
-              disabled={disabled}
-              placeholder="0-360°"
-            />
-            <Button
-              variant="outline"
-              onClick={() => onRotationChange(0)}
-              disabled={disabled}
-              size="sm"
-              className="h-9 w-9 p-0"
-            >
-              <RotateCw className="w-4 h-4" />
-            </Button>
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <RotateCw className="w-6 h-6 text-blue-600" />
+        </div>
+        <h3 className="text-lg font-semibold mb-2">Chakra Controls</h3>
+        <p className="text-sm text-gray-600">Adjust the chakra overlay settings</p>
+      </div>
+
+      <Card className="p-4 space-y-4">
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium">Rotation</label>
+            <span className="text-sm text-gray-500">{rotation}°</span>
           </div>
           <Slider
             value={[rotation]}
-            onValueChange={(value) => onRotationChange(value[0])}
+            onValueChange={([value]) => onRotationChange(value)}
             max={360}
+            min={0}
             step={1}
-            disabled={disabled}
             className="w-full"
           />
-          <div className="text-xs text-gray-500 text-center">{rotation}°</div>
         </div>
-      </Card>
 
-      {/* Scale Control */}
-      <Card className="p-4">
-        <Label htmlFor="scale" className="text-sm font-semibold text-gray-800 mb-3 block">
-          Scale
-        </Label>
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <Input
-              id="scale"
-              type="number"
-              min="0.1"
-              max="3"
-              step="0.1"
-              value={scale}
-              onChange={(e) => onScaleChange(Number(e.target.value))}
-              className="flex-1 h-9 text-sm"
-              disabled={disabled}
-              placeholder="0.1-3.0"
-            />
-            <Button
-              variant="outline"
-              onClick={() => onScaleChange(1)}
-              disabled={disabled}
-              size="sm"
-              className="h-9 w-9 p-0"
-            >
-              <ZoomIn className="w-4 h-4" />
-            </Button>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium">Scale</label>
+            <span className="text-sm text-gray-500">{scale.toFixed(1)}x</span>
           </div>
           <Slider
             value={[scale]}
-            onValueChange={(value) => onScaleChange(value[0])}
-            min={0.1}
-            max={3}
+            onValueChange={([value]) => onScaleChange(value)}
+            max={2}
+            min={0.5}
             step={0.1}
-            disabled={disabled}
             className="w-full"
           />
-          <div className="text-xs text-gray-500 text-center">{scale.toFixed(1)}x</div>
         </div>
-      </Card>
 
-      {/* Opacity Control */}
-      <Card className="p-4">
-        <Label htmlFor="opacity" className="text-sm font-semibold text-gray-800 mb-3 block">
-          Opacity
-        </Label>
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <Input
-              id="opacity"
-              type="number"
-              min="0"
-              max="1"
-              step="0.1"
-              value={opacity}
-              onChange={(e) => onOpacityChange(Number(e.target.value))}
-              className="flex-1 h-9 text-sm"
-              disabled={disabled}
-              placeholder="0.0-1.0"
-            />
-            <Button
-              variant="outline"
-              onClick={() => onOpacityChange(0.7)}
-              disabled={disabled}
-              size="sm"
-              className="h-9 w-9 p-0"
-            >
-              <Eye className="w-4 h-4" />
-            </Button>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium">Opacity</label>
+            <span className="text-sm text-gray-500">{Math.round(opacity * 100)}%</span>
           </div>
           <Slider
             value={[opacity]}
-            onValueChange={(value) => onOpacityChange(value[0])}
-            min={0}
+            onValueChange={([value]) => onOpacityChange(value)}
             max={1}
-            step={0.05}
-            disabled={disabled}
+            min={0.1}
+            step={0.1}
             className="w-full"
           />
-          <div className="text-xs text-gray-500 text-center">{Math.round(opacity * 100)}%</div>
         </div>
       </Card>
 
-      {disabled && (
-        <div className="text-center py-4">
-          <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-600 px-3 py-2 rounded-full text-sm">
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-            Select plot area first to enable controls
+      <Card className="p-4 space-y-4">
+        <h4 className="font-medium text-sm">Display Options</h4>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Eye className="w-4 h-4 text-gray-500" />
+            <span className="text-sm">Directions</span>
           </div>
+          <Switch
+            checked={showDirections}
+            onCheckedChange={onShowDirectionsChange}
+          />
         </div>
-      )}
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Eye className="w-4 h-4 text-gray-500" />
+            <span className="text-sm">Entrances</span>
+          </div>
+          <Switch
+            checked={showEntrances}
+            onCheckedChange={onShowEntrancesChange}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Eye className="w-4 h-4 text-gray-500" />
+            <span className="text-sm">Shakti Chakra</span>
+          </div>
+          <Switch
+            checked={showShaktiChakra}
+            onCheckedChange={onShowShaktiChakraChange}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-gray-500" />
+            <span className="text-sm">Area Analysis</span>
+          </div>
+          <Switch
+            checked={showBarChart}
+            onCheckedChange={onShowBarChartChange}
+          />
+        </div>
+      </Card>
+
+      <div className="text-xs text-gray-500 text-center">
+        <p>Adjust these settings to customize your Vastu analysis overlay</p>
+      </div>
     </div>
   );
 };

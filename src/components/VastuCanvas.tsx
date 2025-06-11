@@ -1,6 +1,8 @@
+
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 import { ShaktiChakra } from "./ShaktiChakra";
+import { DirectionalBarChart } from "./DirectionalBarChart";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 

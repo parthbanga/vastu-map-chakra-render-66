@@ -22,6 +22,7 @@ const Index = () => {
   const [showDirections, setShowDirections] = useState(true);
   const [showEntrances, setShowEntrances] = useState(true);
   const [showShaktiChakra, setShowShaktiChakra] = useState(false);
+  const [showBarChart, setShowBarChart] = useState(false);
   const [center, setCenter] = useState<Point | null>(null);
   const [activeTab, setActiveTab] = useState<'upload' | 'controls' | 'export'>('upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -149,6 +150,7 @@ const Index = () => {
             showDirections={showDirections}
             showEntrances={showEntrances}
             showShaktiChakra={showShaktiChakra}
+            showBarChart={showBarChart}
           />
         </Card>
       </div>
@@ -254,12 +256,14 @@ const Index = () => {
               showDirections={showDirections}
               showEntrances={showEntrances}
               showShaktiChakra={showShaktiChakra}
+              showBarChart={showBarChart}
               onRotationChange={handleRotationChange}
               onScaleChange={setChakraScale}
               onOpacityChange={setChakraOpacity}
               onShowDirectionsChange={setShowDirections}
               onShowEntrancesChange={setShowEntrances}
               onShowShaktiChakraChange={setShowShaktiChakra}
+              onShowBarChartChange={setShowBarChart}
               disabled={!center}
             />
           </div>
