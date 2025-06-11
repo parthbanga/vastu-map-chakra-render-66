@@ -248,7 +248,7 @@ export class DirectionCalculator {
     });
   }
 
-  // Get entrance points positioned at polygon boundary intersections
+  // Get entrance points positioned within polygon boundary along radial lines
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
     return this.entrancePositions.map(entrance => {
       // Get intersection point with polygon boundary
@@ -261,8 +261,8 @@ export class DirectionCalculator {
           Math.pow(boundaryPoint.y - this.center.y, 2)
         );
         
-        // Position label slightly outside the boundary to avoid overlap with polygon edge
-        const labelDistance = distance + 15; // 15 pixels outside boundary
+        // Position label at 85% of the distance from center to boundary (within polygon)
+        const labelDistance = distance * 0.85;
         
         const adjustedAngle = entrance.angle + this.rotation;
         const radian = this.toRadians(adjustedAngle);
@@ -279,7 +279,7 @@ export class DirectionCalculator {
       } else {
         // Fallback to circle positioning if polygon intersection fails
         return {
-          point: this.getPointOnCircle(entrance.angle, 1.1),
+          point: this.getPointOnCircle(entrance.angle, 0.85),
           entrance: entrance
         };
       }
@@ -293,9 +293,9 @@ export class DirectionCalculator {
     console.log('Direction labels radius:', labelRadius, 'positioned in center of zone sectors between radial lines');
     
     return this.vastuZones.map(zone => {
-      // Use the zone's center angle + 11.25° to position label in the CENTER of the zone sector
-      // Each zone spans 22.5°, so adding 11.25° puts us in the middle of the sector
-      const centerAngle = zone.angle + 11.25;
+      // Use the zone's center angle to position label in the CENTER of the zone sector
+      // Each zone spans 22.5°, so we use the exact zone angle which is already the center
+      const centerAngle = zone.angle;
       const boundaryPoint = this.getPolygonIntersection(centerAngle);
       
       // Position label in the center of the zone sector
