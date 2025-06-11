@@ -1,4 +1,5 @@
 
+
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -109,7 +110,7 @@ export const MathematicalChakra = ({
         />
       ))}
 
-      {/* 32 Entrance points - positioned at polygon boundary without colors or circles */}
+      {/* 32 Entrance points - positioned between radial lines with black bold text */}
       {showEntrances && entrancePoints.map((entrance, index) => {
         return (
           <text
@@ -119,8 +120,8 @@ export const MathematicalChakra = ({
             textAnchor="middle"
             fontSize="10"
             fontWeight="bold"
-            fill="#000"
-            stroke="#fff"
+            fill="#000000"
+            stroke="#ffffff"
             strokeWidth="0.5"
             dominantBaseline="middle"
           >
@@ -148,3 +149,4 @@ export const MathematicalChakra = ({
     </svg>
   );
 };
+

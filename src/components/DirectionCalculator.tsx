@@ -1,4 +1,3 @@
-
 interface Point {
   x: number;
   y: number;
@@ -39,71 +38,41 @@ export class DirectionCalculator {
     { name: 'NNW', angle: 337.5, color: '#009688' }
   ];
 
-  // 32 Entrance positions - positioned on radial lines at polygon boundary
+  // 32 Entrance positions - uniformly distributed with equal angular spacing
   private entrancePositions = [
-    // North zone entrances (N4, N5)
-    { angle: 348.75, name: 'N4' },  
-    { angle: 11.25, name: 'N5' },   
-    
-    // North-NE zone entrances (N6, N7)
-    { angle: 16.875, name: 'N6' },  
-    { angle: 28.125, name: 'N7' },  
-    
-    // North-East zone entrances (N8, E1)
-    { angle: 39.375, name: 'N8' },  
-    { angle: 50.625, name: 'E1' },  
-    
-    // East-NE zone entrances (E2, E3)
-    { angle: 61.875, name: 'E2' },  
-    { angle: 73.125, name: 'E3' },  
-    
-    // East zone entrances (E4, E5)
-    { angle: 78.75, name: 'E4' },   
-    { angle: 101.25, name: 'E5' },  
-    
-    // East-SE zone entrances (E6, E7)
-    { angle: 106.875, name: 'E6' }, 
-    { angle: 118.125, name: 'E7' }, 
-    
-    // South-East zone entrances (E8, S1)
-    { angle: 129.375, name: 'E8' }, 
-    { angle: 140.625, name: 'S1' }, 
-    
-    // South-SE zone entrances (S2, S3)
-    { angle: 151.875, name: 'S2' }, 
-    { angle: 163.125, name: 'S3' }, 
-    
-    // South zone entrances (S4, S5)
-    { angle: 168.75, name: 'S4' },  
-    { angle: 191.25, name: 'S5' },  
-    
-    // South-SW zone entrances (S6, S7)
-    { angle: 196.875, name: 'S6' }, 
-    { angle: 208.125, name: 'S7' }, 
-    
-    // South-West zone entrances (S8, W1)
-    { angle: 219.375, name: 'S8' }, 
-    { angle: 230.625, name: 'W1' }, 
-    
-    // West-SW zone entrances (W2, W3)
-    { angle: 241.875, name: 'W2' }, 
-    { angle: 253.125, name: 'W3' }, 
-    
-    // West zone entrances (W4, W5)
-    { angle: 258.75, name: 'W4' },  
-    { angle: 281.25, name: 'W5' },  
-    
-    // West-NW zone entrances (W6, W7)
-    { angle: 286.875, name: 'W6' }, 
-    { angle: 298.125, name: 'W7' }, 
-    
-    // North-West zone entrances (W8, N1)
-    { angle: 309.375, name: 'W8' }, 
-    { angle: 320.625, name: 'N1' }, 
-    
-    // North-NW zone entrances (N2, N3)
-    { angle: 331.875, name: 'N2' }, 
-    { angle: 343.125, name: 'N3' }  
+    // Each entrance is positioned at the center of its sector (11.25° spacing each)
+    { angle: 5.625, name: 'N4' },    // Center of first sector
+    { angle: 16.875, name: 'N5' },   // Center of second sector
+    { angle: 28.125, name: 'N6' },   // Center of third sector
+    { angle: 39.375, name: 'N7' },   // Center of fourth sector
+    { angle: 50.625, name: 'N8' },   // Center of fifth sector
+    { angle: 61.875, name: 'E1' },   // Center of sixth sector
+    { angle: 73.125, name: 'E2' },   // Center of seventh sector
+    { angle: 84.375, name: 'E3' },   // Center of eighth sector
+    { angle: 95.625, name: 'E4' },   // Center of ninth sector
+    { angle: 106.875, name: 'E5' },  // Center of tenth sector
+    { angle: 118.125, name: 'E6' },  // Center of eleventh sector
+    { angle: 129.375, name: 'E7' },  // Center of twelfth sector
+    { angle: 140.625, name: 'E8' },  // Center of thirteenth sector
+    { angle: 151.875, name: 'S1' },  // Center of fourteenth sector
+    { angle: 163.125, name: 'S2' },  // Center of fifteenth sector
+    { angle: 174.375, name: 'S3' },  // Center of sixteenth sector
+    { angle: 185.625, name: 'S4' },  // Center of seventeenth sector
+    { angle: 196.875, name: 'S5' },  // Center of eighteenth sector
+    { angle: 208.125, name: 'S6' },  // Center of nineteenth sector
+    { angle: 219.375, name: 'S7' },  // Center of twentieth sector
+    { angle: 230.625, name: 'S8' },  // Center of twenty-first sector
+    { angle: 241.875, name: 'W1' },  // Center of twenty-second sector
+    { angle: 253.125, name: 'W2' },  // Center of twenty-third sector
+    { angle: 264.375, name: 'W3' },  // Center of twenty-fourth sector
+    { angle: 275.625, name: 'W4' },  // Center of twenty-fifth sector
+    { angle: 286.875, name: 'W5' },  // Center of twenty-sixth sector
+    { angle: 298.125, name: 'W6' },  // Center of twenty-seventh sector
+    { angle: 309.375, name: 'W7' },  // Center of twenty-eighth sector
+    { angle: 320.625, name: 'W8' },  // Center of twenty-ninth sector
+    { angle: 331.875, name: 'N1' },  // Center of thirtieth sector
+    { angle: 343.125, name: 'N2' },  // Center of thirty-first sector
+    { angle: 354.375, name: 'N3' }   // Center of thirty-second sector
   ];
 
   constructor({ center, radius, rotation, scale, polygonPoints = [] }: DirectionCalculatorProps) {
@@ -249,7 +218,7 @@ export class DirectionCalculator {
     });
   }
 
-  // Get entrance points positioned within polygon boundary along radial lines
+  // Get entrance points positioned within polygon boundary in center of sectors
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
     return this.entrancePositions.map(entrance => {
       // Get intersection point with polygon boundary
