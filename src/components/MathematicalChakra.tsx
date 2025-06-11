@@ -48,6 +48,7 @@ export const MathematicalChakra = ({
   const directionLabels = calculator.getDirectionLabels();
   const entrancePoints = calculator.getEntrancePoints();
   const radialLines = calculator.getRadialLineEndpoints();
+  const entranceRadialLines = calculator.getEntranceRadialLines();
 
   const scaledRadius = radius * scale;
   
@@ -81,7 +82,7 @@ export const MathematicalChakra = ({
         />
       ))}
 
-      {/* Radial lines from center to polygon boundary - only show when directions are enabled */}
+      {/* Radial lines from center to polygon boundary for 16 directions - only show when directions are enabled */}
       {showDirections && radialLines.map((line, index) => (
         <line
           key={`radial-${index}`}
@@ -94,7 +95,21 @@ export const MathematicalChakra = ({
         />
       ))}
 
-      {/* 32 Entrance points - positioned optimally to avoid overlapping */}
+      {/* Radial lines for 32 entrances - only show when entrances are enabled */}
+      {showEntrances && entranceRadialLines.map((line, index) => (
+        <line
+          key={`entrance-radial-${index}`}
+          x1={line.start.x}
+          y1={line.start.y}
+          x2={line.end.x}
+          y2={line.end.y}
+          stroke="#666"
+          strokeWidth="1"
+          strokeDasharray="3,3"
+        />
+      ))}
+
+      {/* 32 Entrance points - positioned at polygon boundary without colors or circles */}
       {showEntrances && entrancePoints.map((entrance, index) => {
         return (
           <text
@@ -102,11 +117,11 @@ export const MathematicalChakra = ({
             x={entrance.point.x}
             y={entrance.point.y}
             textAnchor="middle"
-            fontSize="11"
+            fontSize="10"
             fontWeight="bold"
             fill="#000"
             stroke="#fff"
-            strokeWidth="1"
+            strokeWidth="0.5"
             dominantBaseline="middle"
           >
             {entrance.entrance.name}

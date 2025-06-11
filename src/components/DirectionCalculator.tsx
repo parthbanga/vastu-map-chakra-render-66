@@ -38,71 +38,71 @@ export class DirectionCalculator {
     { name: 'NNW', angle: 337.5, color: '#009688' }
   ];
 
-  // 32 Entrance positions - positioned strategically to avoid overlapping
+  // 32 Entrance positions - positioned on radial lines at polygon boundary
   private entrancePositions = [
-    // North zone entrances
-    { angle: 348.75, name: 'N4', radiusMultiplier: 0.75 },  
-    { angle: 11.25, name: 'N5', radiusMultiplier: 0.75 },   
+    // North zone entrances (N4, N5)
+    { angle: 348.75, name: 'N4' },  
+    { angle: 11.25, name: 'N5' },   
     
-    // North-NE zone entrances  
-    { angle: 16.875, name: 'N6', radiusMultiplier: 0.8 },  
-    { angle: 28.125, name: 'N7', radiusMultiplier: 0.8 },  
+    // North-NE zone entrances (N6, N7)
+    { angle: 16.875, name: 'N6' },  
+    { angle: 28.125, name: 'N7' },  
     
-    // North-East zone entrances
-    { angle: 39.375, name: 'N8', radiusMultiplier: 0.85 },  
-    { angle: 50.625, name: 'E1', radiusMultiplier: 0.85 },  
+    // North-East zone entrances (N8, E1)
+    { angle: 39.375, name: 'N8' },  
+    { angle: 50.625, name: 'E1' },  
     
-    // East-NE zone entrances
-    { angle: 61.875, name: 'E2', radiusMultiplier: 0.8 },  
-    { angle: 73.125, name: 'E3', radiusMultiplier: 0.8 },  
+    // East-NE zone entrances (E2, E3)
+    { angle: 61.875, name: 'E2' },  
+    { angle: 73.125, name: 'E3' },  
     
-    // East zone entrances
-    { angle: 78.75, name: 'E4', radiusMultiplier: 0.75 },   
-    { angle: 101.25, name: 'E5', radiusMultiplier: 0.75 },  
+    // East zone entrances (E4, E5)
+    { angle: 78.75, name: 'E4' },   
+    { angle: 101.25, name: 'E5' },  
     
-    // East-SE zone entrances
-    { angle: 106.875, name: 'E6', radiusMultiplier: 0.8 }, 
-    { angle: 118.125, name: 'E7', radiusMultiplier: 0.8 }, 
+    // East-SE zone entrances (E6, E7)
+    { angle: 106.875, name: 'E6' }, 
+    { angle: 118.125, name: 'E7' }, 
     
-    // South-East zone entrances
-    { angle: 129.375, name: 'E8', radiusMultiplier: 0.85 }, 
-    { angle: 140.625, name: 'S1', radiusMultiplier: 0.85 }, 
+    // South-East zone entrances (E8, S1)
+    { angle: 129.375, name: 'E8' }, 
+    { angle: 140.625, name: 'S1' }, 
     
-    // South-SE zone entrances
-    { angle: 151.875, name: 'S2', radiusMultiplier: 0.8 }, 
-    { angle: 163.125, name: 'S3', radiusMultiplier: 0.8 }, 
+    // South-SE zone entrances (S2, S3)
+    { angle: 151.875, name: 'S2' }, 
+    { angle: 163.125, name: 'S3' }, 
     
-    // South zone entrances
-    { angle: 168.75, name: 'S4', radiusMultiplier: 0.75 },  
-    { angle: 191.25, name: 'S5', radiusMultiplier: 0.75 },  
+    // South zone entrances (S4, S5)
+    { angle: 168.75, name: 'S4' },  
+    { angle: 191.25, name: 'S5' },  
     
-    // South-SW zone entrances
-    { angle: 196.875, name: 'S6', radiusMultiplier: 0.8 }, 
-    { angle: 208.125, name: 'S7', radiusMultiplier: 0.8 }, 
+    // South-SW zone entrances (S6, S7)
+    { angle: 196.875, name: 'S6' }, 
+    { angle: 208.125, name: 'S7' }, 
     
-    // South-West zone entrances
-    { angle: 219.375, name: 'S8', radiusMultiplier: 0.85 }, 
-    { angle: 230.625, name: 'W1', radiusMultiplier: 0.85 }, 
+    // South-West zone entrances (S8, W1)
+    { angle: 219.375, name: 'S8' }, 
+    { angle: 230.625, name: 'W1' }, 
     
-    // West-SW zone entrances
-    { angle: 241.875, name: 'W2', radiusMultiplier: 0.8 }, 
-    { angle: 253.125, name: 'W3', radiusMultiplier: 0.8 }, 
+    // West-SW zone entrances (W2, W3)
+    { angle: 241.875, name: 'W2' }, 
+    { angle: 253.125, name: 'W3' }, 
     
-    // West zone entrances
-    { angle: 258.75, name: 'W4', radiusMultiplier: 0.75 },  
-    { angle: 281.25, name: 'W5', radiusMultiplier: 0.75 },  
+    // West zone entrances (W4, W5)
+    { angle: 258.75, name: 'W4' },  
+    { angle: 281.25, name: 'W5' },  
     
-    // West-NW zone entrances
-    { angle: 286.875, name: 'W6', radiusMultiplier: 0.8 }, 
-    { angle: 298.125, name: 'W7', radiusMultiplier: 0.8 }, 
+    // West-NW zone entrances (W6, W7)
+    { angle: 286.875, name: 'W6' }, 
+    { angle: 298.125, name: 'W7' }, 
     
-    // North-West zone entrances
-    { angle: 309.375, name: 'W8', radiusMultiplier: 0.85 }, 
-    { angle: 320.625, name: 'N1', radiusMultiplier: 0.85 }, 
+    // North-West zone entrances (W8, N1)
+    { angle: 309.375, name: 'W8' }, 
+    { angle: 320.625, name: 'N1' }, 
     
-    // North-NW zone entrances
-    { angle: 331.875, name: 'N2', radiusMultiplier: 0.8 }, 
-    { angle: 343.125, name: 'N3', radiusMultiplier: 0.8 }  
+    // North-NW zone entrances (N2, N3)
+    { angle: 331.875, name: 'N2' }, 
+    { angle: 343.125, name: 'N3' }  
   ];
 
   constructor({ center, radius, rotation, scale, polygonPoints = [] }: DirectionCalculatorProps) {
@@ -214,6 +214,26 @@ export class DirectionCalculator {
     return lines;
   }
 
+  // Get entrance radial lines for 32 entrances
+  getEntranceRadialLines(): Array<{ start: Point; end: Point; angle: number }> {
+    const lines = [];
+    
+    // Generate radial lines for all 32 entrance positions
+    this.entrancePositions.forEach(entrance => {
+      const endPoint = this.getPolygonIntersection(entrance.angle);
+      
+      if (endPoint) {
+        lines.push({
+          start: this.center,
+          end: endPoint,
+          angle: entrance.angle
+        });
+      }
+    });
+    
+    return lines;
+  }
+
   // Get all 16 zone boundaries
   getZoneBoundaries(): Array<{ start: Point; end: Point; zone: any }> {
     return this.vastuZones.map((zone, index) => {
@@ -228,12 +248,42 @@ export class DirectionCalculator {
     });
   }
 
-  // Get entrance points with optimized positioning to prevent overlapping
+  // Get entrance points positioned at polygon boundary intersections
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
-    return this.entrancePositions.map(entrance => ({
-      point: this.getPointOnCircle(entrance.angle, entrance.radiusMultiplier),
-      entrance
-    }));
+    return this.entrancePositions.map(entrance => {
+      // Get intersection point with polygon boundary
+      const boundaryPoint = this.getPolygonIntersection(entrance.angle);
+      
+      if (boundaryPoint) {
+        // Calculate distance from center to boundary
+        const distance = Math.sqrt(
+          Math.pow(boundaryPoint.x - this.center.x, 2) + 
+          Math.pow(boundaryPoint.y - this.center.y, 2)
+        );
+        
+        // Position label slightly outside the boundary to avoid overlap with polygon edge
+        const labelDistance = distance + 15; // 15 pixels outside boundary
+        
+        const adjustedAngle = entrance.angle + this.rotation;
+        const radian = this.toRadians(adjustedAngle);
+        
+        const labelPoint = {
+          x: this.center.x + Math.sin(radian) * labelDistance,
+          y: this.center.y - Math.cos(radian) * labelDistance
+        };
+        
+        return {
+          point: labelPoint,
+          entrance: entrance
+        };
+      } else {
+        // Fallback to circle positioning if polygon intersection fails
+        return {
+          point: this.getPointOnCircle(entrance.angle, 1.1),
+          entrance: entrance
+        };
+      }
+    });
   }
 
   // Get direction labels - positioned in the center of each zone sector (between radial lines)
