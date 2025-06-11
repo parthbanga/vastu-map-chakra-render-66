@@ -155,11 +155,11 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
             <Bar 
               dataKey="area" 
               radius={[2, 2, 0, 0]}
-              fill={(entry) => entry.fill}
+              fill="#8884d8"
             />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </ChartContainer>
     </div>
   );
 };

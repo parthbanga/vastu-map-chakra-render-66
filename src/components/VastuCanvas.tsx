@@ -24,6 +24,7 @@ interface VastuCanvasProps {
   showDirections: boolean;
   showEntrances: boolean;
   showShaktiChakra: boolean;
+  showBarChart: boolean;
 }
 
 export const VastuCanvas = ({
@@ -39,6 +40,7 @@ export const VastuCanvas = ({
   showDirections,
   showEntrances,
   showShaktiChakra,
+  showBarChart,
 }: VastuCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -324,9 +326,16 @@ export const VastuCanvas = ({
                   scale={chakraScale}
                 />
               )}
+
+              {showBarChart && (
+                <DirectionalBarChart
+                  center={center}
+                  polygonPoints={polygonPoints}
+                  rotation={chakraRotation}
+                />
+              )}
             </>
           )}
-          
         </>
       )}
     </div>
