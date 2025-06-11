@@ -1,3 +1,4 @@
+
 interface Point {
   x: number;
   y: number;
@@ -292,10 +293,12 @@ export class DirectionCalculator {
     const labelRadius = 0.6;
     console.log('Direction labels radius:', labelRadius, 'positioned in center of zone sectors between radial lines');
     
-    return this.vastuZones.map(zone => {
-      // Use the zone's center angle to position label in the CENTER of the zone sector
-      // Each zone spans 22.5°, so we use the exact zone angle which is already the center
-      const centerAngle = zone.angle;
+    return this.vastuZones.map((zone, index) => {
+      // Calculate the center angle between two adjacent radial lines
+      // Radial lines are at: 0°, 22.5°, 45°, 67.5°, 90°, etc. (every 22.5°)
+      // Zone centers should be at: 11.25°, 33.75°, 56.25°, 78.75°, etc. (offset by 11.25°)
+      const centerAngle = (index * 22.5) + 11.25;
+      
       const boundaryPoint = this.getPolygonIntersection(centerAngle);
       
       // Position label in the center of the zone sector
