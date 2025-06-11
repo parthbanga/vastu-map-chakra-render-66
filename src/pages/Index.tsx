@@ -119,12 +119,16 @@ const Index = () => {
       {/* App Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-pink-600 rounded-lg flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
+            <img 
+              src="/lovable-uploads/18945461-d60b-4bfe-bfb7-5763f60d2ca3.png" 
+              alt="Astroshala Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">Vastu Chakra</h1>
-            <p className="text-xs text-gray-500">Professional Vastu Analysis</p>
+            <h1 className="text-lg font-bold text-gray-900">Astroshala</h1>
+            <p className="text-xs text-gray-500">BY Somnath Banga</p>
           </div>
         </div>
       </div>
