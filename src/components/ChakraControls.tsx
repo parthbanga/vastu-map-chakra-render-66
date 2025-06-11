@@ -1,4 +1,5 @@
-import { RotateCw, Eye, EyeOff, BarChart3 } from "lucide-react";
+
+import { RotateCw, Eye, EyeOff, BarChart3, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -12,6 +13,7 @@ interface ChakraControlsProps {
   showEntrances: boolean;
   showShaktiChakra: boolean;
   showBarChart: boolean;
+  showPlanetsChakra: boolean;
   onRotationChange: (rotation: number) => void;
   onScaleChange: (scale: number) => void;
   onOpacityChange: (opacity: number) => void;
@@ -19,6 +21,7 @@ interface ChakraControlsProps {
   onShowEntrancesChange: (show: boolean) => void;
   onShowShaktiChakraChange: (show: boolean) => void;
   onShowBarChartChange: (show: boolean) => void;
+  onShowPlanetsChakraChange: (show: boolean) => void;
   disabled?: boolean;
 }
 
@@ -30,6 +33,7 @@ export const ChakraControls = ({
   showEntrances,
   showShaktiChakra,
   showBarChart,
+  showPlanetsChakra,
   onRotationChange,
   onScaleChange,
   onOpacityChange,
@@ -37,6 +41,7 @@ export const ChakraControls = ({
   onShowEntrancesChange,
   onShowShaktiChakraChange,
   onShowBarChartChange,
+  onShowPlanetsChakraChange,
   disabled = false
 }: ChakraControlsProps) => {
   if (disabled) {
@@ -141,6 +146,17 @@ export const ChakraControls = ({
           <Switch
             checked={showShaktiChakra}
             onCheckedChange={onShowShaktiChakraChange}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-gray-500" />
+            <span className="text-sm">8 Planets</span>
+          </div>
+          <Switch
+            checked={showPlanetsChakra}
+            onCheckedChange={onShowPlanetsChakraChange}
           />
         </div>
 

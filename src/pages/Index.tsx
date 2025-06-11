@@ -22,6 +22,7 @@ const Index = () => {
   const [showDirections, setShowDirections] = useState(true);
   const [showEntrances, setShowEntrances] = useState(true);
   const [showShaktiChakra, setShowShaktiChakra] = useState(false);
+  const [showPlanetsChakra, setShowPlanetsChakra] = useState(false);
   const [showBarChart, setShowBarChart] = useState(false);
   const [center, setCenter] = useState<Point | null>(null);
   const [activeTab, setActiveTab] = useState<'upload' | 'controls' | 'export'>('upload');
@@ -154,6 +155,7 @@ const Index = () => {
             showDirections={showDirections}
             showEntrances={showEntrances}
             showShaktiChakra={showShaktiChakra}
+            showPlanetsChakra={showPlanetsChakra}
             showBarChart={showBarChart}
           />
         </Card>
@@ -260,6 +262,7 @@ const Index = () => {
               showDirections={showDirections}
               showEntrances={showEntrances}
               showShaktiChakra={showShaktiChakra}
+              showPlanetsChakra={showPlanetsChakra}
               showBarChart={showBarChart}
               onRotationChange={handleRotationChange}
               onScaleChange={setChakraScale}
@@ -267,6 +270,7 @@ const Index = () => {
               onShowDirectionsChange={setShowDirections}
               onShowEntrancesChange={setShowEntrances}
               onShowShaktiChakraChange={setShowShaktiChakra}
+              onShowPlanetsChakraChange={setShowPlanetsChakra}
               onShowBarChartChange={setShowBarChart}
               disabled={!center}
             />
