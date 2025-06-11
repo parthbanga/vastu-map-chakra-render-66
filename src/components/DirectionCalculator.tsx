@@ -236,19 +236,18 @@ export class DirectionCalculator {
     }));
   }
 
-  // Get direction labels - positioned near boundary for better visibility and spacing
+  // Get direction labels - positioned in the center of each zone sector (between radial lines)
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
-    // Position labels closer to boundary (85% of distance) for better visibility and spacing
-    const labelRadius = 0.85; // Much closer to boundary for better spacing
-    console.log('Direction labels radius:', labelRadius, 'positioned near boundary for better visibility');
+    // Position labels at 60% distance from center to give good visibility in the zone sectors
+    const labelRadius = 0.6;
+    console.log('Direction labels radius:', labelRadius, 'positioned in center of zone sectors between radial lines');
     
     return this.vastuZones.map(zone => {
-      // Use the zone's center angle (which is between the radial lines)
+      // Use the zone's center angle (which is exactly between the two radial lines of the zone)
       const centerAngle = zone.angle;
       const boundaryPoint = this.getPolygonIntersection(centerAngle);
       
-      // If we have a valid boundary intersection, use it with the label radius
-      // Otherwise fall back to circle calculation
+      // Position label in the center of the zone sector
       let labelPoint: Point;
       if (boundaryPoint) {
         const distance = Math.sqrt(
