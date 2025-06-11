@@ -1,4 +1,3 @@
-
 import { RotateCw, Eye, EyeOff, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -86,7 +85,7 @@ export const ChakraControls = ({
           <Slider
             value={[scale]}
             onValueChange={([value]) => onScaleChange(value)}
-            max={2}
+            max={5}
             min={0.5}
             step={0.1}
             className="w-full"
