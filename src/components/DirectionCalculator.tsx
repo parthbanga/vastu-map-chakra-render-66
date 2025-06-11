@@ -41,40 +41,40 @@ export class DirectionCalculator {
   // 32 Entrance positions - positioned in the CENTER of each 11.25° sector (between radial lines)
   private entrancePositions = [
     // Each entrance is positioned at the center of its sector
-    // Starting from 0° and going clockwise, each sector is 11.25° wide
-    // So centers are at: 5.625°, 16.875°, 28.125°, etc.
-    { angle: 5.625, name: 'N4' },    // Between 0° and 11.25°
-    { angle: 16.875, name: 'N5' },   // Between 11.25° and 22.5°
-    { angle: 28.125, name: 'N6' },   // Between 22.5° and 33.75°
-    { angle: 39.375, name: 'N7' },   // Between 33.75° and 45°
-    { angle: 50.625, name: 'N8' },   // Between 45° and 56.25°
-    { angle: 61.875, name: 'E1' },   // Between 56.25° and 67.5°
-    { angle: 73.125, name: 'E2' },   // Between 67.5° and 78.75°
-    { angle: 84.375, name: 'E3' },   // Between 78.75° and 90°
-    { angle: 95.625, name: 'E4' },   // Between 90° and 101.25°
-    { angle: 106.875, name: 'E5' },  // Between 101.25° and 112.5°
-    { angle: 118.125, name: 'E6' },  // Between 112.5° and 123.75°
-    { angle: 129.375, name: 'E7' },  // Between 123.75° and 135°
-    { angle: 140.625, name: 'E8' },  // Between 135° and 146.25°
-    { angle: 151.875, name: 'S1' },  // Between 146.25° and 157.5°
-    { angle: 163.125, name: 'S2' },  // Between 157.5° and 168.75°
-    { angle: 174.375, name: 'S3' },  // Between 168.75° and 180°
-    { angle: 185.625, name: 'S4' },  // Between 180° and 191.25°
-    { angle: 196.875, name: 'S5' },  // Between 191.25° and 202.5°
-    { angle: 208.125, name: 'S6' },  // Between 202.5° and 213.75°
-    { angle: 219.375, name: 'S7' },  // Between 213.75° and 225°
-    { angle: 230.625, name: 'S8' },  // Between 225° and 236.25°
-    { angle: 241.875, name: 'W1' },  // Between 236.25° and 247.5°
-    { angle: 253.125, name: 'W2' },  // Between 247.5° and 258.75°
-    { angle: 264.375, name: 'W3' },  // Between 258.75° and 270°
-    { angle: 275.625, name: 'W4' },  // Between 270° and 281.25°
-    { angle: 286.875, name: 'W5' },  // Between 281.25° and 292.5°
-    { angle: 298.125, name: 'W6' },  // Between 292.5° and 303.75°
-    { angle: 309.375, name: 'W7' },  // Between 303.75° and 315°
-    { angle: 320.625, name: 'W8' },  // Between 315° and 326.25°
-    { angle: 331.875, name: 'N1' },  // Between 326.25° and 337.5°
-    { angle: 343.125, name: 'N2' },  // Between 337.5° and 348.75°
-    { angle: 354.375, name: 'N3' }   // Between 348.75° and 360° (0°)
+    // Radial lines are at: 0°, 11.25°, 22.5°, 33.75°, 45°, 56.25°, 67.5°, 78.75°, 90°, etc.
+    // So entrance centers should be at: 5.625°, 16.875°, 28.125°, 39.375°, etc.
+    { angle: 5.625, name: 'N4' },    // Between 0° and 11.25° radial lines
+    { angle: 16.875, name: 'N5' },   // Between 11.25° and 22.5° radial lines
+    { angle: 28.125, name: 'N6' },   // Between 22.5° and 33.75° radial lines
+    { angle: 39.375, name: 'N7' },   // Between 33.75° and 45° radial lines
+    { angle: 50.625, name: 'N8' },   // Between 45° and 56.25° radial lines
+    { angle: 61.875, name: 'E1' },   // Between 56.25° and 67.5° radial lines
+    { angle: 73.125, name: 'E2' },   // Between 67.5° and 78.75° radial lines
+    { angle: 84.375, name: 'E3' },   // Between 78.75° and 90° radial lines
+    { angle: 95.625, name: 'E4' },   // Between 90° and 101.25° radial lines
+    { angle: 106.875, name: 'E5' },  // Between 101.25° and 112.5° radial lines
+    { angle: 118.125, name: 'E6' },  // Between 112.5° and 123.75° radial lines
+    { angle: 129.375, name: 'E7' },  // Between 123.75° and 135° radial lines
+    { angle: 140.625, name: 'E8' },  // Between 135° and 146.25° radial lines
+    { angle: 151.875, name: 'S1' },  // Between 146.25° and 157.5° radial lines
+    { angle: 163.125, name: 'S2' },  // Between 157.5° and 168.75° radial lines
+    { angle: 174.375, name: 'S3' },  // Between 168.75° and 180° radial lines
+    { angle: 185.625, name: 'S4' },  // Between 180° and 191.25° radial lines
+    { angle: 196.875, name: 'S5' },  // Between 191.25° and 202.5° radial lines
+    { angle: 208.125, name: 'S6' },  // Between 202.5° and 213.75° radial lines
+    { angle: 219.375, name: 'S7' },  // Between 213.75° and 225° radial lines
+    { angle: 230.625, name: 'S8' },  // Between 225° and 236.25° radial lines
+    { angle: 241.875, name: 'W1' },  // Between 236.25° and 247.5° radial lines
+    { angle: 253.125, name: 'W2' },  // Between 247.5° and 258.75° radial lines
+    { angle: 264.375, name: 'W3' },  // Between 258.75° and 270° radial lines
+    { angle: 275.625, name: 'W4' },  // Between 270° and 281.25° radial lines
+    { angle: 286.875, name: 'W5' },  // Between 281.25° and 292.5° radial lines
+    { angle: 298.125, name: 'W6' },  // Between 292.5° and 303.75° radial lines
+    { angle: 309.375, name: 'W7' },  // Between 303.75° and 315° radial lines
+    { angle: 320.625, name: 'W8' },  // Between 315° and 326.25° radial lines
+    { angle: 331.875, name: 'N1' },  // Between 326.25° and 337.5° radial lines
+    { angle: 343.125, name: 'N2' },  // Between 337.5° and 348.75° radial lines
+    { angle: 354.375, name: 'N3' }   // Between 348.75° and 360° (0°) radial lines
   ];
 
   constructor({ center, radius, rotation, scale, polygonPoints = [] }: DirectionCalculatorProps) {
@@ -165,13 +165,13 @@ export class DirectionCalculator {
     };
   }
 
-  // Get radial line endpoints that stop at polygon boundary
+  // Get radial line endpoints that stop at polygon boundary - generates 32 lines for entrances
   getRadialLineEndpoints(): Array<{ start: Point; end: Point; angle: number }> {
     const lines = [];
     
-    // Generate 16 main direction lines
-    for (let i = 0; i < 16; i++) {
-      const angle = i * (360 / 16);
+    // Generate 32 radial lines (every 11.25 degrees)
+    for (let i = 0; i < 32; i++) {
+      const angle = i * (360 / 32); // Every 11.25 degrees
       const endPoint = this.getPolygonIntersection(angle);
       
       if (endPoint) {
@@ -186,22 +186,23 @@ export class DirectionCalculator {
     return lines;
   }
 
-  // Get entrance radial lines for 32 entrances
+  // Get entrance radial lines for 32 entrances - these are the sector boundary lines
   getEntranceRadialLines(): Array<{ start: Point; end: Point; angle: number }> {
     const lines = [];
     
-    // Generate radial lines for all 32 entrance positions
-    this.entrancePositions.forEach(entrance => {
-      const endPoint = this.getPolygonIntersection(entrance.angle);
+    // Generate radial lines every 11.25 degrees to create sector boundaries
+    for (let i = 0; i < 32; i++) {
+      const angle = i * (360 / 32); // Every 11.25 degrees
+      const endPoint = this.getPolygonIntersection(angle);
       
       if (endPoint) {
         lines.push({
           start: this.center,
           end: endPoint,
-          angle: entrance.angle
+          angle: angle
         });
       }
-    });
+    }
     
     return lines;
   }
@@ -220,9 +221,10 @@ export class DirectionCalculator {
     });
   }
 
-  // Get entrance points positioned within polygon boundary in center of sectors (BETWEEN radial lines)
+  // Get entrance points positioned BETWEEN radial lines in the center of each sector
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
     return this.entrancePositions.map(entrance => {
+      // Each entrance is already positioned at the center of its 11.25° sector
       // Get intersection point with polygon boundary at the entrance angle
       const boundaryPoint = this.getPolygonIntersection(entrance.angle);
       
@@ -233,8 +235,8 @@ export class DirectionCalculator {
           Math.pow(boundaryPoint.y - this.center.y, 2)
         );
         
-        // Position label at 85% of the distance from center to boundary (within polygon)
-        const labelDistance = distance * 0.85;
+        // Position label at 75% of the distance from center to boundary (well within polygon)
+        const labelDistance = distance * 0.75;
         
         const adjustedAngle = entrance.angle + this.rotation;
         const radian = this.toRadians(adjustedAngle);
@@ -244,7 +246,7 @@ export class DirectionCalculator {
           y: this.center.y - Math.cos(radian) * labelDistance
         };
         
-        console.log(`Entrance ${entrance.name} positioned at angle ${entrance.angle}° (center of sector), distance ${labelDistance}`);
+        console.log(`Entrance ${entrance.name} positioned at angle ${entrance.angle}° (center of ${entrance.angle - 5.625}° - ${entrance.angle + 5.625}° sector)`);
         
         return {
           point: labelPoint,
@@ -253,7 +255,7 @@ export class DirectionCalculator {
       } else {
         // Fallback to circle positioning if polygon intersection fails
         return {
-          point: this.getPointOnCircle(entrance.angle, 0.85),
+          point: this.getPointOnCircle(entrance.angle, 0.75),
           entrance: entrance
         };
       }
