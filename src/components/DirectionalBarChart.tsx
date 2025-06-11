@@ -14,6 +14,35 @@ interface DirectionalBarChartProps {
   rotation: number;
 }
 
+// Move utility functions outside component to avoid hoisting issues
+const lineIntersection = (x1: number, y1: number, x2: number, y2: number,
+                         x3: number, y3: number, x4: number, y4: number) => {
+  const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+  if (Math.abs(denom) < 1e-10) return null;
+  
+  const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
+  const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom;
+  
+  if (t >= 0 && u >= 0 && u <= 1) {
+    return {
+      x: x1 + t * (x2 - x1),
+      y: y1 + t * (y2 - y1)
+    };
+  }
+  
+  return null;
+};
+
+const getDirectionColor = (direction: string) => {
+  const colors: { [key: string]: string } = {
+    'N': '#4CAF50', 'NNE': '#8BC34A', 'NE': '#CDDC39', 'ENE': '#FFEB3B',
+    'E': '#FFC107', 'ESE': '#FF9800', 'SE': '#FF5722', 'SSE': '#F44336',
+    'S': '#E91E63', 'SSW': '#9C27B0', 'SW': '#673AB7', 'WSW': '#3F51B5',
+    'W': '#2196F3', 'WNW': '#03A9F4', 'NW': '#00BCD4', 'NNW': '#009688'
+  };
+  return colors[direction] || '#666666';
+};
+
 export const DirectionalBarChart = ({ center, polygonPoints, rotation }: DirectionalBarChartProps) => {
   const directionalData = useMemo(() => {
     if (polygonPoints.length < 3) return [];
@@ -80,35 +109,6 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
 
     return data;
   }, [center, polygonPoints, rotation]);
-
-  // Line intersection utility function
-  const lineIntersection = (x1: number, y1: number, x2: number, y2: number,
-                           x3: number, y3: number, x4: number, y4: number) => {
-    const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-    if (Math.abs(denom) < 1e-10) return null;
-    
-    const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
-    const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom;
-    
-    if (t >= 0 && u >= 0 && u <= 1) {
-      return {
-        x: x1 + t * (x2 - x1),
-        y: y1 + t * (y2 - y1)
-      };
-    }
-    
-    return null;
-  };
-
-  const getDirectionColor = (direction: string) => {
-    const colors: { [key: string]: string } = {
-      'N': '#4CAF50', 'NNE': '#8BC34A', 'NE': '#CDDC39', 'ENE': '#FFEB3B',
-      'E': '#FFC107', 'ESE': '#FF9800', 'SE': '#FF5722', 'SSE': '#F44336',
-      'S': '#E91E63', 'SSW': '#9C27B0', 'SW': '#673AB7', 'WSW': '#3F51B5',
-      'W': '#2196F3', 'WNW': '#03A9F4', 'NW': '#00BCD4', 'NNW': '#009688'
-    };
-    return colors[direction] || '#666666';
-  };
 
   const chartConfig = {
     area: {
