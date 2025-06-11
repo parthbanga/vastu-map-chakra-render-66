@@ -1,7 +1,9 @@
+
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 import { ShaktiChakra } from "./ShaktiChakra";
 import { PlanetsChakra } from "./PlanetsChakra";
+import { VastuPurush } from "./VastuPurush";
 import { DirectionalBarChart } from "./DirectionalBarChart";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
@@ -25,6 +27,7 @@ interface VastuCanvasProps {
   showEntrances: boolean;
   showShaktiChakra: boolean;
   showPlanetsChakra: boolean;
+  showVastuPurush: boolean;
   showBarChart: boolean;
 }
 
@@ -42,6 +45,7 @@ export const VastuCanvas = ({
   showEntrances,
   showShaktiChakra,
   showPlanetsChakra,
+  showVastuPurush,
   showBarChart,
 }: VastuCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -337,6 +341,16 @@ export const VastuCanvas = ({
                   opacity={chakraOpacity}
                   scale={chakraScale}
                   polygonPoints={polygonPoints}
+                />
+              )}
+
+              {showVastuPurush && (
+                <VastuPurush
+                  center={center}
+                  radius={calculateRadius()}
+                  rotation={chakraRotation}
+                  opacity={chakraOpacity}
+                  scale={chakraScale}
                 />
               )}
 
