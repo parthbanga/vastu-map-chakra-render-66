@@ -165,13 +165,13 @@ export class DirectionCalculator {
     };
   }
 
-  // Get radial line endpoints that stop at polygon boundary - generates 32 lines for entrances
+  // Get radial line endpoints that stop at polygon boundary - generates 16 lines for directions
   getRadialLineEndpoints(): Array<{ start: Point; end: Point; angle: number }> {
     const lines = [];
     
-    // Generate 32 radial lines (every 11.25 degrees)
-    for (let i = 0; i < 32; i++) {
-      const angle = i * (360 / 32); // Every 11.25 degrees
+    // Generate 16 radial lines for main directions (every 22.5 degrees)
+    for (let i = 0; i < 16; i++) {
+      const angle = i * (360 / 16); // Every 22.5 degrees
       const endPoint = this.getPolygonIntersection(angle);
       
       if (endPoint) {
