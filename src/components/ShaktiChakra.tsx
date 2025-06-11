@@ -1,3 +1,4 @@
+
 interface Point {
   x: number;
   y: number;
@@ -36,7 +37,7 @@ export const ShaktiChakra = ({
       }}
     >
       <img
-        src="/lovable-uploads/801d501a-6d1d-4499-a2f1-899c650beb3b.png"
+        src="/lovable-uploads/87dc0310-3443-4402-a251-7af16b78ce63.png"
         alt="Shakti Chakra"
         style={{
           width: '100%',
