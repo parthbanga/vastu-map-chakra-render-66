@@ -38,41 +38,43 @@ export class DirectionCalculator {
     { name: 'NNW', angle: 337.5, color: '#009688' }
   ];
 
-  // 32 Entrance positions - uniformly distributed with equal angular spacing
+  // 32 Entrance positions - positioned in the CENTER of each 11.25° sector (between radial lines)
   private entrancePositions = [
-    // Each entrance is positioned at the center of its sector (11.25° spacing each)
-    { angle: 5.625, name: 'N4' },    // Center of first sector
-    { angle: 16.875, name: 'N5' },   // Center of second sector
-    { angle: 28.125, name: 'N6' },   // Center of third sector
-    { angle: 39.375, name: 'N7' },   // Center of fourth sector
-    { angle: 50.625, name: 'N8' },   // Center of fifth sector
-    { angle: 61.875, name: 'E1' },   // Center of sixth sector
-    { angle: 73.125, name: 'E2' },   // Center of seventh sector
-    { angle: 84.375, name: 'E3' },   // Center of eighth sector
-    { angle: 95.625, name: 'E4' },   // Center of ninth sector
-    { angle: 106.875, name: 'E5' },  // Center of tenth sector
-    { angle: 118.125, name: 'E6' },  // Center of eleventh sector
-    { angle: 129.375, name: 'E7' },  // Center of twelfth sector
-    { angle: 140.625, name: 'E8' },  // Center of thirteenth sector
-    { angle: 151.875, name: 'S1' },  // Center of fourteenth sector
-    { angle: 163.125, name: 'S2' },  // Center of fifteenth sector
-    { angle: 174.375, name: 'S3' },  // Center of sixteenth sector
-    { angle: 185.625, name: 'S4' },  // Center of seventeenth sector
-    { angle: 196.875, name: 'S5' },  // Center of eighteenth sector
-    { angle: 208.125, name: 'S6' },  // Center of nineteenth sector
-    { angle: 219.375, name: 'S7' },  // Center of twentieth sector
-    { angle: 230.625, name: 'S8' },  // Center of twenty-first sector
-    { angle: 241.875, name: 'W1' },  // Center of twenty-second sector
-    { angle: 253.125, name: 'W2' },  // Center of twenty-third sector
-    { angle: 264.375, name: 'W3' },  // Center of twenty-fourth sector
-    { angle: 275.625, name: 'W4' },  // Center of twenty-fifth sector
-    { angle: 286.875, name: 'W5' },  // Center of twenty-sixth sector
-    { angle: 298.125, name: 'W6' },  // Center of twenty-seventh sector
-    { angle: 309.375, name: 'W7' },  // Center of twenty-eighth sector
-    { angle: 320.625, name: 'W8' },  // Center of twenty-ninth sector
-    { angle: 331.875, name: 'N1' },  // Center of thirtieth sector
-    { angle: 343.125, name: 'N2' },  // Center of thirty-first sector
-    { angle: 354.375, name: 'N3' }   // Center of thirty-second sector
+    // Each entrance is positioned at the center of its sector
+    // Starting from 0° and going clockwise, each sector is 11.25° wide
+    // So centers are at: 5.625°, 16.875°, 28.125°, etc.
+    { angle: 5.625, name: 'N4' },    // Between 0° and 11.25°
+    { angle: 16.875, name: 'N5' },   // Between 11.25° and 22.5°
+    { angle: 28.125, name: 'N6' },   // Between 22.5° and 33.75°
+    { angle: 39.375, name: 'N7' },   // Between 33.75° and 45°
+    { angle: 50.625, name: 'N8' },   // Between 45° and 56.25°
+    { angle: 61.875, name: 'E1' },   // Between 56.25° and 67.5°
+    { angle: 73.125, name: 'E2' },   // Between 67.5° and 78.75°
+    { angle: 84.375, name: 'E3' },   // Between 78.75° and 90°
+    { angle: 95.625, name: 'E4' },   // Between 90° and 101.25°
+    { angle: 106.875, name: 'E5' },  // Between 101.25° and 112.5°
+    { angle: 118.125, name: 'E6' },  // Between 112.5° and 123.75°
+    { angle: 129.375, name: 'E7' },  // Between 123.75° and 135°
+    { angle: 140.625, name: 'E8' },  // Between 135° and 146.25°
+    { angle: 151.875, name: 'S1' },  // Between 146.25° and 157.5°
+    { angle: 163.125, name: 'S2' },  // Between 157.5° and 168.75°
+    { angle: 174.375, name: 'S3' },  // Between 168.75° and 180°
+    { angle: 185.625, name: 'S4' },  // Between 180° and 191.25°
+    { angle: 196.875, name: 'S5' },  // Between 191.25° and 202.5°
+    { angle: 208.125, name: 'S6' },  // Between 202.5° and 213.75°
+    { angle: 219.375, name: 'S7' },  // Between 213.75° and 225°
+    { angle: 230.625, name: 'S8' },  // Between 225° and 236.25°
+    { angle: 241.875, name: 'W1' },  // Between 236.25° and 247.5°
+    { angle: 253.125, name: 'W2' },  // Between 247.5° and 258.75°
+    { angle: 264.375, name: 'W3' },  // Between 258.75° and 270°
+    { angle: 275.625, name: 'W4' },  // Between 270° and 281.25°
+    { angle: 286.875, name: 'W5' },  // Between 281.25° and 292.5°
+    { angle: 298.125, name: 'W6' },  // Between 292.5° and 303.75°
+    { angle: 309.375, name: 'W7' },  // Between 303.75° and 315°
+    { angle: 320.625, name: 'W8' },  // Between 315° and 326.25°
+    { angle: 331.875, name: 'N1' },  // Between 326.25° and 337.5°
+    { angle: 343.125, name: 'N2' },  // Between 337.5° and 348.75°
+    { angle: 354.375, name: 'N3' }   // Between 348.75° and 360° (0°)
   ];
 
   constructor({ center, radius, rotation, scale, polygonPoints = [] }: DirectionCalculatorProps) {
@@ -218,10 +220,10 @@ export class DirectionCalculator {
     });
   }
 
-  // Get entrance points positioned within polygon boundary in center of sectors
+  // Get entrance points positioned within polygon boundary in center of sectors (BETWEEN radial lines)
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
     return this.entrancePositions.map(entrance => {
-      // Get intersection point with polygon boundary
+      // Get intersection point with polygon boundary at the entrance angle
       const boundaryPoint = this.getPolygonIntersection(entrance.angle);
       
       if (boundaryPoint) {
@@ -241,6 +243,8 @@ export class DirectionCalculator {
           x: this.center.x + Math.sin(radian) * labelDistance,
           y: this.center.y - Math.cos(radian) * labelDistance
         };
+        
+        console.log(`Entrance ${entrance.name} positioned at angle ${entrance.angle}° (center of sector), distance ${labelDistance}`);
         
         return {
           point: labelPoint,

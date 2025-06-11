@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -110,7 +108,7 @@ export const MathematicalChakra = ({
         />
       ))}
 
-      {/* 32 Entrance points - positioned between radial lines with black bold text */}
+      {/* 32 Entrance points - positioned between radial lines with BLACK BOLD text */}
       {showEntrances && entrancePoints.map((entrance, index) => {
         return (
           <text
@@ -149,4 +147,3 @@ export const MathematicalChakra = ({
     </svg>
   );
 };
-
