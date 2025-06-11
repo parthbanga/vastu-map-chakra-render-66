@@ -29,6 +29,160 @@ export const PDFExporter = ({
 }: PDFExporterProps) => {
   const [isExporting, setIsExporting] = useState(false);
 
+  const createCanvasFromElements = async (includeMap: boolean, includeDirections: boolean, includeEntrances: boolean, includeShakti: boolean, shaktiScale = 1) => {
+    return new Promise<{ dataURL: string; width: number; height: number }>((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas context not available');
+
+      canvas.width = 800;
+      canvas.height = 600;
+      
+      // White background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      let loadCount = 0;
+      const expectedLoads = includeMap ? (includeShakti ? 2 : 1) : (includeShakti ? 1 : 0);
+
+      const checkComplete = () => {
+        loadCount++;
+        if (loadCount >= expectedLoads) {
+          resolve({
+            dataURL: canvas.toDataURL('image/png', 1.0),
+            width: canvas.width,
+            height: canvas.height
+          });
+        }
+      };
+
+      if (includeMap && mapImage) {
+        const img = new Image();
+        img.onload = () => {
+          const scaleX = canvas.width / img.naturalWidth;
+          const scaleY = canvas.height / img.naturalHeight;
+          const scale = Math.min(scaleX, scaleY);
+          
+          const scaledWidth = img.naturalWidth * scale;
+          const scaledHeight = img.naturalHeight * scale;
+          
+          const x = (canvas.width - scaledWidth) / 2;
+          const y = (canvas.height - scaledHeight) / 2;
+          
+          ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+
+          // Draw polygon if map is included
+          if (polygonPoints.length > 0 && center) {
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+            
+            ctx.beginPath();
+            ctx.moveTo(polygonPoints[0].x, polygonPoints[0].y);
+            
+            for (let i = 1; i < polygonPoints.length; i++) {
+              ctx.lineTo(polygonPoints[i].x, polygonPoints[i].y);
+            }
+            
+            if (polygonPoints.length > 2) {
+              ctx.closePath();
+              ctx.fill();
+            }
+            ctx.stroke();
+
+            // Draw center point
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, 10, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+
+          if (!includeShakti) checkComplete();
+        };
+        img.src = mapImage;
+      }
+
+      // Draw directions and entrances
+      if (center && (includeDirections || includeEntrances)) {
+        const centerX = center.x;
+        const centerY = center.y;
+        const radius = Math.max(50, Math.min(centerX, centerY, canvas.width - centerX, canvas.height - centerY) * 0.8);
+
+        if (includeDirections) {
+          // Draw 16 direction lines
+          ctx.strokeStyle = '#4ade80';
+          ctx.lineWidth = 2;
+          for (let i = 0; i < 16; i++) {
+            const angle = (i * 22.5 + chakraRotation) * Math.PI / 180;
+            const x1 = centerX + Math.cos(angle) * radius * 0.3;
+            const y1 = centerY + Math.sin(angle) * radius * 0.3;
+            const x2 = centerX + Math.cos(angle) * radius;
+            const y2 = centerY + Math.sin(angle) * radius;
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+          }
+
+          // Draw direction labels
+          ctx.fillStyle = '#059669';
+          ctx.font = 'bold 14px Arial';
+          ctx.textAlign = 'center';
+          const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+          
+          for (let i = 0; i < 16; i++) {
+            const angle = (i * 22.5 + chakraRotation) * Math.PI / 180;
+            const labelRadius = radius * 0.6;
+            const x = centerX + Math.cos(angle) * labelRadius;
+            const y = centerY + Math.sin(angle) * labelRadius + 5;
+            ctx.fillText(directions[i], x, y);
+          }
+        }
+
+        if (includeEntrances) {
+          // Draw 32 entrance points
+          ctx.fillStyle = '#f59e0b';
+          for (let i = 0; i < 32; i++) {
+            const angle = (i * 11.25 + chakraRotation) * Math.PI / 180;
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+        }
+      }
+
+      // Draw Shakti Chakra
+      if (includeShakti) {
+        const shaktiImg = new Image();
+        shaktiImg.onload = () => {
+          const scaledRadius = (Math.max(50, Math.min(center!.x, center!.y, canvas.width - center!.x, canvas.height - center!.y) * 0.8)) * shaktiScale;
+          const imageSize = scaledRadius * 2.2;
+          
+          const x = center!.x - imageSize / 2;
+          const y = center!.y - imageSize / 2;
+          
+          ctx.save();
+          ctx.translate(center!.x, center!.y);
+          ctx.rotate((chakraRotation) * Math.PI / 180);
+          ctx.translate(-center!.x, -center!.y);
+          ctx.drawImage(shaktiImg, x, y, imageSize, imageSize);
+          ctx.restore();
+          
+          checkComplete();
+        };
+        shaktiImg.src = "/lovable-uploads/801d501a-6d1d-4499-a2f1-899c650beb3b.png";
+      }
+
+      if (expectedLoads === 0) {
+        checkComplete();
+      }
+    });
+  };
+
   const handleExportPDF = async () => {
     if (!mapImage || !center) {
       toast.error("Please upload a map and select the plot area first");
@@ -38,18 +192,8 @@ export const PDFExporter = ({
     setIsExporting(true);
     
     try {
-      // Get high-quality canvas data directly from Fabric.js
-      const canvasData = (window as any).exportVastuCanvas?.();
-      
-      if (!canvasData) {
-        throw new Error("Canvas export function not available");
-      }
-
-      const { dataURL, width, height } = canvasData;
-      
-      // Create PDF
       const pdf = new jsPDF({
-        orientation: width > height ? 'landscape' : 'portrait',
+        orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
@@ -57,16 +201,16 @@ export const PDFExporter = ({
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
-      // Add title
+      // Page 1: Map with plot area
       pdf.setFontSize(20);
       pdf.setTextColor(51, 51, 51);
-      pdf.text('Vastu Shakti Chakra Analysis', 20, 20);
+      pdf.text('Vastu Analysis - Map with Plot Area', 20, 20);
 
-      // Calculate image dimensions to fit page while maintaining aspect ratio
-      const maxImgWidth = pageWidth - 40; // 20mm margin on each side
-      const maxImgHeight = pageHeight - 80; // Space for title and metadata
+      const mapCanvas = await createCanvasFromElements(true, false, false, false);
+      const maxImgWidth = pageWidth - 40;
+      const maxImgHeight = pageHeight - 60;
       
-      const imgAspectRatio = width / height;
+      const imgAspectRatio = mapCanvas.width / mapCanvas.height;
       let imgWidth = maxImgWidth;
       let imgHeight = maxImgWidth / imgAspectRatio;
       
@@ -75,37 +219,60 @@ export const PDFExporter = ({
         imgWidth = maxImgHeight * imgAspectRatio;
       }
 
-      // Add high-quality image
-      pdf.addImage(dataURL, 'PNG', 20, 30, imgWidth, imgHeight, undefined, 'FAST');
+      pdf.addImage(mapCanvas.dataURL, 'PNG', 20, 30, imgWidth, imgHeight, undefined, 'FAST');
 
-      // Add metadata
-      const metadataY = 35 + imgHeight;
-      pdf.setFontSize(12);
-      pdf.setTextColor(85, 85, 85);
-      
-      pdf.text('Analysis Details:', 20, metadataY);
-      pdf.setFontSize(10);
-      
-      const details = [
-        `Center Point: (${Math.round(center.x)}, ${Math.round(center.y)})`,
-        `Chakra Rotation: ${chakraRotation}°`,
-        `Chakra Scale: ${chakraScale.toFixed(2)}`,
-        `Chakra Opacity: ${Math.round(chakraOpacity * 100)}%`,
-        `Plot Points: ${polygonPoints.length} corners`,
-        `Generated: ${new Date().toLocaleString()}`
-      ];
+      // Page 2: 16 Zones
+      pdf.addPage();
+      pdf.setFontSize(20);
+      pdf.text('Vastu Analysis - 16 Directional Zones', 20, 20);
 
-      details.forEach((detail, index) => {
-        if (metadataY + 10 + (index * 5) < pageHeight - 10) {
-          pdf.text(detail, 20, metadataY + 10 + (index * 5));
-        }
-      });
+      const directionsCanvas = await createCanvasFromElements(true, true, false, false);
+      pdf.addImage(directionsCanvas.dataURL, 'PNG', 20, 30, imgWidth, imgHeight, undefined, 'FAST');
 
-      // Save the PDF
+      // Page 3: 32 Entrances
+      pdf.addPage();
+      pdf.setFontSize(20);
+      pdf.text('Vastu Analysis - 32 Entrances', 20, 20);
+
+      const entrancesCanvas = await createCanvasFromElements(true, false, true, false);
+      pdf.addImage(entrancesCanvas.dataURL, 'PNG', 20, 30, imgWidth, imgHeight, undefined, 'FAST');
+
+      // Page 4: Shakti Chakra (3x zoom)
+      pdf.addPage();
+      pdf.setFontSize(20);
+      pdf.text('Vastu Analysis - Shakti Chakra (3x)', 20, 20);
+
+      const shaktiCanvas = await createCanvasFromElements(true, false, false, true, 3);
+      pdf.addImage(shaktiCanvas.dataURL, 'PNG', 20, 30, imgWidth, imgHeight, undefined, 'FAST');
+
+      // Add metadata on last page
+      const metadataY = 30 + imgHeight + 20;
+      if (metadataY < pageHeight - 60) {
+        pdf.setFontSize(12);
+        pdf.setTextColor(85, 85, 85);
+        
+        pdf.text('Analysis Details:', 20, metadataY);
+        pdf.setFontSize(10);
+        
+        const details = [
+          `Center Point: (${Math.round(center.x)}, ${Math.round(center.y)})`,
+          `Chakra Rotation: ${chakraRotation}°`,
+          `Chakra Scale: ${chakraScale.toFixed(2)}`,
+          `Plot Points: ${polygonPoints.length} corners`,
+          `Generated: ${new Date().toLocaleString()}`
+        ];
+
+        details.forEach((detail, index) => {
+          if (metadataY + 15 + (index * 6) < pageHeight - 10) {
+            pdf.text(detail, 20, metadataY + 15 + (index * 6));
+          }
+        });
+      }
+
       const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
       pdf.save(`vastu-chakra-analysis-${timestamp}.pdf`);
       
-      toast.success("High-quality PDF exported successfully!");
+      toast.success("Multi-page PDF exported successfully!");
       
     } catch (error) {
       console.error("Export error:", error);

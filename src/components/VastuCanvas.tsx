@@ -305,9 +305,9 @@ export const VastuCanvas = ({
             </>
           )}
           
-          {/* Simple mobile instructions */}
+          {/* Simple mobile instructions - positioned to not block map */}
           {!center && (
-            <div className="absolute top-4 left-4 right-4">
+            <div className="absolute bottom-20 left-4 right-4 pointer-events-none">
               <div className="bg-white/90 backdrop-blur-sm px-4 py-3 rounded-lg shadow-lg border">
                 <p className="text-sm font-medium text-gray-800 text-center">
                   Tap corners to outline your plot area
