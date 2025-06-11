@@ -13,11 +13,13 @@ interface ChakraControlsProps {
   opacity: number;
   showDirections: boolean;
   showEntrances: boolean;
+  showShaktiChakra: boolean;
   onRotationChange: (rotation: number) => void;
   onScaleChange: (scale: number) => void;
   onOpacityChange: (opacity: number) => void;
   onShowDirectionsChange: (show: boolean) => void;
   onShowEntrancesChange: (show: boolean) => void;
+  onShowShaktiChakraChange: (show: boolean) => void;
   disabled?: boolean;
 }
 
@@ -27,11 +29,13 @@ export const ChakraControls = ({
   opacity,
   showDirections,
   showEntrances,
+  showShaktiChakra,
   onRotationChange,
   onScaleChange,
   onOpacityChange,
   onShowDirectionsChange,
   onShowEntrancesChange,
+  onShowShaktiChakraChange,
   disabled = false
 }: ChakraControlsProps) => {
   return (
@@ -68,6 +72,18 @@ export const ChakraControls = ({
               id="show-entrances"
               checked={showEntrances}
               onCheckedChange={onShowEntrancesChange}
+              disabled={disabled}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <Label htmlFor="show-shakti-chakra" className="text-sm text-gray-700">
+              Shakti Chakra
+            </Label>
+            <Switch
+              id="show-shakti-chakra"
+              checked={showShaktiChakra}
+              onCheckedChange={onShowShaktiChakraChange}
               disabled={disabled}
             />
           </div>

@@ -21,6 +21,7 @@ const Index = () => {
   const [chakraOpacity, setChakraOpacity] = useState(0.7);
   const [showDirections, setShowDirections] = useState(true);
   const [showEntrances, setShowEntrances] = useState(true);
+  const [showShaktiChakra, setShowShaktiChakra] = useState(false);
   const [center, setCenter] = useState<Point | null>(null);
   const [activeTab, setActiveTab] = useState<'upload' | 'controls' | 'export'>('upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -147,6 +148,7 @@ const Index = () => {
             chakraOpacity={chakraOpacity}
             showDirections={showDirections}
             showEntrances={showEntrances}
+            showShaktiChakra={showShaktiChakra}
           />
         </Card>
       </div>
@@ -251,11 +253,13 @@ const Index = () => {
               opacity={chakraOpacity}
               showDirections={showDirections}
               showEntrances={showEntrances}
+              showShaktiChakra={showShaktiChakra}
               onRotationChange={handleRotationChange}
               onScaleChange={setChakraScale}
               onOpacityChange={setChakraOpacity}
               onShowDirectionsChange={setShowDirections}
               onShowEntrancesChange={setShowEntrances}
+              onShowShaktiChakraChange={setShowShaktiChakra}
               disabled={!center}
             />
           </div>

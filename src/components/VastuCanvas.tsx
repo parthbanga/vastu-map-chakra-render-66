@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
+import { ShaktiChakra } from "./ShaktiChakra";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 
@@ -20,6 +21,7 @@ interface VastuCanvasProps {
   chakraOpacity: number;
   showDirections: boolean;
   showEntrances: boolean;
+  showShaktiChakra: boolean;
 }
 
 export const VastuCanvas = ({
@@ -34,6 +36,7 @@ export const VastuCanvas = ({
   chakraOpacity,
   showDirections,
   showEntrances,
+  showShaktiChakra,
 }: VastuCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -278,16 +281,28 @@ export const VastuCanvas = ({
           />
           
           {center && (
-            <MathematicalChakra
-              center={center}
-              radius={calculateRadius()}
-              rotation={chakraRotation}
-              opacity={chakraOpacity}
-              scale={chakraScale}
-              showDirections={showDirections}
-              showEntrances={showEntrances}
-              polygonPoints={polygonPoints}
-            />
+            <>
+              <MathematicalChakra
+                center={center}
+                radius={calculateRadius()}
+                rotation={chakraRotation}
+                opacity={chakraOpacity}
+                scale={chakraScale}
+                showDirections={showDirections}
+                showEntrances={showEntrances}
+                polygonPoints={polygonPoints}
+              />
+              
+              {showShaktiChakra && (
+                <ShaktiChakra
+                  center={center}
+                  radius={calculateRadius()}
+                  rotation={chakraRotation}
+                  opacity={chakraOpacity}
+                  scale={chakraScale}
+                />
+              )}
+            </>
           )}
           
           {/* Simple mobile instructions */}
