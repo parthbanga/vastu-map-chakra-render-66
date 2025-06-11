@@ -119,46 +119,54 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
   if (directionalData.length === 0) return null;
 
   return (
-    <div className="absolute top-4 right-4 w-80 h-60 bg-white rounded-lg shadow-lg p-4 z-20">
-      <h3 className="text-sm font-semibold mb-2 text-center">Directional Area Analysis</h3>
-      <ChartContainer config={chartConfig} className="h-48">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={directionalData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-            <XAxis 
-              dataKey="direction" 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10 }}
-            />
-            <YAxis 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10 }}
-            />
-            <ChartTooltip 
-              content={({ active, payload }) => {
-                if (active && payload && payload.length > 0) {
-                  const data = payload[0].payload;
-                  return (
-                    <div className="bg-white p-2 border rounded shadow-lg">
-                      <p className="font-semibold">{data.fullName}</p>
-                      <p className="text-sm">Extension: {data.area}px</p>
-                      <p className="text-xs text-gray-500">
-                        {data.area > 150 ? 'Extended' : data.area < 100 ? 'Contracted' : 'Balanced'}
-                      </p>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
-            <Bar 
-              dataKey="area" 
-              radius={[2, 2, 0, 0]}
-              fill="#8884d8"
-            />
-          </BarChart>
-        </ResponsiveContainer>
+    <div className="absolute top-4 right-4 w-96 h-80 bg-white rounded-lg shadow-lg p-4 z-20">
+      <h3 className="text-sm font-semibold mb-3 text-center">Directional Area Analysis</h3>
+      <ChartContainer config={chartConfig} className="h-64">
+        <BarChart 
+          data={directionalData} 
+          margin={{ top: 10, right: 10, left: 10, bottom: 40 }}
+          width={360}
+          height={240}
+        >
+          <XAxis 
+            dataKey="direction" 
+            axisLine={true}
+            tickLine={true}
+            tick={{ fontSize: 11, fill: '#666' }}
+            angle={-45}
+            textAnchor="end"
+            height={60}
+            interval={0}
+          />
+          <YAxis 
+            axisLine={true}
+            tickLine={true}
+            tick={{ fontSize: 11, fill: '#666' }}
+            label={{ value: 'Extension (px)', angle: -90, position: 'insideLeft' }}
+          />
+          <ChartTooltip 
+            content={({ active, payload }) => {
+              if (active && payload && payload.length > 0) {
+                const data = payload[0].payload;
+                return (
+                  <div className="bg-white p-3 border rounded shadow-lg">
+                    <p className="font-semibold text-sm">{data.fullName}</p>
+                    <p className="text-sm">Extension: {data.area}px</p>
+                    <p className="text-xs text-gray-500">
+                      {data.area > 150 ? 'Extended' : data.area < 100 ? 'Contracted' : 'Balanced'}
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            }}
+          />
+          <Bar 
+            dataKey="area" 
+            radius={[2, 2, 0, 0]}
+            fill={(entry) => entry.fill}
+          />
+        </BarChart>
       </ChartContainer>
     </div>
   );
