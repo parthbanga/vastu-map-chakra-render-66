@@ -305,35 +305,6 @@ export const VastuCanvas = ({
             </>
           )}
           
-          {/* Simple mobile instructions - positioned to not block map */}
-          {!center && (
-            <div className="absolute bottom-20 left-4 right-4 pointer-events-none">
-              <div className="bg-white/90 backdrop-blur-sm px-4 py-3 rounded-lg shadow-lg border">
-                <p className="text-sm font-medium text-gray-800 text-center">
-                  Tap corners to outline your plot area
-                </p>
-                {polygonPoints.length > 0 && (
-                  <p className="text-xs text-blue-600 text-center mt-1">
-                    {polygonPoints.length} points added
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {/* Finish button */}
-          {polygonPoints.length >= 3 && !center && (
-            <div className="absolute bottom-4 left-4 right-4">
-              <Button
-                onClick={() => onPolygonComplete(polygonPoints)}
-                className="w-full bg-green-600 hover:bg-green-700 text-white shadow-lg"
-                size="lg"
-              >
-                <CheckCircle className="w-5 h-5 mr-2" />
-                Finish Selection
-              </Button>
-            </div>
-          )}
         </>
       )}
     </div>
