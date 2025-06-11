@@ -42,16 +42,17 @@ export const PlanetsChakra = ({
 
   const scaledRadius = radius * scale;
   
-  // Define the 8 planets with their colors and positions
+  // Define the 8 planets with correct directional positions
+  // Note: Angles are measured clockwise from East (0°)
   const planets = [
-    { name: 'Sun', color: '#FFD700', angle: 0 },
-    { name: 'Moon', color: '#C0C0C0', angle: 45 },
-    { name: 'Mars', color: '#CD5C5C', angle: 90 },
-    { name: 'Mercury', color: '#87CEEB', angle: 135 },
-    { name: 'Jupiter', color: '#FFA500', angle: 180 },
-    { name: 'Venus', color: '#FFB6C1', angle: 225 },
-    { name: 'Saturn', color: '#800080', angle: 270 },
-    { name: 'Rahu', color: '#2F4F4F', angle: 315 }
+    { name: 'Surya', color: '#FFD700', angle: 0 },      // East
+    { name: 'Shukra', color: '#FFB6C1', angle: 45 },   // Southeast  
+    { name: 'Mangal', color: '#CD5C5C', angle: 90 },   // South
+    { name: 'Rahu', color: '#2F4F4F', angle: 135 },    // Southwest
+    { name: 'Shani', color: '#800080', angle: 180 },   // West
+    { name: 'Chandra', color: '#C0C0C0', angle: 225 }, // Northwest
+    { name: 'Budh', color: '#87CEEB', angle: 270 },    // North
+    { name: 'Guru', color: '#FFA500', angle: 315 }     // Northeast
   ];
 
   const maxPossibleRadius = scaledRadius * 1.1;
