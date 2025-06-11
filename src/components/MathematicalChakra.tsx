@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -43,7 +44,6 @@ export const MathematicalChakra = ({
 
   if (!calculator) return null;
 
-  const zoneSectors = calculator.getZoneSectors();
   const directionLabels = calculator.getDirectionLabels();
   const entrancePoints = calculator.getEntrancePoints();
   const radialLines = calculator.getRadialLineEndpoints();
@@ -70,17 +70,6 @@ export const MathematicalChakra = ({
         overflow: 'visible'
       }}
     >
-      {/* Zone sectors for coloring - triangular sectors from center to boundary */}
-      {zoneSectors.map((sector, index) => (
-        <path
-          key={`sector-${index}`}
-          d={sector.path}
-          fill={sector.color}
-          fillOpacity="0.3"
-          stroke="none"
-        />
-      ))}
-
       {/* Radial lines from center to polygon boundary for 16 directions - only show when directions are enabled */}
       {showDirections && radialLines.map((line, index) => (
         <line
