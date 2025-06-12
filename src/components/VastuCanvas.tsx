@@ -70,18 +70,71 @@ export const VastuCanvas = ({
     return () => window.removeEventListener('resize', updateCanvasSize);
   }, []);
 
+  // Reset image loaded state when mapImage changes
+  useEffect(() => {
+    if (mapImage) {
+      setImageLoaded(false);
+    }
+  }, [mapImage]);
+
   // Load and draw the map image
   useEffect(() => {
-    if (!mapImage || !canvasRef.current) return;
+    if (!mapImage || !canvasRef.current) {
+      setImageLoaded(false);
+      return;
+    }
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    console.log("Loading map image:", mapImage.substring(0, 50) + "...");
+
     const img = new Image();
     img.onload = () => {
+      console.log("Image loaded successfully:", img.naturalWidth, "x", img.naturalHeight);
       setImageNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
       
+      // Clear canvas first
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Calculate scaling to fit image in canvas while maintaining aspect ratio
+      const scaleX = canvas.width / img.naturalWidth;
+      const scaleY = canvas.height / img.naturalHeight;
+      const scale = Math.min(scaleX, scaleY);
+      
+      const scaledWidth = img.naturalWidth * scale;
+      const scaledHeight = img.naturalHeight * scale;
+      
+      // Center the image
+      const x = (canvas.width - scaledWidth) / 2;
+      const y = (canvas.height - scaledHeight) / 2;
+      
+      // Draw the image
+      ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+      setImageLoaded(true);
+      console.log("Image drawn on canvas");
+    };
+    
+    img.onerror = (error) => {
+      console.error("Failed to load image:", error);
+      setImageLoaded(false);
+    };
+    
+    img.src = mapImage;
+  }, [mapImage, canvasSize]);
+
+  // Draw polygon points and lines
+  useEffect(() => {
+    if (!canvasRef.current || !imageLoaded || !mapImage) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Redraw the map image first
+    const img = new Image();
+    img.onload = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       const scaleX = canvas.width / img.naturalWidth;
@@ -95,80 +148,53 @@ export const VastuCanvas = ({
       const y = (canvas.height - scaledHeight) / 2;
       
       ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-      setImageLoaded(true);
-    };
-    img.src = mapImage;
-  }, [mapImage, canvasSize]);
-
-  // Draw polygon points and lines
-  useEffect(() => {
-    if (!canvasRef.current || !imageLoaded) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    if (mapImage) {
-      const img = new Image();
-      img.onload = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw polygon if points exist
+      if (polygonPoints.length > 0) {
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 3;
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
         
-        const scaleX = canvas.width / img.naturalWidth;
-        const scaleY = canvas.height / img.naturalHeight;
-        const scale = Math.min(scaleX, scaleY);
+        ctx.beginPath();
+        ctx.moveTo(polygonPoints[0].x, polygonPoints[0].y);
         
-        const scaledWidth = img.naturalWidth * scale;
-        const scaledHeight = img.naturalHeight * scale;
-        
-        const x = (canvas.width - scaledWidth) / 2;
-        const y = (canvas.height - scaledHeight) / 2;
-        
-        ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-        
-        if (polygonPoints.length > 0) {
-          ctx.strokeStyle = '#3b82f6';
-          ctx.lineWidth = 3;
-          ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
-          
-          ctx.beginPath();
-          ctx.moveTo(polygonPoints[0].x, polygonPoints[0].y);
-          
-          for (let i = 1; i < polygonPoints.length; i++) {
-            ctx.lineTo(polygonPoints[i].x, polygonPoints[i].y);
-          }
-          
-          if (polygonPoints.length > 2) {
-            ctx.closePath();
-            ctx.fill();
-          }
-          ctx.stroke();
-          
-          polygonPoints.forEach((point, index) => {
-            ctx.fillStyle = '#3b82f6';
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
-            ctx.fill();
-            
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText((index + 1).toString(), point.x, point.y + 5);
-          });
+        for (let i = 1; i < polygonPoints.length; i++) {
+          ctx.lineTo(polygonPoints[i].x, polygonPoints[i].y);
         }
-
-        if (center) {
-          ctx.fillStyle = '#ef4444';
+        
+        if (polygonPoints.length > 2) {
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.stroke();
+        
+        // Draw point markers
+        polygonPoints.forEach((point, index) => {
+          ctx.fillStyle = '#3b82f6';
           ctx.beginPath();
-          ctx.arc(center.x, center.y, 10, 0, 2 * Math.PI);
+          ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
           ctx.fill();
           
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 3;
-          ctx.stroke();
-        }
-      };
-      img.src = mapImage;
-    }
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 14px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText((index + 1).toString(), point.x, point.y + 5);
+        });
+      }
+
+      // Draw center point if exists
+      if (center) {
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, 10, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+    };
+    img.src = mapImage;
   }, [polygonPoints, center, mapImage, imageLoaded]);
 
   const getEventCoordinates = useCallback((event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -269,6 +295,7 @@ export const VastuCanvas = ({
 
   return (
     <div 
+      ref={containerRef}
       className="relative w-full h-full overflow-hidden bg-gray-100 rounded-lg"
       data-testid="vastu-canvas"
     >
@@ -278,6 +305,14 @@ export const VastuCanvas = ({
             <div className="text-5xl mb-4">🗺️</div>
             <p className="text-lg font-medium mb-2">No Map Uploaded</p>
             <p className="text-sm text-gray-400">Go to Upload tab to add your house plan</p>
+          </div>
+        </div>
+      ) : !imageLoaded ? (
+        <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+          <div className="text-center p-8">
+            <div className="text-5xl mb-4">⏳</div>
+            <p className="text-lg font-medium mb-2">Loading Map...</p>
+            <p className="text-sm text-gray-400">Please wait while we load your house plan</p>
           </div>
         </div>
       ) : (
