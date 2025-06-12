@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Download, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,11 +47,11 @@ export const PDFExporter = ({
         scale: 2, // High quality
         logging: false,
         ignoreElements: (element) => {
-          // Ignore UI controls and buttons - return boolean only
+          // Ignore UI controls and buttons
           return element.classList.contains('pointer-events-none') === false && 
                  (element.tagName === 'BUTTON' || 
                   element.classList.contains('bg-white') ||
-                  Boolean(element.closest('.bg-white.border-t')));
+                  element.closest('.bg-white.border-t'));
         }
       });
 
