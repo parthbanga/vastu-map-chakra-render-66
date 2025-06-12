@@ -37,7 +37,7 @@ export const VastuPurush = ({
       }}
     >
       <img
-        src="/lovable-uploads/93a51b9a-d482-4072-bde8-c8b2efcc88e4.png"
+        src="/lovable-uploads/375e8a62-28de-4842-b2d6-6d8352bc9e93.png"
         alt="Vastu Purush"
         style={{
           width: '100%',
