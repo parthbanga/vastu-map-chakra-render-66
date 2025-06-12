@@ -37,7 +37,7 @@ export const ShaktiChakra = ({
       }}
     >
       <img
-        src="/lovable-uploads/87dc0310-3443-4402-a251-7af16b78ce63.png"
+        src="/lovable-uploads/2ff9c545-321e-482d-8cf2-d6017d2313f8.png"
         alt="Shakti Chakra"
         style={{
           width: '100%',
