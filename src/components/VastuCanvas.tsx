@@ -74,6 +74,8 @@ export const VastuCanvas = ({
   useEffect(() => {
     if (mapImage) {
       setImageLoaded(false);
+    } else {
+      setImageLoaded(false);
     }
   }, [mapImage]);
 
@@ -325,11 +327,12 @@ export const VastuCanvas = ({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className={`absolute inset-0 w-full h-full ${!center ? 'cursor-crosshair' : 'cursor-default'}`}
+            className={`w-full h-full ${!center ? 'cursor-crosshair' : 'cursor-default'}`}
             style={{ 
               touchAction: 'none',
               userSelect: 'none',
-              WebkitUserSelect: 'none'
+              WebkitUserSelect: 'none',
+              display: 'block'
             }}
           />
           
