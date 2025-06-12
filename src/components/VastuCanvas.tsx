@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 import { ShaktiChakra } from "./ShaktiChakra";
@@ -46,7 +45,7 @@ export const VastuCanvas = ({
   showShaktiChakra,
   showPlanetsChakra,
   showVastuPurush,
-  showBarChart,
+  showBarChart
 }: VastuCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -269,7 +268,10 @@ export const VastuCanvas = ({
   }, [polygonPoints, onPolygonComplete]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full min-h-[400px] bg-gray-50 rounded-lg overflow-hidden">
+    <div 
+      className="relative w-full h-full overflow-hidden bg-gray-100 rounded-lg"
+      data-testid="vastu-canvas"
+    >
       {!mapImage ? (
         <div className="absolute inset-0 flex items-center justify-center text-gray-500">
           <div className="text-center p-8">
