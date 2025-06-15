@@ -155,16 +155,28 @@ export const PDFExporter = ({
   return (
     <div className="space-y-6">
       {/* Checklist for overlays */}
-      <div className="space-y-3">
-        <div className="text-sm font-semibold mb-1 text-gray-800 text-left">Checklist: Capture overlays by checking when done</div>
+      <div className="space-y-3 p-2">
+        <div className="text-sm font-bold mb-2 text-gray-800 text-left border-b pb-2">
+          Step checklist: Capture overlays by checking when done
+        </div>
         {EXPORT_STEPS.map(step => (
-          <div className="flex items-center gap-3" key={step.key}>
-            <Checkbox
-              checked={completedSteps[step.key]}
-              onCheckedChange={c => handleStepCheckbox(step.key, !!c)}
-              disabled={capturing[step.key] || isExporting}
-              className="border-2 border-green-600 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-            />
+          <div
+            className="flex items-center gap-3 px-2 py-2 bg-gray-50 rounded border"
+            key={step.key}
+            data-testid={`checkbox-step-${step.key}`}
+          >
+            {/* Explicitly wrap Checkbox and add visible border/background */}
+            <div className="flex items-center">
+              <Checkbox
+                checked={completedSteps[step.key]}
+                onCheckedChange={c => handleStepCheckbox(step.key, !!c)}
+                disabled={capturing[step.key] || isExporting}
+                className="!border-2 !border-green-600 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 bg-white"
+                style={{ minWidth: 20, minHeight: 20 }} // Ensures checkbox always has space
+              />
+              {/* Fallback text if not visible (debug aid) */}
+              <noscript className="text-red-500 text-xs ml-1">(Checkbox not rendering)</noscript>
+            </div>
             <label className="text-sm select-none">{step.label}</label>
             {capturing[step.key] && (
               <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
