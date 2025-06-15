@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -15,7 +14,7 @@ interface MathematicalChakraProps {
   scale: number;
   showDirections?: boolean;
   showEntrances?: boolean;
-  polygonPoints?: Point[]; // Add polygon points prop
+  polygonPoints?: Point[];
 }
 
 export const MathematicalChakra = ({ 
@@ -49,13 +48,14 @@ export const MathematicalChakra = ({
   const radialLines = calculator.getRadialLineEndpoints();
   const entranceRadialLines = calculator.getEntranceRadialLines();
 
+  // Overlay placement logic: mimic the red SVG!
   const scaledRadius = radius * scale;
-  
   const maxPossibleRadius = scaledRadius * 1.1;
   const textPadding = 30;
   const viewBoxSize = (maxPossibleRadius + textPadding) * 2;
   const viewBoxOffset = viewBoxSize / 2;
 
+  // Keep overlay clean for html2canvas: no pointerEvents, no zIndex, just absolute with left/top/width/height
   return (
     <svg
       width={viewBoxSize}
@@ -65,12 +65,12 @@ export const MathematicalChakra = ({
         position: 'absolute',
         top: center.y - viewBoxOffset,
         left: center.x - viewBoxOffset,
-        opacity,
-        pointerEvents: 'none',
-        overflow: 'visible'
+        width: viewBoxSize,
+        height: viewBoxSize,
+        opacity // no pointerEvents or zIndex!
       }}
     >
-      {/* Radial lines from center to polygon boundary for 16 directions - only show when directions are enabled */}
+      {/* Radial lines for 16 directions */}
       {showDirections && radialLines.map((line, index) => (
         <line
           key={`radial-${index}`}
@@ -83,7 +83,7 @@ export const MathematicalChakra = ({
         />
       ))}
 
-      {/* Radial lines for 32 entrances - only show when entrances are enabled */}
+      {/* 32 entrance radial lines */}
       {showEntrances && entranceRadialLines.map((line, index) => (
         <line
           key={`entrance-radial-${index}`}
@@ -97,27 +97,25 @@ export const MathematicalChakra = ({
         />
       ))}
 
-      {/* 32 Entrance points - positioned between radial lines with BLACK BOLD text */}
-      {showEntrances && entrancePoints.map((entrance, index) => {
-        return (
-          <text
-            key={`entrance-${index}`}
-            x={entrance.point.x}
-            y={entrance.point.y}
-            textAnchor="middle"
-            fontSize="10"
-            fontWeight="bold"
-            fill="#000000"
-            stroke="#ffffff"
-            strokeWidth="0.5"
-            dominantBaseline="middle"
-          >
-            {entrance.entrance.name}
-          </text>
-        );
-      })}
+      {/* Entrance points */}
+      {showEntrances && entrancePoints.map((entrance, index) => (
+        <text
+          key={`entrance-${index}`}
+          x={entrance.point.x}
+          y={entrance.point.y}
+          textAnchor="middle"
+          fontSize="10"
+          fontWeight="bold"
+          fill="#000000"
+          stroke="#ffffff"
+          strokeWidth="0.5"
+          dominantBaseline="middle"
+        >
+          {entrance.entrance.name}
+        </text>
+      ))}
 
-      {/* Direction labels - abbreviated names positioned in center of zone sectors */}
+      {/* Direction labels */}
       {showDirections && directionLabels.map((label, index) => (
         <text
           key={`label-${index}`}
