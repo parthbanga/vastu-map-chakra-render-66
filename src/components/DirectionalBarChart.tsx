@@ -154,19 +154,34 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
 
   const directionalAreas = calculateDirectionalAreas();
   const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-
   const totalArea = directionalAreas.reduce((sum, area) => sum + area, 0);
-  // Debug log for chart data
-  console.log('[BarChart] Calculated directional areas:', directionalAreas);
 
-  const data = directions.map((label, index) => {
-    const area = directionalAreas[index];
-    const percentage = totalArea > 0 ? (area / totalArea) * 100 : 0;
-    return {
-      direction: label,
-      percentage: percentage
-    };
-  });
+  const data = directions.map((label, index) => ({
+    direction: label,
+    percentage: totalArea > 0 ? (directionalAreas[index] / totalArea) * 100 : 0
+  }));
+
+  // Custom XAxis tick for two-line display
+  const renderCustomTick = (props: any) => {
+    const { x, y, payload, index } = props;
+    // Stagger labels: even row lower, odd row higher
+    const dy = (index % 2 === 0) ? 18 : 34;
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0}
+          y={0}
+          dy={dy}
+          textAnchor="middle"
+          fill="#555"
+          fontSize={12}
+          fontWeight="500"
+        >
+          {payload.value}
+        </text>
+      </g>
+    );
+  };
 
   return (
     <div
@@ -176,7 +191,7 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
         left: '50%',
         transform: 'translateX(-50%)',
         width: 400,
-        maxWidth: '95vw',
+        maxWidth: '97vw',
         height: 300,
         backgroundColor: 'rgba(255, 255, 255, 0.97)',
         border: '2px solid #333',
@@ -198,15 +213,14 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
       </h3>
 
       <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 40 }}>
+        <BarChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
           <CartesianGrid strokeDasharray="3,3" />
           <XAxis
             dataKey="direction"
             fontSize={12}
             interval={0}
-            angle={0}          // Keep label horizontal
-            dy={12}            // Move slightly down
-            height={48}
+            tick={renderCustomTick}
+            height={58}
             tickLine={false}
           />
           <YAxis fontSize={12} />
