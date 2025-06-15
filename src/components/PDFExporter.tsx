@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { VastuCanvas } from "./VastuCanvas";
 
 interface Point {
   x: number;
@@ -21,6 +20,24 @@ interface PDFExporterProps {
   chakraOpacity: number;
 }
 
+// NEW: Find the *visible* canvas rendered by VastuCanvas
+function getVisibleVastuCanvasNode(): HTMLElement | null {
+  // Look for a canvas within the app root that matches VastuCanvas's CSS classes
+  // We assume only one editable canvas is present (the main one)
+  // If more logic is needed to identify the canvas, we can get more specific
+  const allCanvases = document.querySelectorAll<HTMLCanvasElement>('canvas');
+  // Look for a canvas element that is NOT hidden (left > -9999px)
+  for (const canvas of allCanvases) {
+    const style = window.getComputedStyle(canvas);
+    const left = parseInt(style.left || "0", 10);
+    if (!canvas.closest('[style*="left: -9999px"]')) {
+      // This is likely the visible canvas!
+      return canvas as HTMLElement;
+    }
+  }
+  return null;
+}
+
 export const PDFExporter = ({
   mapImage,
   polygonPoints,
@@ -30,22 +47,6 @@ export const PDFExporter = ({
   chakraOpacity
 }: PDFExporterProps) => {
   const [isExporting, setIsExporting] = useState(false);
-  const exportRef = useRef<HTMLDivElement>(null);
-
-  // Use fixed export resolution for matching what the user sees
-  const EXPORT_WIDTH = 800;
-  const EXPORT_HEIGHT = 600;
-
-  // Helper for dom-to-image with html2canvas
-  const captureExportView = async (node: HTMLElement) => {
-    // Use a high DPI scale for PDF clarity
-    return await html2canvas(node, {
-      backgroundColor: "#fff",
-      scale: 2,
-      useCORS: true,
-      allowTaint: true
-    });
-  };
 
   const handleExportPDF = async () => {
     if (!mapImage || !center) {
@@ -55,14 +56,18 @@ export const PDFExporter = ({
     setIsExporting(true);
 
     try {
-      const exportNode = exportRef.current;
-      if (!exportNode) throw new Error("Export view not available");
-
-      // Wait for DOM paint and all canvas renders (long enough for images to render)
-      await new Promise(resolve => setTimeout(resolve, 600));
-
-      // Step 1: Capture export view with html2canvas
-      const canvas = await captureExportView(exportNode);
+      // NEW: Select the visible canvas DOM node
+      const exportNode = getVisibleVastuCanvasNode();
+      if (!exportNode) throw new Error("Visual canvas not found!");
+      // Wait a little in case any overlay/transition is in progress
+      await new Promise(resolve => setTimeout(resolve, 300));
+      // Render with html2canvas directly from the visible node
+      const canvas = await html2canvas(exportNode as HTMLElement, {
+        backgroundColor: "#fff",
+        scale: 2,
+        useCORS: true,
+        allowTaint: true
+      });
       const dataURL = canvas.toDataURL("image/png", 1.0);
 
       // Step 2: Compose PDF with this screenshot
@@ -74,12 +79,10 @@ export const PDFExporter = ({
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
-      // Calculate image size to fit A4, preserve aspect
       const marginX = 20;
       const marginY = 20;
       const maxImgWidth = pageWidth - marginX * 2;
       const maxImgHeight = pageHeight - marginY * 2 - 10;
-
       const imgAspectRatio = canvas.width / canvas.height;
       let imgWidth = maxImgWidth;
       let imgHeight = imgWidth / imgAspectRatio;
@@ -138,41 +141,6 @@ export const PDFExporter = ({
             ✓ Ready to export screen-accurate PDF
           </div>
         )}
-      </div>
-
-      {/* Hidden export view for html2canvas (matches main canvas exactly) */}
-      <div
-        ref={exportRef}
-        style={{
-          position: "absolute",
-          left: "-9999px",
-          top: 0,
-          width: `${EXPORT_WIDTH}px`,
-          height: `${EXPORT_HEIGHT}px`,
-          pointerEvents: "none",
-          opacity: 1,
-          background: "#fff",
-          zIndex: -999
-        }}
-        aria-hidden="true"
-      >
-        <VastuCanvas
-          mapImage={mapImage}
-          polygonPoints={polygonPoints}
-          isSelectingPolygon={false}
-          onPolygonPointAdd={() => {}}
-          onPolygonComplete={() => {}}
-          center={center}
-          chakraRotation={chakraRotation}
-          chakraScale={chakraScale}
-          chakraOpacity={chakraOpacity}
-          showDirections={true}
-          showEntrances={true}
-          showShaktiChakra={false}
-          showPlanetsChakra={false}
-          showVastuPurush={false}
-          showBarChart={false}
-        />
       </div>
     </>
   );
