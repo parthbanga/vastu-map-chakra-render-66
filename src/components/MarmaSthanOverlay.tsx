@@ -117,28 +117,20 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
 
   // Standard compass angles: N, NE, E, SE, S, SW, W, NW
   const compassAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+  const compassLabels = ["N","NE","E","SE","S","SW","W","NW"];
+  const labelRadiusOffset = 28; // px further out from point
 
-  const labelOffsets = [
-    { dx: 0, dy: -18 },   // N
-    { dx: 18, dy: -18 },  // NE
-    { dx: 20, dy: 0 },    // E
-    { dx: 15, dy: 18 },   // SE
-    { dx: 0, dy: 24 },    // S
-    { dx: -15, dy: 18 },  // SW
-    { dx: -22, dy: 0 },   // W
-    { dx: -17, dy: -17 }  // NW
-  ];
-
-  // Store info whether fallback was used (for diagnostics)
-  const marmaBoundaryPoints: { pt: Point; usedFallback: boolean; angle: number; label: string }[] = compassAngles.map((ang, idx) => {
+  // Compute Marma Sthan boundary points
+  const marmaBoundaryPoints: { pt: Point; usedFallback: boolean; angle: number; label: string; labelPos: Point }[] = compassAngles.map((ang, idx) => {
     const dir = getDirVec(ang, rotation);
+    // Find plot intersection (black point)
     const intersection = getPolygonRayIntersection(center, dir, polygonPoints);
     let usedFallback = false;
     let pt: Point;
     if (intersection) {
       pt = intersection;
     } else {
-      // Fallback: get closest polygon point
+      // fallback: closest polygon point
       let minDist = Infinity;
       let closest = polygonPoints[0];
       for (const p of polygonPoints) {
@@ -151,14 +143,12 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
       usedFallback = true;
       pt = closest;
     }
-
-    // Debug log for troubleshooting which points use fallback
-    if (typeof window !== "undefined" && window.console && usedFallback) {
-      console.warn(`[MarmaSthanOverlay] Fallback used for angle ${ang} (${["N","NE","E","SE","S","SW","W","NW"][idx]}), using vertex:`, pt);
-    }
-
-    // Optional: add text label for debugging/clarity (not shown in UI unless wanted)
-    return { pt, usedFallback, angle: ang, label: ["N","NE","E","SE","S","SW","W","NW"][idx] };
+    // For the label, move 'labelRadiusOffset' px *further* from center along direction vector
+    const labelPos: Point = {
+      x: pt.x + dir.x * labelRadiusOffset,
+      y: pt.y + dir.y * labelRadiusOffset,
+    };
+    return { pt, usedFallback, angle: ang, label: compassLabels[idx], labelPos };
   });
 
   // --- Draw Marma Sthan square grid (keep existing logic) ---
@@ -264,8 +254,8 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
         );
       })}
 
-      {/* --- Draw all 8 Marma Sthan boundary points as bold black circles with labels --- */}
-      {marmaBoundaryPoints.map(({ pt, usedFallback, label }, idx) => (
+      {/* --- Draw all 8 Marma Sthan boundary points as bold black circles with polar-positioned labels --- */}
+      {marmaBoundaryPoints.map(({ pt, usedFallback, label, labelPos }, idx) => (
         <g key={`marma-pt-label-${idx}`}>
           <circle
             cx={pt.x}
@@ -276,8 +266,8 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
             strokeWidth={usedFallback ? 4.5 : 3.5}
           />
           <text
-            x={pt.x + (labelOffsets[idx]?.dx ?? 15)}
-            y={pt.y + (labelOffsets[idx]?.dy ?? 0)}
+            x={labelPos.x}
+            y={labelPos.y}
             fontSize="17"
             fontWeight="bold"
             fill="#1e293b"
