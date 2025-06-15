@@ -89,7 +89,7 @@ export const PDFExporter = ({
     entrances: false
   });
 
-  // Helper to trigger canvas overlays on
+  // Force overlay state tracks *exporting* mode
   const [drawOverlaysOnCanvas, setDrawOverlaysOnCanvas] = useState(false);
 
   // Export enabled only if all steps complete and screenshot exist
@@ -97,31 +97,39 @@ export const PDFExporter = ({
     k => completedSteps[k] && screenshots[k]
   );
 
-  // For ticking and screenshotting each step
+  // Handles ticking and screenshotting each overlay step
   const handleStepCheckbox = async (key: string, checked: boolean) => {
     setCompletedSteps(prev => ({
       ...prev,
       [key]: checked
     }));
 
+    // Each step defined overlays needed
     const overlayMap: {[key: string]: any} = {
-      directions: {directions: true},
-      entrances: {entrances: true}
+      directions: {directions: true, entrances: false},
+      entrances: {directions: false, entrances: true}
     };
 
     if (checked) {
       setCapturing(prev => ({...prev, [key]: true}));
       toast.info(`Capturing screenshot for "${EXPORT_STEPS.find(s=>s.key===key)?.label}"...`);
 
-      // Turn ON canvas overlays for screenshot
+      // 1. Turn overlays ON when screenshotting
       setDrawOverlaysOnCanvas(true);
+      if(setForceOverlay) setForceOverlay({
+        directions: overlayMap[key].directions,
+        entrances: overlayMap[key].entrances
+      });
 
-      // Wait for overlays to be drawn on canvas, then capture!
-      await new Promise(r => setTimeout(r, 250));
+      // 2. Wait TWO animation frames to guarantee propagation
+      await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+      // 3. Now take screenshot
       const img = await screenshotVisibleCanvas();
 
-      // Restore overlay state
+      // 4. Restore interactive overlays
       setDrawOverlaysOnCanvas(false);
+      if(setForceOverlay) setForceOverlay({});
 
       setScreenshots(prev => ({
         ...prev,
@@ -232,8 +240,8 @@ export const PDFExporter = ({
           chakraRotation={chakraRotation}
           chakraScale={chakraScale}
           chakraOpacity={chakraOpacity}
-          showDirections={true}
-          showEntrances={true}
+          showDirections={forceOverlay?.directions ?? true}
+          showEntrances={forceOverlay?.entrances ?? true}
           showShaktiChakra={false}
           showPlanetsChakra={false}
           showVastuPurush={false}
