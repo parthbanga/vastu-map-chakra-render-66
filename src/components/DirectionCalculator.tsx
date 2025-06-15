@@ -19,6 +19,7 @@ export class DirectionCalculator {
   private polygonPoints: Point[];
 
   // 16 Vastu zones with their traditional positions and abbreviated names (0° = North)
+  // IMPORTANT: angles below are compass angles: 0° = up/N, 90°=E, 180°=S, 270°=W
   private vastuZones = [
     { name: 'N', angle: 0, color: '#4CAF50' },
     { name: 'NNE', angle: 22.5, color: '#8BC34A' },
@@ -38,43 +39,40 @@ export class DirectionCalculator {
     { name: 'NNW', angle: 337.5, color: '#009688' }
   ];
 
-  // 32 Entrance positions
+  // 32 Entrance positions -- ensure all are relative to compass angles (0 = up)
   private entrancePositions = [
-    // Each entrance is positioned at the center of its sector
-    // Radial lines are at: 0°, 11.25°, 22.5°, 33.75°, 45°, 56.25°, 67.5°, 78.75°, 90°, etc.
-    // So entrance centers should be at: 5.625°, 16.875°, 28.125°, 39.375°, etc.
-    { angle: 5.625, name: 'N4' },    // Between 0° and 11.25° radial lines
-    { angle: 16.875, name: 'N5' },   // Between 11.25° and 22.5° radial lines
-    { angle: 28.125, name: 'N6' },   // Between 22.5° and 33.75° radial lines
-    { angle: 39.375, name: 'N7' },   // Between 33.75° and 45° radial lines
-    { angle: 50.625, name: 'N8' },   // Between 45° and 56.25° radial lines
-    { angle: 61.875, name: 'E1' },   // Between 56.25° and 67.5° radial lines
-    { angle: 73.125, name: 'E2' },   // Between 67.5° and 78.75° radial lines
-    { angle: 84.375, name: 'E3' },   // Between 78.75° and 90° radial lines
-    { angle: 95.625, name: 'E4' },   // Between 90° and 101.25° radial lines
-    { angle: 106.875, name: 'E5' },  // Between 101.25° and 112.5° radial lines
-    { angle: 118.125, name: 'E6' },  // Between 112.5° and 123.75° radial lines
-    { angle: 129.375, name: 'E7' },  // Between 123.75° and 135° radial lines
-    { angle: 140.625, name: 'E8' },  // Between 135° and 146.25° radial lines
-    { angle: 151.875, name: 'S1' },  // Between 146.25° and 157.5° radial lines
-    { angle: 163.125, name: 'S2' },  // Between 157.5° and 168.75° radial lines
-    { angle: 174.375, name: 'S3' },  // Between 168.75° and 180° radial lines
-    { angle: 185.625, name: 'S4' },  // Between 180° and 191.25° radial lines
-    { angle: 196.875, name: 'S5' },  // Between 191.25° and 202.5° radial lines
-    { angle: 208.125, name: 'S6' },  // Between 202.5° and 213.75° radial lines
-    { angle: 219.375, name: 'S7' },  // Between 213.75° and 225° radial lines
-    { angle: 230.625, name: 'S8' },  // Between 225° and 236.25° radial lines
-    { angle: 241.875, name: 'W1' },  // Between 236.25° and 247.5° radial lines
-    { angle: 253.125, name: 'W2' },  // Between 247.5° and 258.75° radial lines
-    { angle: 264.375, name: 'W3' },  // Between 258.75° and 270° radial lines
-    { angle: 275.625, name: 'W4' },  // Between 270° and 281.25° radial lines
-    { angle: 286.875, name: 'W5' },  // Between 281.25° and 292.5° radial lines
-    { angle: 298.125, name: 'W6' },  // Between 292.5° and 303.75° radial lines
-    { angle: 309.375, name: 'W7' },  // Between 303.75° and 315° radial lines
-    { angle: 320.625, name: 'W8' },  // Between 315° and 326.25° radial lines
-    { angle: 331.875, name: 'N1' },  // Between 326.25° and 337.5° radial lines
-    { angle: 343.125, name: 'N2' },  // Between 337.5° and 348.75° radial lines
-    { angle: 354.375, name: 'N3' }   // Between 348.75° and 360° (0°) radial lines
+    { angle: 5.625, name: 'N4' },    
+    { angle: 16.875, name: 'N5' },
+    { angle: 28.125, name: 'N6' },
+    { angle: 39.375, name: 'N7' },
+    { angle: 50.625, name: 'N8' },
+    { angle: 61.875, name: 'E1' },
+    { angle: 73.125, name: 'E2' },
+    { angle: 84.375, name: 'E3' },
+    { angle: 95.625, name: 'E4' },
+    { angle: 106.875, name: 'E5' },
+    { angle: 118.125, name: 'E6' },
+    { angle: 129.375, name: 'E7' },
+    { angle: 140.625, name: 'E8' },
+    { angle: 151.875, name: 'S1' },
+    { angle: 163.125, name: 'S2' },
+    { angle: 174.375, name: 'S3' },
+    { angle: 185.625, name: 'S4' },
+    { angle: 196.875, name: 'S5' },
+    { angle: 208.125, name: 'S6' },
+    { angle: 219.375, name: 'S7' },
+    { angle: 230.625, name: 'S8' },
+    { angle: 241.875, name: 'W1' },
+    { angle: 253.125, name: 'W2' },
+    { angle: 264.375, name: 'W3' },
+    { angle: 275.625, name: 'W4' },
+    { angle: 286.875, name: 'W5' },
+    { angle: 298.125, name: 'W6' },
+    { angle: 309.375, name: 'W7' },
+    { angle: 320.625, name: 'W8' },
+    { angle: 331.875, name: 'N1' },
+    { angle: 343.125, name: 'N2' },
+    { angle: 354.375, name: 'N3' }
   ];
 
   constructor({ center, radius, rotation, scale, polygonPoints = [] }: DirectionCalculatorProps) {
@@ -85,12 +83,13 @@ export class DirectionCalculator {
     this.polygonPoints = polygonPoints;
   }
 
-  // Convert angle to radians with compass correction (so 0° = up/North)
+  // Convert angle to radians so 0°=UP, angles increase clockwise; add rotation
   private toRadiansCompass(degrees: number): number {
-    // 0° should be UP. SVG/canvas X-axis is right (0°), so we offset by -90°.
-    // We also allow user rotation.
+    // COMPASS: 0° = up, 90° = right, increasing clockwise; for SVG, 0° is right so shift -90
     return ((degrees - 90 + this.rotation) * Math.PI) / 180;
   }
+
+  // For all get* methods: angles must match compass for start/end points and labels
 
   // Calculate intersection of a line from center with polygon boundary
   private getPolygonIntersection(angle: number): Point | null {
@@ -169,12 +168,11 @@ export class DirectionCalculator {
   // Get radial line endpoints that stop at polygon boundary - generates 16 lines for directions
   getRadialLineEndpoints(): Array<{ start: Point; end: Point; angle: number }> {
     const lines = [];
-
-    // Generate 16 radial lines for main directions (every 22.5 degrees)
+    // 0° = up (North), increment by 22.5 deg (16 lines)
     for (let i = 0; i < 16; i++) {
-      const angle = i * (360 / 16); // Every 22.5 degrees
+      // COMPASS: 0°=up, so angle = i * 22.5
+      const angle = i * 22.5;
       const endPoint = this.getPolygonIntersection(angle);
-
       if (endPoint) {
         lines.push({
           start: this.center,
@@ -183,19 +181,16 @@ export class DirectionCalculator {
         });
       }
     }
-
     return lines;
   }
 
   // Get entrance radial lines for 32 entrances - these are the sector boundary lines
   getEntranceRadialLines(): Array<{ start: Point; end: Point; angle: number }> {
     const lines = [];
-    
-    // Generate radial lines every 11.25 degrees to create sector boundaries
     for (let i = 0; i < 32; i++) {
-      const angle = i * (360 / 32); // Every 11.25 degrees
+      // COMPASS: 0°=up, so angle = i * 11.25
+      const angle = i * 11.25;
       const endPoint = this.getPolygonIntersection(angle);
-      
       if (endPoint) {
         lines.push({
           start: this.center,
@@ -204,16 +199,16 @@ export class DirectionCalculator {
         });
       }
     }
-    
     return lines;
   }
 
   // Get all 16 zone boundaries
   getZoneBoundaries(): Array<{ start: Point; end: Point; zone: any }> {
-    return this.vastuZones.map((zone, index) => {
+    // Each zone is 22.5° wide, centered at zone.angle (compass)
+    // Boundaries at -11.25 and +11.25 from the center angle
+    return this.vastuZones.map((zone) => {
       const startAngle = zone.angle - 11.25;
       const endAngle = zone.angle + 11.25;
-      
       return {
         start: this.getPointOnCircle(startAngle),
         end: this.getPointOnCircle(endAngle),
@@ -223,9 +218,9 @@ export class DirectionCalculator {
   }
 
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
+    // Each entrance label should also use compass angles (0°=up)
     return this.entrancePositions.map(entrance => {
       const boundaryPoint = this.getPolygonIntersection(entrance.angle);
-
       if (boundaryPoint) {
         const distance = Math.sqrt(
           Math.pow(boundaryPoint.x - this.center.x, 2) +
@@ -233,12 +228,10 @@ export class DirectionCalculator {
         );
         const labelDistance = distance * 0.75;
         const radian = this.toRadiansCompass(entrance.angle);
-
         const labelPoint = {
           x: this.center.x + Math.cos(radian) * labelDistance,
           y: this.center.y + Math.sin(radian) * labelDistance
         };
-
         return {
           point: labelPoint,
           entrance: entrance
@@ -253,12 +246,11 @@ export class DirectionCalculator {
   }
 
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
-    // Position labels at 60% distance from center
+    // Position labels at center of each zone (as per compass: 0°=N/up)
     const labelRadius = 0.6;
-    return this.vastuZones.map((zone, index) => {
-      const centerAngle = (index * 22.5) + 11.25;
+    return this.vastuZones.map((zone) => {
+      const centerAngle = zone.angle;
       const boundaryPoint = this.getPolygonIntersection(centerAngle);
-
       let labelPoint: Point;
       if (boundaryPoint) {
         const distance = Math.sqrt(
@@ -267,7 +259,6 @@ export class DirectionCalculator {
         );
         const labelDistance = distance * labelRadius;
         const radian = this.toRadiansCompass(centerAngle);
-
         labelPoint = {
           x: this.center.x + Math.cos(radian) * labelDistance,
           y: this.center.y + Math.sin(radian) * labelDistance
@@ -275,7 +266,6 @@ export class DirectionCalculator {
       } else {
         labelPoint = this.getPointOnCircle(centerAngle, labelRadius);
       }
-
       return {
         point: labelPoint,
         label: zone.name,
@@ -285,16 +275,14 @@ export class DirectionCalculator {
   }
 
   getZoneSectors(): Array<{ path: string; color: string; zone: any }> {
-    return this.vastuZones.map((zone, index) => {
+    return this.vastuZones.map((zone) => {
       const startAngle = zone.angle - 11.25;
       const endAngle = zone.angle + 11.25;
-
       const startPoint = this.getPointOnCircle(startAngle, 0.3);
       const endPoint = this.getPointOnCircle(endAngle, 0.3);
       const outerStartPoint = this.getPointOnCircle(startAngle, 1.0);
       const outerEndPoint = this.getPointOnCircle(endAngle, 1.0);
 
-      // Create SVG path for sector
       const path = [
         `M ${this.center.x} ${this.center.y}`,
         `L ${startPoint.x} ${startPoint.y}`,
