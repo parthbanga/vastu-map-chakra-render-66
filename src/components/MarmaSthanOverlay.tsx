@@ -115,34 +115,38 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
 }) => {
   if (!polygonPoints || polygonPoints.length < 3) return null;
 
-  // Fixed: robust ray directions/inscribed square.
+  // --- Compute main 8 directions (compass) ---
+  // Angles: N=0, NE=45, E=90, SE=135, S=180, SW=225, W=270, NW=315 (+center)
+  const compassAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+
+  // Get robust intersection for each direction
+  const marmaBoundaryPoints = compassAngles.map((ang) => {
+    const dir = getDirVec(ang, rotation);
+    // Use robust intersection to ensure always a valid point
+    return getSafePolygonRayIntersection(center, dir, polygonPoints);
+  });
+
+  // --- Draw Marma Sthan square grid (keep existing logic) ---
   const orthAngles = [0, 90, 180, 270];
-  // Use getSafePolygonRayIntersection for each direction; always get a valid edge!
   const sides = orthAngles.map((ang) => {
     const dir = getDirVec(ang, rotation);
     const pt = getSafePolygonRayIntersection(center, dir, polygonPoints);
     return Math.hypot(pt.x - center.x, pt.y - center.y);
   });
 
-  // Compute half side (min of 4 directions); force positive length
   const minSide = Math.max(1, Math.min(...sides)) * 0.95 * scale;
   const halfSide = minSide;
   const squareSide = halfSide * 2;
 
-  // gridY and gridX: 3 equal intervals
-  const lines: {x1:number, y1:number, x2:number, y2:number}[] = [];
-
-  // Compute the 2 vertical and 2 horizontal grid lines, in square space centered at center
+  // Compute grid lines (just like before, in square)
+  const lines: { x1: number; y1: number; x2: number; y2: number }[] = [];
   for (let i = -1; i <= 1; i += 2) {
-    // i = -1 ("left"/"top"), i = +1 ("right"/"bottom")
-    // Vertical lines: x = center.x + (i * squareSide / 6)
     lines.push({
       x1: center.x + (i * squareSide) / 6,
       y1: center.y - halfSide,
       x2: center.x + (i * squareSide) / 6,
       y2: center.y + halfSide,
     });
-    // Horizontal lines: y = center.y + (i * squareSide / 6)
     lines.push({
       x1: center.x - halfSide,
       y1: center.y + (i * squareSide) / 6,
@@ -151,7 +155,7 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
     });
   }
 
-  // Rotate all corners and grid lines as needed
+  // --- Viewbox calculation for overlay (just like before) ---
   const rot = (deg: number) => {
     const theta = (rotation * Math.PI) / 180;
     const cos = Math.cos(theta),
@@ -163,19 +167,15 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
   };
   const rotate = rot(rotation);
 
-  // Create square corners for Marma bounding box (for 3x3 grid)
   const gridTL = rotate(center.x - halfSide, center.y - halfSide);
   const gridTR = rotate(center.x + halfSide, center.y - halfSide);
   const gridBR = rotate(center.x + halfSide, center.y + halfSide);
   const gridBL = rotate(center.x - halfSide, center.y + halfSide);
 
-  // 3x3 cells: draw as 9 polygons clipped to the inside of the plot polygon (optional, keep simple)
-  // We'll just draw the full grid and rely on the plot outline to show the grid is clipped, for better performance.
+  const polygonPath = polygonPoints
+    .map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`)
+    .join(" ") + " Z";
 
-  // Draw main polygon outline
-  const polygonPath = polygonPoints.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ") + " Z";
-
-  // SVG viewbox boundary for nice padding
   const vbPad = 40;
   const xs = polygonPoints.map((p) => p.x);
   const ys = polygonPoints.map((p) => p.y);
@@ -200,6 +200,7 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
     >
       {/* Plot outline */}
       <path d={polygonPath} fill="none" stroke="#6366f1" strokeWidth={3} opacity={0.6} />
+
       {/* Marma Sthan bounding square outline */}
       <polygon
         points={`${gridTL.x},${gridTL.y} ${gridTR.x},${gridTR.y} ${gridBR.x},${gridBR.y} ${gridBL.x},${gridBL.y}`}
@@ -208,6 +209,7 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
         stroke="#facc15"
         strokeWidth={2.5}
       />
+
       {/* Marma Sthan inner grid lines */}
       {lines.map((l, idx) => {
         const p1 = rotate(l.x1, l.y1);
@@ -226,7 +228,31 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
           />
         );
       })}
-      {/* Brahmasthan center */}
+
+      {/* --- New: Marma Sthan 9 direction points as big black dots --- */}
+      {/* 8 on boundary */}
+      {marmaBoundaryPoints.map((pt, idx) => (
+        <circle
+          key={`marma-pt-${idx}`}
+          cx={pt.x}
+          cy={pt.y}
+          r={9}
+          fill="#111"
+          stroke="#fff"
+          strokeWidth={2.5}
+        />
+      ))}
+      {/* Center (Brahmasthan): bold black */}
+      <circle
+        cx={center.x}
+        cy={center.y}
+        r={10}
+        fill="#111"
+        stroke="#a21caf"
+        strokeWidth={3}
+      />
+
+      {/* Classic Brahmasthan center indicator (purple/pastel, kept for transition effect) */}
       <circle
         cx={center.x}
         cy={center.y}
@@ -234,6 +260,7 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
         fill="#a21caf"
         stroke="#ede9fe"
         strokeWidth="3"
+        opacity={0.6}
       />
     </svg>
   );
