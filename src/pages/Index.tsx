@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback } from "react";
 import { Upload, RotateCw, Download, Trash2, Sparkles, Settings, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +27,12 @@ const Index = () => {
   const [center, setCenter] = useState<Point | null>(null);
   const [activeTab, setActiveTab] = useState<'upload' | 'controls' | 'export'>('upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [forceOverlay, setForceOverlay] = useState<{directions?: boolean; entrances?: boolean}>({});
+
+  const actualShowDirections =
+    typeof forceOverlay.directions === "boolean" ? forceOverlay.directions : showDirections;
+  const actualShowEntrances =
+    typeof forceOverlay.entrances === "boolean" ? forceOverlay.entrances : showEntrances;
 
   const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -153,8 +158,8 @@ const Index = () => {
             chakraRotation={chakraRotation}
             chakraScale={chakraScale}
             chakraOpacity={chakraOpacity}
-            showDirections={showDirections}
-            showEntrances={showEntrances}
+            showDirections={actualShowDirections}
+            showEntrances={actualShowEntrances}
             showShaktiChakra={showShaktiChakra}
             showPlanetsChakra={showPlanetsChakra}
             showVastuPurush={showVastuPurush}
@@ -261,8 +266,8 @@ const Index = () => {
               rotation={chakraRotation}
               scale={chakraScale}
               opacity={chakraOpacity}
-              showDirections={showDirections}
-              showEntrances={showEntrances}
+              showDirections={actualShowDirections}
+              showEntrances={actualShowEntrances}
               showShaktiChakra={showShaktiChakra}
               showPlanetsChakra={showPlanetsChakra}
               showVastuPurush={showVastuPurush}
@@ -297,6 +302,8 @@ const Index = () => {
                 chakraRotation={chakraRotation}
                 chakraScale={chakraScale}
                 chakraOpacity={chakraOpacity}
+                setForceOverlay={setForceOverlay}
+                forceOverlay={forceOverlay}
               />
             </div>
           </div>

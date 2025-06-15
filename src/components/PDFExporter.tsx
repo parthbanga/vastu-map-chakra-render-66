@@ -19,6 +19,8 @@ interface PDFExporterProps {
   chakraRotation: number;
   chakraScale: number;
   chakraOpacity: number;
+  setForceOverlay?: (v: {directions?: boolean; entrances?: boolean}) => void;
+  forceOverlay?: {directions?: boolean; entrances?: boolean};
 }
 
 // Checkmarks/Steps
@@ -65,7 +67,9 @@ export const PDFExporter = ({
   center,
   chakraRotation,
   chakraScale,
-  chakraOpacity
+  chakraOpacity,
+  setForceOverlay,
+  forceOverlay
 }: PDFExporterProps) => {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -96,10 +100,30 @@ export const PDFExporter = ({
       ...prev,
       [key]: checked
     }));
+
+    // === PDF overlay logic injection ===
+    // Ensure overlay is visible during screenshot for this step
+    const overlayMap: {[key: string]: any} = {
+      directions: {directions: true},
+      entrances: {entrances: true}
+    };
+
     if (checked) {
       setCapturing(prev => ({...prev, [key]: true}));
       toast.info(`Capturing screenshot for "${EXPORT_STEPS.find(s=>s.key===key)?.label}"...`);
+      
+      // Temporarily force overlay ON for this step
+      if (typeof setForceOverlay === "function" && overlayMap[key]) {
+        setForceOverlay(overlayMap[key]);
+        // Wait for overlays to render (1 animation frame)
+        await new Promise(r => setTimeout(r, 100));
+      }
       const img = await screenshotVisibleCanvas();
+      // Restore overlay state
+      if (typeof setForceOverlay === "function" && overlayMap[key]) {
+        setForceOverlay({});
+      }
+
       setScreenshots(prev => ({
         ...prev,
         [key]: img
