@@ -246,30 +246,14 @@ export class DirectionCalculator {
   }
 
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
-    // Now correctly center each label between radial lines (for 16 directions, each 22.5° wide)
+    // Place label IN BETWEEN radial lines: at center of each sector.
+    // The 16 sectors start at i*22.5°, each spans 22.5°, so midpoint is start + 11.25°
     const labelRadius = 0.6;
     return this.vastuZones.map((zone, i) => {
-      // Each zone covers center angle +/- 11.25°
-      // For label placement, use the middle of the sector
-      // For 16 directions: N at 0°, NNE at 22.5°, ..., NNW at 337.5°
-      // Each zone's "center" is their angle (so this is actually already correct mathematically)
-      // The render bug is often because of the boundary lines being at the same angle as label
-      // To address the visual, ensure that boundaries drawn in the overlay match sector edges
-      // The key bug is not in the centerAngle but in where labels are shown *relative* to the boundaries
-      // So here, we place each label at zone.angle, which IS the center BETWEEN its boundaries
-
-      // But let's double-check:
-      // For zone 0 (N): shows up at 0°
-      // Boundaries for zone 0 are -11.25° to +11.25°
-      // Therefore, label for N goes at 0° (midpoint between -11.25 and +11.25)
-
-      // So we shift the label slightly toward the center of the sector (if visually off).
-      // But current approach is correct as per geometry: the direction label is at the center of sector.
-
-      // However, the SVG text alignment ("dominantBaseline", etc.) could cause a mis-align.
-      // To ensure, let's just re-calculate: Set label at centerAngle = zone.angle (as before).
-      const centerAngle = zone.angle;
-      const boundaryPoint = this.getPolygonIntersection(centerAngle);
+      // The label should be at the sector MIDPOINT (zone.angle + 11.25°) for proper between-lines placement.
+      // Special case: For last zone (NNW, 337.5°), next is back to N (0°), so (+ 11.25°) mod 360:
+      const midAngle = (zone.angle + 11.25) % 360;
+      const boundaryPoint = this.getPolygonIntersection(midAngle);
       let labelPoint: Point;
       if (boundaryPoint) {
         const distance = Math.sqrt(
@@ -277,18 +261,18 @@ export class DirectionCalculator {
           Math.pow(boundaryPoint.y - this.center.y, 2)
         );
         const labelDistance = distance * labelRadius;
-        const radian = this.toRadiansCompass(centerAngle);
+        const radian = this.toRadiansCompass(midAngle);
         labelPoint = {
           x: this.center.x + Math.cos(radian) * labelDistance,
           y: this.center.y + Math.sin(radian) * labelDistance
         };
       } else {
-        labelPoint = this.getPointOnCircle(centerAngle, labelRadius);
+        labelPoint = this.getPointOnCircle(midAngle, labelRadius);
       }
       return {
         point: labelPoint,
         label: zone.name,
-        angle: centerAngle + this.rotation
+        angle: midAngle + this.rotation
       };
     });
   }
