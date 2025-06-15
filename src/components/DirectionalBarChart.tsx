@@ -1,5 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
+
+// Simple hook for mobile detection (true if < 640px wide)
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' && window.innerWidth < 640
+  );
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return isMobile;
+};
 
 interface Point {
   x: number;
@@ -13,6 +26,8 @@ interface DirectionalBarChartProps {
 }
 
 export const DirectionalBarChart = ({ center, polygonPoints, rotation }: DirectionalBarChartProps) => {
+  const isMobile = useIsMobile();
+
   // Debug: log received props
   console.log('[BarChart] center:', center, 'polygonPoints:', polygonPoints, 'rotation:', rotation);
 
@@ -120,11 +135,12 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
     return (
       <div
         style={{
-          position: 'fixed',
-          bottom: 30,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 370,
+          position: isMobile ? 'static' : 'fixed',
+          bottom: isMobile ? undefined : 30,
+          left: isMobile ? undefined : '50%',
+          transform: isMobile ? undefined : 'translateX(-50%)',
+          width: isMobile ? '100%' : 370,
+          maxWidth: isMobile ? '97vw' : undefined,
           backgroundColor: 'rgba(255,255,255,0.95)',
           border: '2px solid #333',
           borderRadius: 8,
@@ -132,6 +148,7 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           zIndex: 5002,
           textAlign: 'center',
+          margin: isMobile ? '16px 0' : undefined,
         }}
       >
         <h3
@@ -161,9 +178,7 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
     percentage: totalArea > 0 ? (directionalAreas[index] / totalArea) * 100 : 0
   }));
 
-  // Config: if too many bars to fit horizontally, we'll show direction names on bars
-  // This chart is always 400px wide; each bar is 22px with some margin, but we can compute available width.
-  // If labels are likely to overlap, or if forced, we'll use on-bar labels.
+  // If we have more than 12 bars, we'll show labels on the bars; otherwise, show them below
   const alwaysOnBar = data.length > 12; // fallback for >12 bars
 
   // XAxis renderer: If enough space (<=12 bars) stagger as before, else render nothing/blank (will use on-bar)
@@ -235,20 +250,21 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
   return (
     <div
       style={{
-        position: 'fixed',
-        bottom: 30,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: 400,
+        position: isMobile ? 'static' : 'fixed',
+        bottom: isMobile ? undefined : 30,
+        left: isMobile ? undefined : '50%',
+        transform: isMobile ? undefined : 'translateX(-50%)',
+        width: isMobile ? '100%' : 400,
         maxWidth: '97vw',
-        height: 300,
+        height: isMobile ? 'auto' : 300,
         backgroundColor: 'rgba(255, 255, 255, 0.97)',
         border: '2px solid #333',
         borderRadius: '8px',
         padding: '16px',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
         pointerEvents: 'auto',
-        zIndex: 5003
+        zIndex: 5003,
+        margin: isMobile ? '16px 0' : undefined,
       }}
     >
       <h3 style={{
