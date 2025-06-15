@@ -274,6 +274,37 @@ export const VastuCanvas = ({
       className="relative w-full h-full min-h-[400px] bg-white rounded-lg overflow-hidden border border-gray-200"
       style={{ background: "#fff" }}
     >
+      {/* == TEST BADGE - should show up in PDF and app == */}
+      <div className="absolute top-4 left-4 z-[2000] bg-yellow-500 text-black px-4 py-2 text-lg font-bold rounded shadow pointer-events-none">
+        TEST BADGE
+      </div>
+
+      {/* == SIMPLE SVG OVERLAY for html2canvas test == */}
+      <svg
+        className="absolute"
+        style={{
+          left: '50px',
+          top: '50px',
+          width: '100px',
+          height: '100px',
+          zIndex: 1900,    // High but below badge for clarity.
+          pointerEvents: 'none',
+        }}
+      >
+        <circle
+          cx="50"
+          cy="50"
+          r="40"
+          fill="red"
+          fillOpacity="0.5"
+          stroke="black"
+          strokeWidth="3"
+        />
+        <text x="50" y="56" textAnchor="middle" fontSize="18" fill="white" fontWeight="bold">
+          SVG!
+        </text>
+      </svg>
+
       {/* MAIN CANVAS (base map + polygons) */}
       <canvas
         ref={canvasRef}
