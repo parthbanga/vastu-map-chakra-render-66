@@ -6,6 +6,7 @@ import { VastuPurush } from "./VastuPurush";
 import { DirectionalBarChart } from "./DirectionalBarChart";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
+import { MarmaSthanOverlay } from "./MarmaSthanOverlay";
 
 interface Point {
   x: number;
@@ -30,6 +31,7 @@ interface VastuCanvasProps {
   showBarChart: boolean;
   /** If true: overlays are drawn directly onto the main canvas (for PDF/screenshot exporting) */
   drawOverlaysOnCanvas?: boolean;
+  showMarmaSthan?: boolean;
 }
 
 export const VastuCanvas = ({
@@ -49,7 +51,8 @@ export const VastuCanvas = ({
   showVastuPurush,
   showBarChart,
   drawOverlaysOnCanvas = false,
-}: VastuCanvasProps) => {
+  showMarmaSthan,
+}: VastuCanvasProps & { showMarmaSthan?: boolean }) => {
   // DEBUG: Quick log for blank render diagnosis
   console.log("Rendering VastuCanvas with:", { mapImage, polygonPoints, isSelectingPolygon, center });
 
@@ -502,6 +505,17 @@ export const VastuCanvas = ({
               center={center}
               polygonPoints={polygonPoints}
               rotation={chakraRotation}
+            />
+          )}
+
+          {/* Show Marma Sthan if enabled and exactly 4-sided plot */}
+          {showMarmaSthan && polygonPoints.length === 4 && (
+            <MarmaSthanOverlay
+              polygonPoints={polygonPoints}
+              center={center}
+              rotation={chakraRotation}
+              opacity={chakraOpacity}
+              scale={chakraScale}
             />
           )}
         </>

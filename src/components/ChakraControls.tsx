@@ -14,6 +14,7 @@ interface ChakraControlsProps {
   showBarChart: boolean;
   showPlanetsChakra: boolean;
   showVastuPurush: boolean;
+  showMarmaSthan?: boolean;
   onRotationChange: (rotation: number) => void;
   onScaleChange: (scale: number) => void;
   onOpacityChange: (opacity: number) => void;
@@ -23,6 +24,7 @@ interface ChakraControlsProps {
   onShowBarChartChange: (show: boolean) => void;
   onShowPlanetsChakraChange: (show: boolean) => void;
   onShowVastuPurushChange: (show: boolean) => void;
+  onShowMarmaSthanChange?: (show: boolean) => void;
   disabled?: boolean;
 }
 
@@ -36,6 +38,7 @@ export const ChakraControls = ({
   showBarChart,
   showPlanetsChakra,
   showVastuPurush,
+  showMarmaSthan,
   onRotationChange,
   onScaleChange,
   onOpacityChange,
@@ -45,6 +48,7 @@ export const ChakraControls = ({
   onShowBarChartChange,
   onShowPlanetsChakraChange,
   onShowVastuPurushChange,
+  onShowMarmaSthanChange = () => {},
   disabled = false
 }: ChakraControlsProps) => {
   if (disabled) {
@@ -119,6 +123,16 @@ export const ChakraControls = ({
       <Card className="p-4 space-y-4">
         <h4 className="font-medium text-sm">Display Options</h4>
         
+        <div className="flex items-center gap-3 my-2">
+          <label className="flex items-center gap-2">
+            <Switch
+              checked={!!showMarmaSthan}
+              onCheckedChange={onShowMarmaSthanChange}
+            />
+            <span className="text-sm">Show Marma Sthan</span>
+          </label>
+        </div>
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Eye className="w-4 h-4 text-gray-500" />

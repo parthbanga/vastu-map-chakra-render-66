@@ -30,6 +30,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<'upload' | 'controls' | 'export'>('upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [forceOverlay, setForceOverlay] = useState<{directions?: boolean; entrances?: boolean}>({});
+  const [showMarmaSthan, setShowMarmaSthan] = useState(false);
 
   const actualShowDirections =
     typeof forceOverlay.directions === "boolean" ? forceOverlay.directions : showDirections;
@@ -183,6 +184,7 @@ const Index = () => {
             showPlanetsChakra={showPlanetsChakra}
             showVastuPurush={showVastuPurush}
             showBarChart={showBarChart}
+            showMarmaSthan={showMarmaSthan}
           />
         </Card>
       </div>
@@ -300,6 +302,7 @@ const Index = () => {
               onShowPlanetsChakraChange={setShowPlanetsChakra}
               onShowVastuPurushChange={setShowVastuPurush}
               onShowBarChartChange={setShowBarChart}
+              onShowMarmaSthanChange={setShowMarmaSthan}
               disabled={!center}
             />
           </div>
