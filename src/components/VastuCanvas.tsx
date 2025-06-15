@@ -467,7 +467,7 @@ export const VastuCanvas = ({
             <ShaktiChakra
               center={center}
               radius={getOverlayRadius()}
-              rotation={chakraRotation}
+              rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
               opacity={chakraOpacity}
               scale={chakraScale}
             />
@@ -490,7 +490,7 @@ export const VastuCanvas = ({
             <VastuPurush
               center={center}
               radius={getOverlayRadius()}
-              rotation={chakraRotation}
+              rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
               opacity={chakraOpacity}
               scale={chakraScale}
             />
