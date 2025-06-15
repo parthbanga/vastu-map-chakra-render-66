@@ -264,7 +264,8 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
         pointerEvents: 'auto',
         zIndex: 5003,
-        margin: isMobile ? '16px 0' : undefined,
+        margin: isMobile ? '16px 0 32px 0' : undefined, // 32px bottom margin on mobile to push below controls
+        marginTop: isMobile ? '12px' : undefined // extra spacing above chart on mobile
       }}
     >
       <h3 style={{
