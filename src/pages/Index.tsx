@@ -12,7 +12,7 @@ interface Point {
   y: number;
 }
 
-const ROTATION_OFFSET = 7; // Subtract 7 degrees for calculation, per user request.
+const ROTATION_OFFSET = 4; // Subtract 4 degrees for calculation, per user request.
 
 const Index = () => {
   const [mapImage, setMapImage] = useState<string | null>(null);
