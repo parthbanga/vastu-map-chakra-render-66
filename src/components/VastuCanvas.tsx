@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 import { ShaktiChakra } from "./ShaktiChakra";
@@ -274,8 +273,13 @@ export const VastuCanvas = ({
       ref={containerRef}
       id="vastu-canvas-container"
       className="relative w-full h-full min-h-[400px] bg-white rounded-lg overflow-hidden border border-gray-200"
-      style={{ background: "#fff" }} // ensure white bg for export!
+      style={{ background: "#fff" }}
     >
+      {/* == TEST BADGE - should show up in PDF == */}
+      <div className="absolute top-4 left-4 z-[2000] bg-yellow-500 text-black px-4 py-2 text-lg font-bold rounded shadow pointer-events-none">
+        TEST BADGE
+      </div>
+
       {!mapImage ? (
         <div className="absolute inset-0 flex items-center justify-center text-gray-500">
           <div className="text-center p-8">
