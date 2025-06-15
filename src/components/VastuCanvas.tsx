@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 import { ShaktiChakra } from "./ShaktiChakra";
@@ -269,7 +268,11 @@ export const VastuCanvas = ({
   }, [polygonPoints, onPolygonComplete]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full min-h-[400px] bg-gray-50 rounded-lg overflow-hidden">
+    <div
+      ref={containerRef}
+      id="vastu-canvas-container"
+      className="relative w-full h-full min-h-[400px] bg-gray-50 rounded-lg overflow-hidden"
+    >
       {!mapImage ? (
         <div className="absolute inset-0 flex items-center justify-center text-gray-500">
           <div className="text-center p-8">

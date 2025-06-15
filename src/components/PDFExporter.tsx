@@ -36,13 +36,11 @@ const EXPORT_STEPS = [
 
 // Helper to screenshot the visible VastuCanvas area as PNG
 async function screenshotVisibleCanvas(): Promise<string | null> {
-  // Find the actual visible canvas container
-  // Tailwind classes with square brackets need to be escaped with double backslashes for querySelector
-  // .relative.w-full.h-full.min-h-\[400px\]
-  const canvasContainer = document.querySelector(".relative.w-full.h-full.min-h-\\[400px\\]");
+  // Use the reliable id for the canvas container now
+  const canvasContainer = document.getElementById("vastu-canvas-container");
   if (!canvasContainer) {
     console.error(
-      "PDF Export: Failed to find canvas container. Check selector: '.relative.w-full.h-full.min-h-\\[400px\\]'"
+      "PDF Export: Failed to find canvas container by id='vastu-canvas-container'."
     );
     return null;
   }
