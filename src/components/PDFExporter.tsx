@@ -37,10 +37,20 @@ const EXPORT_STEPS = [
 // Helper to screenshot the visible VastuCanvas area as PNG
 async function screenshotVisibleCanvas(): Promise<string | null> {
   // Find the actual visible canvas container
-  const canvasContainer = document.querySelector(".relative.w-full.h-full.min-h-[400px]");
-  if (!canvasContainer) return null;
+  // Tailwind classes with square brackets need to be escaped with double backslashes for querySelector
+  // .relative.w-full.h-full.min-h-\[400px\]
+  const canvasContainer = document.querySelector(".relative.w-full.h-full.min-h-\\[400px\\]");
+  if (!canvasContainer) {
+    console.error(
+      "PDF Export: Failed to find canvas container. Check selector: '.relative.w-full.h-full.min-h-\\[400px\\]'"
+    );
+    return null;
+  }
   const canvas = canvasContainer.querySelector("canvas");
-  if (!canvas) return null;
+  if (!canvas) {
+    console.error("PDF Export: Failed to find canvas element inside container.");
+    return null;
+  }
   // Screenshot the whole container (captures overlays as well)
   const dataUrl = await html2canvas(canvasContainer as HTMLElement, {
     backgroundColor: "#fff",
