@@ -85,9 +85,10 @@ export class DirectionCalculator {
     this.polygonPoints = polygonPoints;
   }
 
-  // Convert angle to radians
-  private toRadians(degrees: number): number {
-    return (degrees * Math.PI) / 180;
+  // Convert angle to radians with compass correction (so 0° = up/North)
+  private toRadiansCompass(degrees: number): number {
+    // Shift by -90° so that 0° points up (standard compass)
+    return ((degrees - 90 + this.rotation) * Math.PI) / 180;
   }
 
   // Calculate intersection of a line from center with polygon boundary
@@ -97,40 +98,40 @@ export class DirectionCalculator {
       return this.getPointOnCircle(angle, 1);
     }
 
-    const adjustedAngle = angle + this.rotation;
-    const radian = this.toRadians(adjustedAngle);
-    
+    // *** Adjusted: Use compass-corrected angle ***
+    const radian = this.toRadiansCompass(angle);
+
     // Direction vector from center
-    const dirX = Math.sin(radian);
-    const dirY = -Math.cos(radian);
-    
+    const dirX = Math.cos(radian); // X grows to the right
+    const dirY = Math.sin(radian); // Y grows down
+
     let closestIntersection: Point | null = null;
     let closestDistance = Infinity;
-    
+
     // Check intersection with each polygon edge
     for (let i = 0; i < this.polygonPoints.length; i++) {
       const p1 = this.polygonPoints[i];
       const p2 = this.polygonPoints[(i + 1) % this.polygonPoints.length];
-      
+
       const intersection = this.lineIntersection(
         this.center.x, this.center.y,
         this.center.x + dirX * 10000, this.center.y + dirY * 10000,
         p1.x, p1.y, p2.x, p2.y
       );
-      
+
       if (intersection) {
         const distance = Math.sqrt(
-          Math.pow(intersection.x - this.center.x, 2) + 
+          Math.pow(intersection.x - this.center.x, 2) +
           Math.pow(intersection.y - this.center.y, 2)
         );
-        
+
         if (distance < closestDistance) {
           closestDistance = distance;
           closestIntersection = intersection;
         }
       }
     }
-    
+
     return closestIntersection || this.getPointOnCircle(angle, 1);
   }
 
@@ -153,27 +154,26 @@ export class DirectionCalculator {
     return null;
   }
 
-  // Calculate point on circle for given angle
+  // Calculate point on circle for given angle (with compass convention)
   private getPointOnCircle(angle: number, radiusMultiplier: number = 1): Point {
-    const adjustedAngle = angle + this.rotation;
-    const radian = this.toRadians(adjustedAngle);
+    const radian = this.toRadiansCompass(angle);
     const effectiveRadius = this.radius * radiusMultiplier;
-    
+
     return {
-      x: this.center.x + Math.sin(radian) * effectiveRadius,
-      y: this.center.y - Math.cos(radian) * effectiveRadius
+      x: this.center.x + Math.cos(radian) * effectiveRadius,
+      y: this.center.y + Math.sin(radian) * effectiveRadius
     };
   }
 
   // Get radial line endpoints that stop at polygon boundary - generates 16 lines for directions
   getRadialLineEndpoints(): Array<{ start: Point; end: Point; angle: number }> {
     const lines = [];
-    
+
     // Generate 16 radial lines for main directions (every 22.5 degrees)
     for (let i = 0; i < 16; i++) {
       const angle = i * (360 / 16); // Every 22.5 degrees
       const endPoint = this.getPolygonIntersection(angle);
-      
+
       if (endPoint) {
         lines.push({
           start: this.center,
@@ -182,7 +182,7 @@ export class DirectionCalculator {
         });
       }
     }
-    
+
     return lines;
   }
 
@@ -221,39 +221,29 @@ export class DirectionCalculator {
     });
   }
 
-  // Get entrance points positioned BETWEEN radial lines in the center of each sector
   getEntrancePoints(): Array<{ point: Point; entrance: any }> {
     return this.entrancePositions.map(entrance => {
-      // Each entrance is already positioned at the center of its 11.25° sector
-      // Get intersection point with polygon boundary at the entrance angle
       const boundaryPoint = this.getPolygonIntersection(entrance.angle);
-      
+
       if (boundaryPoint) {
-        // Calculate distance from center to boundary
         const distance = Math.sqrt(
-          Math.pow(boundaryPoint.x - this.center.x, 2) + 
+          Math.pow(boundaryPoint.x - this.center.x, 2) +
           Math.pow(boundaryPoint.y - this.center.y, 2)
         );
-        
-        // Position label at 75% of the distance from center to boundary (well within polygon)
+
         const labelDistance = distance * 0.75;
-        
-        const adjustedAngle = entrance.angle + this.rotation;
-        const radian = this.toRadians(adjustedAngle);
-        
+        const radian = this.toRadiansCompass(entrance.angle);
+
         const labelPoint = {
-          x: this.center.x + Math.sin(radian) * labelDistance,
-          y: this.center.y - Math.cos(radian) * labelDistance
+          x: this.center.x + Math.cos(radian) * labelDistance,
+          y: this.center.y + Math.sin(radian) * labelDistance
         };
-        
-        console.log(`Entrance ${entrance.name} positioned at angle ${entrance.angle}° (center of ${entrance.angle - 5.625}° - ${entrance.angle + 5.625}° sector)`);
-        
+
         return {
           point: labelPoint,
           entrance: entrance
         };
       } else {
-        // Fallback to circle positioning if polygon intersection fails
         return {
           point: this.getPointOnCircle(entrance.angle, 0.75),
           entrance: entrance
@@ -262,40 +252,30 @@ export class DirectionCalculator {
     });
   }
 
-  // Get direction labels - positioned in the center of each zone sector (between radial lines)
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
-    // Position labels at 60% distance from center to give good visibility in the zone sectors
+    // Position labels at 60% distance from center
     const labelRadius = 0.6;
-    console.log('Direction labels radius:', labelRadius, 'positioned in center of zone sectors between radial lines');
-    
     return this.vastuZones.map((zone, index) => {
-      // Calculate the center angle between two adjacent radial lines
-      // Radial lines are at: 0°, 22.5°, 45°, 67.5°, 90°, etc. (every 22.5°)
-      // Zone centers should be at: 11.25°, 33.75°, 56.25°, 78.75°, etc. (offset by 11.25°)
       const centerAngle = (index * 22.5) + 11.25;
-      
       const boundaryPoint = this.getPolygonIntersection(centerAngle);
-      
-      // Position label in the center of the zone sector
+
       let labelPoint: Point;
       if (boundaryPoint) {
         const distance = Math.sqrt(
-          Math.pow(boundaryPoint.x - this.center.x, 2) + 
+          Math.pow(boundaryPoint.x - this.center.x, 2) +
           Math.pow(boundaryPoint.y - this.center.y, 2)
         );
         const labelDistance = distance * labelRadius;
-        
-        const adjustedAngle = centerAngle + this.rotation;
-        const radian = this.toRadians(adjustedAngle);
-        
+        const radian = this.toRadiansCompass(centerAngle);
+
         labelPoint = {
-          x: this.center.x + Math.sin(radian) * labelDistance,
-          y: this.center.y - Math.cos(radian) * labelDistance
+          x: this.center.x + Math.cos(radian) * labelDistance,
+          y: this.center.y + Math.sin(radian) * labelDistance
         };
       } else {
         labelPoint = this.getPointOnCircle(centerAngle, labelRadius);
       }
-      
+
       return {
         point: labelPoint,
         label: zone.name,
@@ -304,17 +284,16 @@ export class DirectionCalculator {
     });
   }
 
-  // Get zone sectors for coloring
   getZoneSectors(): Array<{ path: string; color: string; zone: any }> {
     return this.vastuZones.map((zone, index) => {
       const startAngle = zone.angle - 11.25;
       const endAngle = zone.angle + 11.25;
-      
+
       const startPoint = this.getPointOnCircle(startAngle, 0.3);
       const endPoint = this.getPointOnCircle(endAngle, 0.3);
       const outerStartPoint = this.getPointOnCircle(startAngle, 1.0);
       const outerEndPoint = this.getPointOnCircle(endAngle, 1.0);
-      
+
       // Create SVG path for sector
       const path = [
         `M ${this.center.x} ${this.center.y}`,
@@ -328,12 +307,11 @@ export class DirectionCalculator {
         `A ${this.radius * 0.3} ${this.radius * 0.3} 0 0 0 ${startPoint.x} ${startPoint.y}`,
         'Z'
       ].join(' ');
-      
+
       return { path, color: zone.color, zone };
     });
   }
 
-  // Get compass directions - positioned safely inside the map boundary
   getCompassDirections(): Array<{ point: Point; direction: string; angle: number }> {
     const mainDirections = [
       { direction: 'N', angle: 0 },
@@ -342,13 +320,17 @@ export class DirectionCalculator {
       { direction: 'W', angle: 270 }
     ];
 
-    // Position compass directions well inside the map boundary
-    const compassRadius = 0.9; // Fixed radius that keeps compass inside map boundary
-    console.log('Compass radius:', compassRadius, 'keeping inside map boundary');
-    return mainDirections.map(dir => ({
-      point: this.getPointOnCircle(dir.angle, compassRadius),
-      direction: dir.direction,
-      angle: dir.angle + this.rotation
-    }));
+    const compassRadius = 0.9;
+    return mainDirections.map(dir => {
+      const radian = this.toRadiansCompass(dir.angle);
+      return {
+        point: {
+          x: this.center.x + Math.cos(radian) * this.radius * compassRadius,
+          y: this.center.y + Math.sin(radian) * this.radius * compassRadius
+        },
+        direction: dir.direction,
+        angle: dir.angle + this.rotation
+      };
+    });
   }
 }
