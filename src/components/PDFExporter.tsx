@@ -42,7 +42,6 @@ const EXPORT_STEPS = [
 
 // Helper to screenshot the VastuCanvas with overlays always on
 async function screenshotVisibleCanvasWithOverlays(): Promise<string | null> {
-  // Use the reliable id for the canvas container now
   const canvasContainer = document.getElementById("vastu-canvas-exporter-helper");
   if (!canvasContainer) {
     console.error(
@@ -50,9 +49,7 @@ async function screenshotVisibleCanvasWithOverlays(): Promise<string | null> {
     );
     return null;
   }
-  // Wait two animation frames for overlays to render
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-  // Screenshot the whole container (captures overlays as well)
   const dataUrl = await html2canvas(canvasContainer as HTMLElement, {
     backgroundColor: "#fff",
     scale: 2,
@@ -114,37 +111,35 @@ export const PDFExporter = ({
       [key]: checked
     }));
 
-    // Each step defined overlays needed
-    const overlayMap: {[key: string]: any} = {
-      directions: {directions: true, entrances: false},
-      entrances: {directions: false, entrances: true}
-    };
-
     if (checked) {
-      setCapturing(prev => ({...prev, [key]: true}));
+      setCapturing(prev => ({ ...prev, [key]: true }));
       toast.info(`Capturing screenshot for "${EXPORT_STEPS.find(s=>s.key===key)?.label}"...`);
 
-      // 1. Show the hidden exporter canvas
+      // ----- MODIFIED: Always show both overlays (directions & entrances) for export -----
       setShowHiddenExporterCanvas(true);
 
-      // 2. Wait for DOM update so the hidden VastuCanvas mounts
+      // Wait for DOM update 
       await new Promise(r => setTimeout(r, 60));
-      // 3. Take screenshot of the HIDDEN canvas with overlays ON for this step only
+
+      // SCREENSHOT: force both overlays ON for export regardless of which step!
+      const overlayStateForScreenshot =
+        { directions: true, entrances: true };
+
+      // Take screenshot of the hidden canvas with both overlays ON
       const img = await screenshotVisibleCanvasWithOverlays();
 
-      // 4. Hide the helper canvas again to save resources
       setShowHiddenExporterCanvas(false);
 
       setScreenshots(prev => ({
         ...prev,
         [key]: img
       }));
-      setCapturing(prev => ({...prev, [key]: false}));
+      setCapturing(prev => ({ ...prev, [key]: false }));
       toast.success(
         <span className="flex items-center"><Check className="w-4 h-4 mr-2 text-green-600" />Captured: {EXPORT_STEPS.find(s=>s.key===key)?.label}</span>
       );
     } else {
-      setScreenshots(prev => ({...prev, [key]: null}));
+      setScreenshots(prev => ({ ...prev, [key]: null }));
     }
   };
 
@@ -240,7 +235,7 @@ export const PDFExporter = ({
         ))}
       </div>
 
-      {/* --- Hidden overlays-export canvas: This is the key fix! --- */}
+      {/* --- Hidden overlays-export canvas: forcibly show overlays for export --- */}
       {showHiddenExporterCanvas && (
         <div id="vastu-canvas-exporter-helper" style={{ position: "fixed", left: "-9999px", top: "0", zIndex: -1, visibility: "hidden", width: 900, height: 700 }}>
           <VastuCanvas
@@ -253,14 +248,13 @@ export const PDFExporter = ({
             chakraRotation={chakraRotation}
             chakraScale={chakraScale}
             chakraOpacity={chakraOpacity}
-            /* Force only the specific overlay for each step ON for this shot */
-            showDirections={completedSteps.directions}
-            showEntrances={completedSteps.entrances}
+            showDirections={true}      // FORCED ON
+            showEntrances={true}       // FORCED ON
             showShaktiChakra={false}
             showPlanetsChakra={false}
             showVastuPurush={false}
             showBarChart={false}
-            drawOverlaysOnCanvas={true}
+            drawOverlaysOnCanvas={true} // Draw directly on the canvas for export
           />
         </div>
       )}
