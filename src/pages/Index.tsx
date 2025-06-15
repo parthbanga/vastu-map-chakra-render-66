@@ -55,6 +55,16 @@ const Index = () => {
     reader.readAsDataURL(file);
   }, []);
 
+  // New helper for area (Shoelace formula)
+  const calculatePolygonArea = (points: Point[]): number => {
+    if (points.length < 3) return 0;
+    let area = 0;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+      area += (points[j].x + points[i].x) * (points[j].y - points[i].y);
+    }
+    return Math.abs(area / 2);
+  };
+
   const calculateCenter = useCallback((points: Point[]): Point => {
     if (points.length === 0) return { x: 0, y: 0 };
     if (points.length < 3) {
@@ -120,6 +130,11 @@ const Index = () => {
   const handleRotationChange = useCallback((rotation: number) => {
     setChakraRotation(rotation);
   }, []);
+
+  // Calculate analysis info for passing to PDFExporter
+  const totalArea = calculatePolygonArea(polygonPoints);
+  const northAngle = chakraRotation;
+  const zonesCount = 16; // As per overlay (static)
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -304,6 +319,9 @@ const Index = () => {
                 chakraOpacity={chakraOpacity}
                 setForceOverlay={setForceOverlay}
                 forceOverlay={forceOverlay}
+                totalArea={totalArea}
+                northAngle={northAngle}
+                zonesCount={zonesCount}
               />
             </div>
           </div>

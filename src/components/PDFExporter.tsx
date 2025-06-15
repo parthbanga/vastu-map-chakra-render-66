@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Download, FileText, Loader2, Check } from "lucide-react";
+import { useState } from "react";
+import { Download, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -21,6 +21,10 @@ interface PDFExporterProps {
   chakraOpacity: number;
   setForceOverlay?: (v: {directions?: boolean; entrances?: boolean}) => void;
   forceOverlay?: {directions?: boolean; entrances?: boolean};
+  // New props for analysis data
+  totalArea?: number;
+  northAngle?: number;
+  zonesCount?: number;
 }
 
 // Checkmarks/Steps
@@ -69,7 +73,10 @@ export const PDFExporter = ({
   chakraScale,
   chakraOpacity,
   setForceOverlay,
-  forceOverlay
+  forceOverlay,
+  totalArea,
+  northAngle,
+  zonesCount
 }: PDFExporterProps) => {
   // DEBUG: Quick log for blank render diagnosis
   console.log("Rendering PDFExporter with:", { mapImage, polygonPoints, center });
@@ -147,7 +154,7 @@ export const PDFExporter = ({
     }
   };
 
-  // Export PDF with screenshots, one per page
+  // Export PDF with screenshots, one per page, and add analysis data below the image
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
@@ -159,33 +166,42 @@ export const PDFExporter = ({
       let added = 0;
       for (const step of EXPORT_STEPS) {
         if (completedSteps[step.key] && screenshots[step.key]) {
-          // Add title page for each overlay
           if (added > 0) pdf.addPage();
           pdf.setFontSize(16);
           pdf.text(step.label, pdf.internal.pageSize.getWidth()/2, 20, {align:"center"});
           // Place image below
           const imgData = screenshots[step.key]!;
-          // Calculate dimensions for a4 within margins
           const pageWidth = pdf.internal.pageSize.getWidth();
           const pageHeight = pdf.internal.pageSize.getHeight();
           const marginX = 15, marginY = 30;
-          const maxW = pageWidth - marginX*2, maxH = pageHeight - marginY*2;
+          const maxW = pageWidth - marginX*2, maxH = pageHeight - marginY*2 - 45; // leave room below for text
           const img = new window.Image();
           img.src = imgData;
-          await new Promise(r=>{
-            img.onload = r;
-          });
+          await new Promise(r=>{ img.onload = r; });
           let iw = img.width, ih = img.height;
           let w = maxW, h = w*(ih/iw);
           if (h > maxH) { h = maxH; w = h*(iw/ih);}
-          pdf.addImage(imgData, "PNG", (pageWidth-w)/2, marginY, w, h, undefined, 'FAST');
+          const imgY = marginY;
+          pdf.addImage(imgData, "PNG", (pageWidth-w)/2, imgY, w, h, undefined, 'FAST');
+
+          // --- Add analysis data below image ---
+          let textY = imgY + h + 12;
+          pdf.setFontSize(16);
+          pdf.text('Vastu Analysis Report', marginX, textY);
+          textY += 9;
+          pdf.setFontSize(12);
+          // Only print if props are defined, fallback to "N/A"
+          pdf.text(`Total Area: ${typeof totalArea === "number" ? totalArea.toFixed(2) : "N/A"} sq units`, marginX, textY += 10);
+          pdf.text(`North Angle: ${typeof northAngle === "number" ? northAngle : "N/A"}°`, marginX, textY += 10);
+          pdf.text(`Zones Analyzed: ${typeof zonesCount === "number" ? zonesCount : "N/A"}`, marginX, textY += 10);
+
           added++;
         }
       }
       if (added === 0) throw new Error("Nothing to export.");
       const timestamp = new Date().toISOString().slice(0,19).replace(/:/g,"-");
       pdf.save(`vastu-chakra-analysis-${timestamp}.pdf`);
-      toast.success("PDF exported with overlays!");
+      toast.success("PDF exported with analysis info!");
     } catch (error) {
       console.error(error);
       toast.error("Failed to export PDF. Please try again.");
