@@ -14,6 +14,9 @@ interface DirectionalBarChartProps {
 }
 
 export const DirectionalBarChart = ({ center, polygonPoints, rotation }: DirectionalBarChartProps) => {
+  // Debug: log received props
+  console.log('[BarChart] center:', center, 'polygonPoints:', polygonPoints, 'rotation:', rotation);
+
   // Helper function for line intersection
   const lineIntersection = (x1: number, y1: number, x2: number, y2: number,
                            x3: number, y3: number, x4: number, y4: number) => {
@@ -113,10 +116,49 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
     return areas;
   };
 
+  // If no polygon or not enough points, show a message
+  if (!polygonPoints || polygonPoints.length < 3) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 30,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 370,
+          backgroundColor: 'rgba(255,255,255,0.95)',
+          border: '2px solid #333',
+          borderRadius: 8,
+          padding: 16,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          zIndex: 5002,
+          textAlign: 'center',
+        }}
+      >
+        <h3
+          style={{
+            margin: 0,
+            fontSize: 16,
+            fontWeight: "bold",
+            color: "#333"
+          }}
+        >
+          Directional Area Analysis
+        </h3>
+        <div style={{marginTop: 12, color: "#666", fontSize: 14}}>
+          Please select a plot area first.<br />
+          The directional area chart will appear once your plot region is defined.
+        </div>
+      </div>
+    );
+  }
+
   const directionalAreas = calculateDirectionalAreas();
   const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
 
   const totalArea = directionalAreas.reduce((sum, area) => sum + area, 0);
+  // Debug log for chart data
+  console.log('[BarChart] Calculated directional areas:', directionalAreas);
 
   const data = directions.map((label, index) => {
     const area = directionalAreas[index];
@@ -127,21 +169,24 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
     };
   });
 
+  // Place overlay below the plot, using fixed so it's always visible
   return (
     <div
       style={{
-        position: 'absolute',
-        top: center.y + 150,
-        left: center.x - 200,
+        position: 'fixed',
+        bottom: 30,
+        left: '50%',
+        transform: 'translateX(-50%)',
         width: 400,
+        maxWidth: '95vw',
         height: 300,
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backgroundColor: 'rgba(255, 255, 255, 0.97)',
         border: '2px solid #333',
         borderRadius: '8px',
         padding: '16px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-        pointerEvents: 'none',
-        zIndex: 1000
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
+        pointerEvents: 'auto',
+        zIndex: 5003
       }}
     >
       <h3 style={{ 
@@ -188,3 +233,4 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
     </div>
   );
 };
+
