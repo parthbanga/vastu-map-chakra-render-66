@@ -461,7 +461,7 @@ export const VastuCanvas = ({
             showEntrances={showEntrances}
             polygonPoints={polygonPoints}
           />
-          
+
           {/* Show Shakti Chakra image overlay if toggle is enabled */}
           {showShaktiChakra && (
             <ShaktiChakra
@@ -500,8 +500,8 @@ export const VastuCanvas = ({
           {showBarChart && (
             <DirectionalBarChart
               center={center}
-              radius={getOverlayRadius()}
               polygonPoints={polygonPoints}
+              rotation={chakraRotation}
             />
           )}
         </>
