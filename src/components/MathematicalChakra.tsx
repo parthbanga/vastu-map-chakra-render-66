@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -55,7 +56,6 @@ export const MathematicalChakra = ({
   const viewBoxSize = (maxPossibleRadius + textPadding) * 2;
   const viewBoxOffset = viewBoxSize / 2;
 
-  // Keep overlay clean for html2canvas: no pointerEvents, no zIndex, just absolute with left/top/width/height
   return (
     <svg
       width={viewBoxSize}
@@ -67,7 +67,7 @@ export const MathematicalChakra = ({
         left: center.x - viewBoxOffset,
         width: viewBoxSize,
         height: viewBoxSize,
-        opacity // no pointerEvents or zIndex!
+        opacity
       }}
     >
       {/* Radial lines for 16 directions */}
@@ -104,11 +104,11 @@ export const MathematicalChakra = ({
           x={entrance.point.x}
           y={entrance.point.y}
           textAnchor="middle"
-          fontSize="10"
+          fontSize="12"
           fontWeight="bold"
           fill="#000000"
           stroke="#ffffff"
-          strokeWidth="0.5"
+          strokeWidth="1.2"
           dominantBaseline="middle"
         >
           {entrance.entrance.name}
