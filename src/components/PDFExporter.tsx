@@ -71,6 +71,9 @@ export const PDFExporter = ({
   setForceOverlay,
   forceOverlay
 }: PDFExporterProps) => {
+  // DEBUG: Quick log for blank render diagnosis
+  console.log("Rendering PDFExporter with:", { mapImage, polygonPoints, center });
+
   const [isExporting, setIsExporting] = useState(false);
 
   // Overlay check: which overlays have been "marked as done" by user

@@ -50,6 +50,9 @@ export const VastuCanvas = ({
   showBarChart,
   drawOverlaysOnCanvas = false,
 }: VastuCanvasProps) => {
+  // DEBUG: Quick log for blank render diagnosis
+  console.log("Rendering VastuCanvas with:", { mapImage, polygonPoints, isSelectingPolygon, center });
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
