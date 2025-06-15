@@ -123,16 +123,7 @@ export const ChakraControls = ({
       <Card className="p-4 space-y-4">
         <h4 className="font-medium text-sm">Display Options</h4>
         
-        <div className="flex items-center gap-3 my-2">
-          <label className="flex items-center gap-2">
-            <Switch
-              checked={!!showMarmaSthan}
-              onCheckedChange={onShowMarmaSthanChange}
-            />
-            <span className="text-sm">Show Marma Sthan</span>
-          </label>
-        </div>
-
+        {/* Directions */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Eye className="w-4 h-4 text-gray-500" />
@@ -144,6 +135,7 @@ export const ChakraControls = ({
           />
         </div>
 
+        {/* Entrances */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Eye className="w-4 h-4 text-gray-500" />
@@ -155,6 +147,7 @@ export const ChakraControls = ({
           />
         </div>
 
+        {/* Shakti Chakra */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Eye className="w-4 h-4 text-gray-500" />
@@ -166,6 +159,7 @@ export const ChakraControls = ({
           />
         </div>
 
+        {/* Planets Chakra */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-gray-500" />
@@ -177,6 +171,7 @@ export const ChakraControls = ({
           />
         </div>
 
+        {/* Vastu Purush */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-gray-500" />
@@ -188,6 +183,7 @@ export const ChakraControls = ({
           />
         </div>
 
+        {/* Area Analysis */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-gray-500" />
@@ -196,6 +192,18 @@ export const ChakraControls = ({
           <Switch
             checked={showBarChart}
             onCheckedChange={onShowBarChartChange}
+          />
+        </div>
+
+        {/* Marma Sthan - placed below Area Analysis */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-yellow-500" />
+            <span className="text-sm">Marma Sthan</span>
+          </div>
+          <Switch
+            checked={!!showMarmaSthan}
+            onCheckedChange={onShowMarmaSthanChange}
           />
         </div>
       </Card>
