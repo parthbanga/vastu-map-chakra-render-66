@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { MathematicalChakra } from "./MathematicalChakra";
 
 interface Point {
   x: number;
@@ -20,18 +21,12 @@ interface PDFExporterProps {
   chakraOpacity: number;
 }
 
-// NEW: Find the *visible* canvas rendered by VastuCanvas
+// Find the actual visible canvas rendered by VastuCanvas (for legacy fallback)
 function getVisibleVastuCanvasNode(): HTMLElement | null {
-  // Look for a canvas within the app root that matches VastuCanvas's CSS classes
-  // We assume only one editable canvas is present (the main one)
-  // If more logic is needed to identify the canvas, we can get more specific
   const allCanvases = document.querySelectorAll<HTMLCanvasElement>('canvas');
-  // Look for a canvas element that is NOT hidden (left > -9999px)
   for (const canvas of allCanvases) {
     const style = window.getComputedStyle(canvas);
-    const left = parseInt(style.left || "0", 10);
     if (!canvas.closest('[style*="left: -9999px"]')) {
-      // This is likely the visible canvas!
       return canvas as HTMLElement;
     }
   }
@@ -47,6 +42,11 @@ export const PDFExporter = ({
   chakraOpacity
 }: PDFExporterProps) => {
   const [isExporting, setIsExporting] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
+
+  // Fixed export size: should match your main canvas (or adjust as you wish)
+  const EXPORT_WIDTH = 800;
+  const EXPORT_HEIGHT = 600;
 
   const handleExportPDF = async () => {
     if (!mapImage || !center) {
@@ -56,13 +56,13 @@ export const PDFExporter = ({
     setIsExporting(true);
 
     try {
-      // NEW: Select the visible canvas DOM node
-      const exportNode = getVisibleVastuCanvasNode();
-      if (!exportNode) throw new Error("Visual canvas not found!");
-      // Wait a little in case any overlay/transition is in progress
+      const exportNode = exportRef.current;
+      if (!exportNode) throw new Error("Export view not available");
+      // Wait for the DOM/layout paint (this ensures overlays render)
       await new Promise(resolve => setTimeout(resolve, 300));
-      // Render with html2canvas directly from the visible node
-      const canvas = await html2canvas(exportNode as HTMLElement, {
+
+      // Step 1: Capture the hidden export area with html2canvas
+      const canvas = await html2canvas(exportNode, {
         backgroundColor: "#fff",
         scale: 2,
         useCORS: true,
@@ -70,7 +70,7 @@ export const PDFExporter = ({
       });
       const dataURL = canvas.toDataURL("image/png", 1.0);
 
-      // Step 2: Compose PDF with this screenshot
+      // Step 2: Compose PDF and fit image to page
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -92,7 +92,7 @@ export const PDFExporter = ({
       }
 
       pdf.setFontSize(18);
-      pdf.text('Vastu Analysis - Map with Plot Area', pageWidth / 2, marginY, { align: 'center' });
+      pdf.text('Vastu Analysis - Map with Plot Area, 16 Zones, 32 Entrances', pageWidth / 2, marginY, { align: 'center' });
       pdf.addImage(dataURL, 'PNG', marginX, marginY + 10, imgWidth, imgHeight, undefined, 'FAST');
 
       const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
@@ -139,6 +139,87 @@ export const PDFExporter = ({
         {canExport && (
           <div className="text-xs text-green-600 text-center">
             ✓ Ready to export screen-accurate PDF
+          </div>
+        )}
+      </div>
+
+      {/* Hidden export view for html2canvas: contains the overlays! */}
+      <div
+        ref={exportRef}
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          top: 0,
+          width: `${EXPORT_WIDTH}px`,
+          height: `${EXPORT_HEIGHT}px`,
+          pointerEvents: "none",
+          opacity: 1,
+          background: "#fff",
+          zIndex: -999
+        }}
+        aria-hidden="true"
+      >
+        {/* Map background */}
+        <div style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          width: `${EXPORT_WIDTH}px`,
+          height: `${EXPORT_HEIGHT}px`,
+        }}>
+          <img
+            src={mapImage || ""}
+            alt="Map"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain"
+            }}
+          />
+          {/* Draw plot polygon (simple SVG overlay) */}
+          {polygonPoints.length >= 2 && (
+            <svg width={EXPORT_WIDTH} height={EXPORT_HEIGHT} style={{ position: "absolute", left: 0, top: 0 }}>
+              <polyline
+                points={polygonPoints.map(p => `${p.x},${p.y}`).join(" ")}
+                fill="rgba(59,130,246,0.1)"
+                stroke="#3b82f6"
+                strokeWidth="3"
+              />
+              {polygonPoints.map((p, i) => (
+                <g key={i}>
+                  <circle cx={p.x} cy={p.y} r={8} fill="#3b82f6" />
+                  <text x={p.x} y={p.y+5} fontSize="14" fontWeight="bold" textAnchor="middle" fill="#fff">{i+1}</text>
+                </g>
+              ))}
+              {center && (
+                <>
+                  <circle cx={center.x} cy={center.y} r={10} fill="#ef4444" />
+                  <circle cx={center.x} cy={center.y} r={10} stroke="#fff" strokeWidth="3" fill="none" />
+                </>
+              )}
+            </svg>
+          )}
+        </div>
+        {/* Overlays: MathematicalChakra with ALL overlays enabled */}
+        {center && (
+          <div style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: `${EXPORT_WIDTH}px`,
+            height: `${EXPORT_HEIGHT}px`,
+            pointerEvents: "none"
+          }}>
+            <MathematicalChakra
+              center={center}
+              radius={Math.min(EXPORT_WIDTH, EXPORT_HEIGHT) * 0.3}
+              rotation={chakraRotation}
+              opacity={chakraOpacity}
+              scale={chakraScale}
+              showDirections={true}
+              showEntrances={true}
+              polygonPoints={polygonPoints}
+            />
           </div>
         )}
       </div>
