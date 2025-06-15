@@ -380,18 +380,16 @@ export const VastuCanvas = ({
     event.preventDefault();
   }, [mapImage, center]);
 
-  const calculateRadius = useCallback(() => {
+  // Calculate overlay radius for MathematicalChakra (SVG overlay)
+  const getOverlayRadius = useCallback(() => {
     if (!center || polygonPoints.length < 3) return 100;
-
     let minDistance = Infinity;
-    
     polygonPoints.forEach((point) => {
       const distance = Math.sqrt(
         Math.pow(point.x - center.x, 2) + Math.pow(point.y - center.y, 2)
       );
       minDistance = Math.min(minDistance, distance);
     });
-
     return Math.max(50, minDistance * 0.8);
   }, [center, polygonPoints]);
 
@@ -427,9 +425,20 @@ export const VastuCanvas = ({
       />
 
       {/* When not exporting, render SVG overlays as before */}
-      {!drawOverlaysOnCanvas && (
+      {!drawOverlaysOnCanvas && center && polygonPoints.length >= 3 && (
         <div className="absolute inset-0 z-[2000] pointer-events-none">
-          {/* ... keep SVG overlay and MathematicalChakra rendering ... */}
+          {/* Directions/Entrances/other overlays (interactive mode) */}
+          <MathematicalChakra
+            center={center}
+            radius={getOverlayRadius()}
+            rotation={chakraRotation}
+            opacity={chakraOpacity}
+            scale={chakraScale}
+            showDirections={showDirections}
+            showEntrances={showEntrances}
+            polygonPoints={polygonPoints}
+          />
+          {/* Add future overlays here, e.g., ShaktiChakra, PlanetsChakra, etc. if needed */}
         </div>
       )}
 
