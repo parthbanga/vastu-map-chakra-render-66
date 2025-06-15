@@ -83,6 +83,29 @@ function isPointInPolygon(point: Point, polygon: Point[]): boolean {
   return inside;
 }
 
+// New helper: returns point on polygon boundary in given direction, or the closest vertex if no intersection
+function getSafePolygonRayIntersection(center: Point, dir: Point, polygon: Point[]): Point {
+  const intersection = getPolygonRayIntersection(center, dir, polygon);
+  if (intersection) return intersection;
+
+  // No ray intersection found; fallback: use closest point on the polygon
+  let minDist = Infinity;
+  let closest = polygon[0];
+  for (const p of polygon) {
+    const dist = Math.hypot(p.x - center.x, p.y - center.y);
+    if (dist < minDist) {
+      minDist = dist;
+      closest = p;
+    }
+  }
+  // Debugging: notify if fallback is needed
+  // @ts-ignore
+  if (typeof window !== "undefined" && window.console) {
+    console.warn("[MarmaSthanOverlay] No intersection at dir", dir, ". Using closest vertex.", {center, closest});
+  }
+  return closest;
+}
+
 export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
   polygonPoints,
   center,
@@ -92,22 +115,18 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
 }) => {
   if (!polygonPoints || polygonPoints.length < 3) return null;
 
-  // 3x3 Marma Sthan: 2 vertical and 2 horizontal grid lines (so 9 cells).
-  // The grid should be square, centered at center, fully inside the polygon.
-
-  // Find maximum inscribed square side.
-  // We'll approximate: pick the distance to boundary in 4 orthogonal directions (vertical/horizontal w/rotation).
-  // The minimum of these is half-side; so side = 2*min.
-  // Directions: 0° (right), 90° (down), 180° (left), 270° (up), all rotated.
+  // Fixed: robust ray directions/inscribed square.
   const orthAngles = [0, 90, 180, 270];
+  // Use getSafePolygonRayIntersection for each direction; always get a valid edge!
   const sides = orthAngles.map((ang) => {
     const dir = getDirVec(ang, rotation);
-    const pt = getPolygonRayIntersection(center, dir, polygonPoints);
-    if (!pt) return Infinity;
+    const pt = getSafePolygonRayIntersection(center, dir, polygonPoints);
     return Math.hypot(pt.x - center.x, pt.y - center.y);
   });
-  // Clamp to positive values for degenerate cases
-  const halfSide = Math.max(1, Math.min(...sides)) * 0.95 * scale;
+
+  // Compute half side (min of 4 directions); force positive length
+  const minSide = Math.max(1, Math.min(...sides)) * 0.95 * scale;
+  const halfSide = minSide;
   const squareSide = halfSide * 2;
 
   // gridY and gridX: 3 equal intervals
