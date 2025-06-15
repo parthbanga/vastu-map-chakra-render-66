@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -169,7 +168,6 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
     };
   });
 
-  // Place overlay below the plot, using fixed so it's always visible
   return (
     <div
       style={{
@@ -189,42 +187,46 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
         zIndex: 5003
       }}
     >
-      <h3 style={{ 
-        margin: '0 0 16px 0', 
-        fontSize: '16px', 
+      <h3 style={{
+        margin: '0 0 16px 0',
+        fontSize: '22px',
         fontWeight: 'bold',
         textAlign: 'center',
-        color: '#333'
+        color: '#222'
       }}>
         Directional Area Analysis
       </h3>
-      
+
       <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+        <BarChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 40 }}>
           <CartesianGrid strokeDasharray="3,3" />
-          <XAxis 
-            dataKey="direction" 
-            fontSize={10}
-            angle={-45}
-            textAnchor="end"
-            height={60}
+          <XAxis
+            dataKey="direction"
+            fontSize={12}
+            interval={0}
+            angle={0}          // Keep label horizontal
+            dy={12}            // Move slightly down
+            height={48}
+            tickLine={false}
           />
-          <YAxis fontSize={10} />
-          <Tooltip 
+          <YAxis fontSize={12} />
+          <Tooltip
             formatter={(value: number) => [`${value.toFixed(1)}%`, 'Area']}
             labelFormatter={(label: string) => `Direction: ${label}`}
           />
-          <Bar 
-            dataKey="percentage" 
+          <Bar
+            dataKey="percentage"
             fill="#8884d8"
             name="Area %"
+            barSize={22}
+            radius={[4, 4, 0, 0]}
           />
         </BarChart>
       </ResponsiveContainer>
-      
-      <div style={{ 
-        fontSize: '10px', 
-        color: '#666', 
+
+      <div style={{
+        fontSize: '12px',
+        color: '#666',
         textAlign: 'center',
         marginTop: '8px'
       }}>
@@ -233,4 +235,3 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
     </div>
   );
 };
-
