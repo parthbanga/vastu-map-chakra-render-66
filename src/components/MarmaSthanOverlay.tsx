@@ -117,11 +117,11 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
 
   // Standard compass angles: N, NE, E, SE, S, SW, W, NW
   const compassAngles = [0, 45, 90, 135, 180, 225, 270, 315];
-  const compassLabels = ["N","NE","E","SE","S","SW","W","NW"];
-  const labelRadiusOffset = 28; // px further out from point
+  // For coordinate label, set offsets so label doesn't overlap point
+  const labelRadiusOffset = 20; // px away from point for text
 
   // Compute Marma Sthan boundary points
-  const marmaBoundaryPoints: { pt: Point; usedFallback: boolean; angle: number; label: string; labelPos: Point }[] = compassAngles.map((ang, idx) => {
+  const marmaBoundaryPoints: { pt: Point; usedFallback: boolean; angle: number; labelPos: Point }[] = compassAngles.map((ang) => {
     const dir = getDirVec(ang, rotation);
     // Find plot intersection (black point)
     const intersection = getPolygonRayIntersection(center, dir, polygonPoints);
@@ -143,12 +143,12 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
       usedFallback = true;
       pt = closest;
     }
-    // For the label, move 'labelRadiusOffset' px *further* from center along direction vector
+    // For the label, move 'labelRadiusOffset' px *further* from point along direction vector
     const labelPos: Point = {
       x: pt.x + dir.x * labelRadiusOffset,
       y: pt.y + dir.y * labelRadiusOffset,
     };
-    return { pt, usedFallback, angle: ang, label: compassLabels[idx], labelPos };
+    return { pt, usedFallback, angle: ang, labelPos };
   });
 
   // --- Draw Marma Sthan square grid (keep existing logic) ---
@@ -254,8 +254,8 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
         );
       })}
 
-      {/* --- Draw all 8 Marma Sthan boundary points as bold black circles with polar-positioned labels --- */}
-      {marmaBoundaryPoints.map(({ pt, usedFallback, label, labelPos }, idx) => (
+      {/* --- Draw all 8 Marma Sthan boundary points as bold black circles with polar-positioned coordinate labels --- */}
+      {marmaBoundaryPoints.map(({ pt, usedFallback, labelPos }, idx) => (
         <g key={`marma-pt-label-${idx}`}>
           <circle
             cx={pt.x}
@@ -268,17 +268,21 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
           <text
             x={labelPos.x}
             y={labelPos.y}
-            fontSize="17"
+            fontSize="15"
             fontWeight="bold"
             fill="#1e293b"
             stroke="#f8fafc"
-            strokeWidth="1"
+            strokeWidth="0.75"
             paintOrder="stroke"
             alignmentBaseline="middle"
             textAnchor="middle"
             style={{ pointerEvents: "none", userSelect: "none" }}
           >
-            {label}
+            (
+            {pt.x.toFixed(1)}
+            ,{" "}
+            {pt.y.toFixed(1)}
+            )
           </text>
         </g>
       ))}
