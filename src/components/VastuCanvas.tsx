@@ -406,7 +406,7 @@ export const VastuCanvas = ({
       className="relative w-full h-full min-h-[400px] bg-white rounded-lg overflow-hidden border border-gray-200"
       style={{ background: "#fff" }}
     >
-      {/* MAIN CANVAS (base map + polygons + overlays for export) */}
+      {/* MAIN CANVAS */}
       <canvas
         ref={canvasRef}
         width={canvasSize.width}
@@ -424,10 +424,32 @@ export const VastuCanvas = ({
         }}
       />
 
+      {/* Overlay: No Map Uploaded */}
+      {!mapImage && (
+        <div className="absolute inset-0 flex items-center justify-center text-gray-500 z-[3000] pointer-events-none bg-white bg-opacity-90">
+          <div className="text-center p-8">
+            <div className="text-5xl mb-4">🗺️</div>
+            <p className="text-lg font-medium mb-2">No Map Uploaded</p>
+            <p className="text-sm text-gray-400">Go to Upload tab to add your house plan</p>
+          </div>
+        </div>
+      )}
+
+      {/* Overlay: Map uploaded, but no polygon yet */}
+      {mapImage && polygonPoints.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center z-[2000] pointer-events-none">
+          <div className="text-center bg-white/90 px-8 py-8 rounded-lg shadow-lg border mx-auto">
+            <div className="text-4xl mb-2 text-blue-500">✏️</div>
+            <p className="font-semibold text-lg mb-1">Draw Your Plot</p>
+            <p className="text-sm text-gray-700">Click on the map to select at least 3 points defining your house plot.</p>
+            <p className="text-xs text-gray-400 mt-2">Polygon selection required to enable Vastu overlays.</p>
+          </div>
+        </div>
+      )}
+
       {/* When not exporting, render SVG overlays as before */}
       {!drawOverlaysOnCanvas && center && polygonPoints.length >= 3 && (
         <div className="absolute inset-0 z-[2000] pointer-events-none">
-          {/* Directions/Entrances/other overlays (interactive mode) */}
           <MathematicalChakra
             center={center}
             radius={getOverlayRadius()}
@@ -438,18 +460,6 @@ export const VastuCanvas = ({
             showEntrances={showEntrances}
             polygonPoints={polygonPoints}
           />
-          {/* Add future overlays here, e.g., ShaktiChakra, PlanetsChakra, etc. if needed */}
-        </div>
-      )}
-
-      {/* Overlay: No Map Uploaded */}
-      {!mapImage && (
-        <div className="absolute inset-0 flex items-center justify-center text-gray-500 z-[3000] pointer-events-none">
-          <div className="text-center p-8">
-            <div className="text-5xl mb-4">🗺️</div>
-            <p className="text-lg font-medium mb-2">No Map Uploaded</p>
-            <p className="text-sm text-gray-400">Go to Upload tab to add your house plan</p>
-          </div>
         </div>
       )}
 
