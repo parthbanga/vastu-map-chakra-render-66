@@ -418,130 +418,133 @@ export const VastuCanvas = ({
   }, [polygonPoints, onPolygonComplete]);
 
   return (
-    <div
-      ref={containerRef}
-      id="vastu-canvas-container"
-      className="relative w-full h-full min-h-[400px] bg-white rounded-lg overflow-hidden border border-gray-200"
-      style={{ background: "#fff" }}
-    >
-      {/* MAIN CANVAS */}
-      <canvas
-        ref={canvasRef}
-        width={canvasSize.width}
-        height={canvasSize.height}
-        onClick={handleCanvasClick}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className={`absolute inset-0 w-full h-full ${!center ? 'cursor-crosshair' : 'cursor-default'}`}
-        style={{
-          touchAction: "none",
-          userSelect: "none",
-          WebkitUserSelect: "none",
-          zIndex: 0
-        }}
-      />
+    <>
+      {/* Main Canvas Area */}
+      <div
+        ref={containerRef}
+        id="vastu-canvas-container"
+        className="relative w-full h-full min-h-[400px] bg-white rounded-lg overflow-hidden border border-gray-200"
+        style={{ background: "#fff" }}
+      >
+        {/* MAIN CANVAS */}
+        <canvas
+          ref={canvasRef}
+          width={canvasSize.width}
+          height={canvasSize.height}
+          onClick={handleCanvasClick}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className={`absolute inset-0 w-full h-full ${!center ? 'cursor-crosshair' : 'cursor-default'}`}
+          style={{
+            touchAction: "none",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            zIndex: 0
+          }}
+        />
 
-      {/* Overlay: No Map Uploaded */}
-      {!mapImage && (
-        <div className="absolute inset-0 flex items-center justify-center text-gray-500 z-[3000] pointer-events-none bg-white bg-opacity-90">
-          <div className="text-center p-8">
-            <div className="text-5xl mb-4">🗺️</div>
-            <p className="text-lg font-medium mb-2">No Map Uploaded</p>
-            <p className="text-sm text-gray-400">Go to Upload tab to add your house plan</p>
+        {/* Overlay: No Map Uploaded */}
+        {!mapImage && (
+          <div className="absolute inset-0 flex items-center justify-center text-gray-500 z-[3000] pointer-events-none bg-white bg-opacity-90">
+            <div className="text-center p-8">
+              <div className="text-5xl mb-4">🗺️</div>
+              <p className="text-lg font-medium mb-2">No Map Uploaded</p>
+              <p className="text-sm text-gray-400">Go to Upload tab to add your house plan</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Overlay: Map uploaded, but no polygon yet */}
-      {mapImage && polygonPoints.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center z-[2000] pointer-events-none">
-          <div className="text-center bg-white/90 px-8 py-8 rounded-lg shadow-lg border mx-auto">
-            <div className="text-4xl mb-2 text-blue-500">✏️</div>
-            <p className="font-semibold text-lg mb-1">Draw Your Plot</p>
-            <p className="text-sm text-gray-700">Click on the map to select at least 3 points defining your house plot.</p>
-            <p className="text-xs text-gray-400 mt-2">Polygon selection required to enable Vastu overlays.</p>
+        {/* Overlay: Map uploaded, but no polygon yet */}
+        {mapImage && polygonPoints.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center z-[2000] pointer-events-none">
+            <div className="text-center bg-white/90 px-8 py-8 rounded-lg shadow-lg border mx-auto">
+              <div className="text-4xl mb-2 text-blue-500">✏️</div>
+              <p className="font-semibold text-lg mb-1">Draw Your Plot</p>
+              <p className="text-sm text-gray-700">Click on the map to select at least 3 points defining your house plot.</p>
+              <p className="text-xs text-gray-400 mt-2">Polygon selection required to enable Vastu overlays.</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* When not exporting, render SVG overlays as before */}
-      {!drawOverlaysOnCanvas && center && polygonPoints.length >= 3 && (
-        <>
-          {/* Directions + Entrances Chakra */}
-          <MathematicalChakra
-            center={center}
-            radius={getOverlayRadius()}
-            rotation={chakraRotation}
-            opacity={chakraOpacity}
-            scale={chakraScale}
-            showDirections={showDirections}
-            showEntrances={showEntrances}
-            polygonPoints={polygonPoints}
-          />
-
-          {/* Show Shakti Chakra image overlay if toggle is enabled */}
-          {showShaktiChakra && (
-            <ShaktiChakra
-              center={center}
-              radius={getOverlayRadius()}
-              rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
-              opacity={chakraOpacity}
-              scale={chakraScale}
-            />
-          )}
-
-          {/* Show Planets Chakra overlay if toggle is enabled */}
-          {showPlanetsChakra && (
-            <PlanetsChakra
+        {/* When not exporting, render SVG overlays as before */}
+        {!drawOverlaysOnCanvas && center && polygonPoints.length >= 3 && (
+          <>
+            {/* Directions + Entrances Chakra */}
+            <MathematicalChakra
               center={center}
               radius={getOverlayRadius()}
               rotation={chakraRotation}
               opacity={chakraOpacity}
               scale={chakraScale}
+              showDirections={showDirections}
+              showEntrances={showEntrances}
               polygonPoints={polygonPoints}
             />
-          )}
 
-          {/* Show Vastu Purush image overlay if toggle is enabled */}
-          {showVastuPurush && (
-            <VastuPurush
-              center={center}
-              radius={getOverlayRadius()}
-              rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
-              opacity={chakraOpacity}
-              scale={chakraScale}
-            />
-          )}
+            {/* Show Shakti Chakra image overlay if toggle is enabled */}
+            {showShaktiChakra && (
+              <ShaktiChakra
+                center={center}
+                radius={getOverlayRadius()}
+                rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
+                opacity={chakraOpacity}
+                scale={chakraScale}
+              />
+            )}
 
-          {/* Show Directional Bar Chart if enabled */}
-          {showBarChart && (
-            <DirectionalBarChart
-              center={center}
-              polygonPoints={polygonPoints}
-              rotation={chakraRotation}
-            />
-          )}
+            {/* Show Planets Chakra overlay if toggle is enabled */}
+            {showPlanetsChakra && (
+              <PlanetsChakra
+                center={center}
+                radius={getOverlayRadius()}
+                rotation={chakraRotation}
+                opacity={chakraOpacity}
+                scale={chakraScale}
+                polygonPoints={polygonPoints}
+              />
+            )}
 
-          {/* Show Marma Sthan if enabled and 3+ sided plot */}
-          {(showMarmaSthan && polygonPoints.length >= 3) ? (
-            <MarmaSthanOverlay
-              polygonPoints={polygonPoints}
-              center={center}
-              rotation={chakraRotation}
-              opacity={chakraOpacity}
-              scale={chakraScale}
-            />
-          ) : null}
-        </>
-      )}
+            {/* Show Vastu Purush image overlay if toggle is enabled */}
+            {showVastuPurush && (
+              <VastuPurush
+                center={center}
+                radius={getOverlayRadius()}
+                rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
+                opacity={chakraOpacity}
+                scale={chakraScale}
+              />
+            )}
 
-      {/* Finish Button */}
+            {/* Show Directional Bar Chart if enabled */}
+            {showBarChart && (
+              <DirectionalBarChart
+                center={center}
+                polygonPoints={polygonPoints}
+                rotation={chakraRotation}
+              />
+            )}
+
+            {/* Show Marma Sthan if enabled and 3+ sided plot */}
+            {(showMarmaSthan && polygonPoints.length >= 3) ? (
+              <MarmaSthanOverlay
+                polygonPoints={polygonPoints}
+                center={center}
+                rotation={chakraRotation}
+                opacity={chakraOpacity}
+                scale={chakraScale}
+              />
+            ) : null}
+          </>
+        )}
+      </div>
+
+      {/* Finish Polygon Button - move OUTSIDE of the overlayed canvas, keep it below */}
       {isSelectingPolygon && polygonPoints.length >= 3 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[3000]">
+        <div className="w-full flex justify-center mt-4 mb-2">
           <Button
             onClick={handleFinishPolygon}
-            className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
+            className="bg-green-600 hover:bg-green-700 text-white shadow-lg w-full max-w-xs"
             size="lg"
           >
             <CheckCircle className="w-5 h-5 mr-2" />
@@ -549,6 +552,6 @@ export const VastuCanvas = ({
           </Button>
         </div>
       )}
-    </div>
+    </>
   );
 };
