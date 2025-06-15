@@ -143,15 +143,15 @@ export const PDFExporter = ({
         )}
       </div>
 
-      {/* Hidden export view for html2canvas: contains the overlays! */}
+      {/* Hidden export view with all overlays: polygon, center, 16 zones, 32 entrances */}
       <div
         ref={exportRef}
         style={{
           position: "absolute",
           left: "-9999px",
           top: 0,
-          width: `${EXPORT_WIDTH}px`,
-          height: `${EXPORT_HEIGHT}px`,
+          width: `800px`,
+          height: `600px`,
           pointerEvents: "none",
           opacity: 1,
           background: "#fff",
@@ -159,13 +159,13 @@ export const PDFExporter = ({
         }}
         aria-hidden="true"
       >
-        {/* Map background */}
+        {/* Map background and polygon overlay */}
         <div style={{
           position: "absolute",
           left: 0,
           top: 0,
-          width: `${EXPORT_WIDTH}px`,
-          height: `${EXPORT_HEIGHT}px`,
+          width: `800px`,
+          height: `600px`,
         }}>
           <img
             src={mapImage || ""}
@@ -176,9 +176,9 @@ export const PDFExporter = ({
               objectFit: "contain"
             }}
           />
-          {/* Draw plot polygon (simple SVG overlay) */}
+          {/* Polygon overlay */}
           {polygonPoints.length >= 2 && (
-            <svg width={EXPORT_WIDTH} height={EXPORT_HEIGHT} style={{ position: "absolute", left: 0, top: 0 }}>
+            <svg width={800} height={600} style={{ position: "absolute", left: 0, top: 0 }}>
               <polyline
                 points={polygonPoints.map(p => `${p.x},${p.y}`).join(" ")}
                 fill="rgba(59,130,246,0.1)"
@@ -200,19 +200,19 @@ export const PDFExporter = ({
             </svg>
           )}
         </div>
-        {/* Overlays: MathematicalChakra with ALL overlays enabled */}
+        {/* MathematicalChakra overlay always with 16 zones and 32 entrances! */}
         {center && (
           <div style={{
             position: "absolute",
             left: 0,
             top: 0,
-            width: `${EXPORT_WIDTH}px`,
-            height: `${EXPORT_HEIGHT}px`,
+            width: `800px`,
+            height: `600px`,
             pointerEvents: "none"
           }}>
             <MathematicalChakra
               center={center}
-              radius={Math.min(EXPORT_WIDTH, EXPORT_HEIGHT) * 0.3}
+              radius={Math.min(800, 600) * 0.3}
               rotation={chakraRotation}
               opacity={chakraOpacity}
               scale={chakraScale}
