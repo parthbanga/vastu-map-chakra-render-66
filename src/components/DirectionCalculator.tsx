@@ -38,7 +38,7 @@ export class DirectionCalculator {
     { name: 'NNW', angle: 337.5, color: '#009688' }
   ];
 
-  // 32 Entrance positions - positioned in the CENTER of each 11.25° sector (between radial lines)
+  // 32 Entrance positions
   private entrancePositions = [
     // Each entrance is positioned at the center of its sector
     // Radial lines are at: 0°, 11.25°, 22.5°, 33.75°, 45°, 56.25°, 67.5°, 78.75°, 90°, etc.
@@ -87,7 +87,8 @@ export class DirectionCalculator {
 
   // Convert angle to radians with compass correction (so 0° = up/North)
   private toRadiansCompass(degrees: number): number {
-    // Shift by -90° so that 0° points up (standard compass)
+    // 0° should be UP. SVG/canvas X-axis is right (0°), so we offset by -90°.
+    // We also allow user rotation.
     return ((degrees - 90 + this.rotation) * Math.PI) / 180;
   }
 
@@ -230,7 +231,6 @@ export class DirectionCalculator {
           Math.pow(boundaryPoint.x - this.center.x, 2) +
           Math.pow(boundaryPoint.y - this.center.y, 2)
         );
-
         const labelDistance = distance * 0.75;
         const radian = this.toRadiansCompass(entrance.angle);
 
