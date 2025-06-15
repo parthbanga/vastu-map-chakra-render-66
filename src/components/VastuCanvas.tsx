@@ -28,6 +28,8 @@ interface VastuCanvasProps {
   showPlanetsChakra: boolean;
   showVastuPurush: boolean;
   showBarChart: boolean;
+  /** If true: overlays are drawn directly onto the main canvas (for PDF/screenshot exporting) */
+  drawOverlaysOnCanvas?: boolean;
 }
 
 export const VastuCanvas = ({
@@ -46,6 +48,7 @@ export const VastuCanvas = ({
   showPlanetsChakra,
   showVastuPurush,
   showBarChart,
+  drawOverlaysOnCanvas = false,
 }: VastuCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -100,7 +103,94 @@ export const VastuCanvas = ({
     img.src = mapImage;
   }, [mapImage, canvasSize]);
 
-  // Draw polygon points and lines
+  // Helper to draw MathematicalChakra overlays onto the main canvas for export/print
+  const drawMathematicalChakraOntoCanvas = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      center: Point,
+      radius: number,
+      rotation: number,
+      scale: number,
+      polygonPoints: Point[],
+      drawDirections: boolean,
+      drawEntrances: boolean
+    ) => {
+      // The logic here mimics DirectionCalculator used in MathematicalChakra
+      // (But simplified: radial lines, direction labels, entrance points)
+      if (!center || radius < 10) return;
+
+      // Directions: 16
+      const directionLabels = [
+        "N", "NNE", "NE", "ENE",
+        "E", "ESE", "SE", "SSE",
+        "S", "SSW", "SW", "WSW",
+        "W", "WNW", "NW", "NNW"
+      ];
+      const directionAngles = Array.from({length: 16}, (_, i) => rotation + i * (360/16));
+
+      const deg2rad = (deg: number) => (deg * Math.PI) / 180;
+
+      // Draw radial lines + labels for directions
+      if (drawDirections) {
+        for (let i = 0; i < 16; i++) {
+          const angle = deg2rad(directionAngles[i]-90);
+          const x2 = center.x + radius * scale * Math.cos(angle);
+          const y2 = center.y + radius * scale * Math.sin(angle);
+
+          // Radial line
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(center.x, center.y);
+          ctx.lineTo(x2, y2);
+          ctx.strokeStyle = "#333";
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 1;
+          ctx.stroke();
+          ctx.restore();
+
+          // Direction label
+          const labelR = radius * scale * 1.14;
+          const lx = center.x + labelR * Math.cos(angle);
+          const ly = center.y + labelR * Math.sin(angle);
+
+          ctx.save();
+          ctx.font = "bold 14px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = "#000";
+          ctx.globalAlpha = 1;
+          ctx.fillText(directionLabels[i], lx, ly);
+          ctx.restore();
+        }
+      }
+
+      // Entrances: 32 -- show as black bold label with white outline
+      if (drawEntrances) {
+        for (let i = 0; i < 32; i++) {
+          const angle = deg2rad(rotation + i * (360/32) - 90);
+          const er = radius * scale * 1.08;
+          const ex = center.x + er * Math.cos(angle);
+          const ey = center.y + er * Math.sin(angle);
+
+          const entranceName = String(i+1);
+
+          ctx.save();
+          ctx.font = "bold 10px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = "#fff";
+          ctx.globalAlpha = 1;
+          ctx.strokeText(entranceName, ex, ey);
+          ctx.fillStyle = "#000";
+          ctx.fillText(entranceName, ex, ey);
+          ctx.restore();
+        }
+      }
+    }, []
+  );
+
+  // Draw polygon points and lines + overlays (when exporting)
   useEffect(() => {
     if (!canvasRef.current || !imageLoaded) return;
 
@@ -112,43 +202,44 @@ export const VastuCanvas = ({
       const img = new Image();
       img.onload = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         const scaleX = canvas.width / img.naturalWidth;
         const scaleY = canvas.height / img.naturalHeight;
         const scale = Math.min(scaleX, scaleY);
-        
+
         const scaledWidth = img.naturalWidth * scale;
         const scaledHeight = img.naturalHeight * scale;
-        
+
         const x = (canvas.width - scaledWidth) / 2;
         const y = (canvas.height - scaledHeight) / 2;
-        
+
         ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-        
+
+        // Drawing user polygon
         if (polygonPoints.length > 0) {
           ctx.strokeStyle = '#3b82f6';
           ctx.lineWidth = 3;
           ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
-          
+
           ctx.beginPath();
           ctx.moveTo(polygonPoints[0].x, polygonPoints[0].y);
-          
+
           for (let i = 1; i < polygonPoints.length; i++) {
             ctx.lineTo(polygonPoints[i].x, polygonPoints[i].y);
           }
-          
+
           if (polygonPoints.length > 2) {
             ctx.closePath();
             ctx.fill();
           }
           ctx.stroke();
-          
+
           polygonPoints.forEach((point, index) => {
             ctx.fillStyle = '#3b82f6';
             ctx.beginPath();
             ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
             ctx.fill();
-            
+
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
@@ -161,15 +252,53 @@ export const VastuCanvas = ({
           ctx.beginPath();
           ctx.arc(center.x, center.y, 10, 0, 2 * Math.PI);
           ctx.fill();
-          
+
           ctx.strokeStyle = '#ffffff';
           ctx.lineWidth = 3;
           ctx.stroke();
         }
+
+        // Overlay directions and entrances directly onto canvas when exporting!
+        if (
+          drawOverlaysOnCanvas &&
+          center &&
+          polygonPoints.length >= 3
+        ) {
+          // Estimate radius for overlays
+          let minDistance = Infinity;
+          polygonPoints.forEach((point) => {
+            const distance = Math.sqrt(
+              Math.pow(point.x - center.x, 2) + Math.pow(point.y - center.y, 2)
+            );
+            minDistance = Math.min(minDistance, distance);
+          });
+          const radius = Math.max(50, minDistance * 0.8);
+          drawMathematicalChakraOntoCanvas(
+            ctx,
+            center,
+            radius,
+            chakraRotation,
+            chakraScale,
+            polygonPoints,
+            showDirections,
+            showEntrances
+          );
+        }
       };
       img.src = mapImage;
     }
-  }, [polygonPoints, center, mapImage, imageLoaded]);
+  }, [
+    polygonPoints,
+    center,
+    mapImage,
+    imageLoaded,
+    drawOverlaysOnCanvas,
+    drawMathematicalChakraOntoCanvas,
+    chakraRotation,
+    chakraScale,
+    showDirections,
+    showEntrances
+  ]);
 
   const getEventCoordinates = useCallback((event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -274,7 +403,7 @@ export const VastuCanvas = ({
       className="relative w-full h-full min-h-[400px] bg-white rounded-lg overflow-hidden border border-gray-200"
       style={{ background: "#fff" }}
     >
-      {/* MAIN CANVAS (base map + polygons) */}
+      {/* MAIN CANVAS (base map + polygons + overlays for export) */}
       <canvas
         ref={canvasRef}
         width={canvasSize.width}
@@ -284,102 +413,95 @@ export const VastuCanvas = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         className={`absolute inset-0 w-full h-full ${!center ? 'cursor-crosshair' : 'cursor-default'}`}
-        style={{ 
-          touchAction: 'none',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-          zIndex: 0 // Lower z-index than overlays
+        style={{
+          touchAction: "none",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          zIndex: 0
         }}
       />
 
-      {/* OVERLAY LAYER: Badge, Overlays, Test SVG */}
-      <div className="absolute inset-0 z-[2000] pointer-events-none">
-        {/* TEST BADGE */}
-        <div className="absolute top-4 left-4 bg-yellow-500 text-black px-4 py-2 text-lg font-bold rounded shadow">
-          TEST BADGE
-        </div>
-
-        {/* SIMPLE TEST SVG (for debugging only) */}
-        <svg
-          className="absolute"
-          style={{
-            left: '50px',
-            top: '50px',
-            width: '100px',
-            height: '100px',
-            zIndex: 1900,    // High but below badge for clarity.
-            pointerEvents: 'none',
-          }}
-        >
-          <circle
-            cx="50"
-            cy="50"
-            r="40"
-            fill="red"
-            fillOpacity="0.5"
-            stroke="black"
-            strokeWidth="3"
-          />
-          <text x="50" y="56" textAnchor="middle" fontSize="18" fill="white" fontWeight="bold">
-            SVG!
-          </text>
-        </svg>
-
-        {/* === All overlays rendered at highest stacking === */}
-        {center && (
-          <>
-            <MathematicalChakra
-              center={center}
-              radius={calculateRadius()}
-              rotation={chakraRotation}
-              opacity={chakraOpacity}
-              scale={chakraScale}
-              showDirections={showDirections}
-              showEntrances={showEntrances}
-              polygonPoints={polygonPoints}
+      {/* OVERLAY LAYER: Show overlays as SVG/HTML when NOT exporting */}
+      {!drawOverlaysOnCanvas && (
+        <div className="absolute inset-0 z-[2000] pointer-events-none">
+          <div className="absolute top-4 left-4 bg-yellow-500 text-black px-4 py-2 text-lg font-bold rounded shadow">
+            TEST BADGE
+          </div>
+          <svg
+            className="absolute"
+            style={{
+              left: "50px",
+              top: "50px",
+              width: "100px",
+              height: "100px",
+              zIndex: 1900,
+              pointerEvents: "none"
+            }}
+          >
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              fill="red"
+              fillOpacity="0.5"
+              stroke="black"
+              strokeWidth="3"
             />
-
-            {showShaktiChakra && (
-              <ShaktiChakra
+            <text x="50" y="56" textAnchor="middle" fontSize="18" fill="white" fontWeight="bold">
+              SVG!
+            </text>
+          </svg>
+          {center && (
+            <>
+              <MathematicalChakra
                 center={center}
                 radius={calculateRadius()}
                 rotation={chakraRotation}
                 opacity={chakraOpacity}
                 scale={chakraScale}
-              />
-            )}
-
-            {showPlanetsChakra && (
-              <PlanetsChakra
-                center={center}
-                radius={calculateRadius()}
-                rotation={chakraRotation}
-                opacity={chakraOpacity}
-                scale={chakraScale}
+                showDirections={showDirections}
+                showEntrances={showEntrances}
                 polygonPoints={polygonPoints}
               />
-            )}
-
-            {showVastuPurush && (
-              <VastuPurush
-                center={center}
-                radius={calculateRadius()}
-                rotation={chakraRotation}
-                opacity={chakraOpacity}
-                scale={chakraScale}
-              />
-            )}
-
-            {showBarChart && (
-              <DirectionalBarChart
-                center={center}
-                polygonPoints={polygonPoints}
-                rotation={chakraRotation}
-              />
-            )}
-          </>
-        )}
-      </div>
+              {showShaktiChakra && (
+                <ShaktiChakra
+                  center={center}
+                  radius={calculateRadius()}
+                  rotation={chakraRotation}
+                  opacity={chakraOpacity}
+                  scale={chakraScale}
+                />
+              )}
+              {showPlanetsChakra && (
+                <PlanetsChakra
+                  center={center}
+                  radius={calculateRadius()}
+                  rotation={chakraRotation}
+                  opacity={chakraOpacity}
+                  scale={chakraScale}
+                  polygonPoints={polygonPoints}
+                />
+              )}
+              {showVastuPurush && (
+                <VastuPurush
+                  center={center}
+                  radius={calculateRadius()}
+                  rotation={chakraRotation}
+                  opacity={chakraOpacity}
+                  scale={chakraScale}
+                />
+              )}
+              {showBarChart && (
+                <DirectionalBarChart
+                  center={center}
+                  polygonPoints={polygonPoints}
+                  rotation={chakraRotation}
+                />
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {/* Overlay: No Map Uploaded */}
       {!mapImage && (

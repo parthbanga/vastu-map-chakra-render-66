@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { MathematicalChakra } from "./MathematicalChakra";
+import { VastuCanvas } from "./VastuCanvas";
 
 interface Point {
   x: number;
@@ -89,6 +89,9 @@ export const PDFExporter = ({
     entrances: false
   });
 
+  // Helper to trigger canvas overlays on
+  const [drawOverlaysOnCanvas, setDrawOverlaysOnCanvas] = useState(false);
+
   // Export enabled only if all steps complete and screenshot exist
   const canExport = Object.keys(completedSteps).every(
     k => completedSteps[k] && screenshots[k]
@@ -101,8 +104,6 @@ export const PDFExporter = ({
       [key]: checked
     }));
 
-    // === PDF overlay logic injection ===
-    // Ensure overlay is visible during screenshot for this step
     const overlayMap: {[key: string]: any} = {
       directions: {directions: true},
       entrances: {entrances: true}
@@ -111,18 +112,16 @@ export const PDFExporter = ({
     if (checked) {
       setCapturing(prev => ({...prev, [key]: true}));
       toast.info(`Capturing screenshot for "${EXPORT_STEPS.find(s=>s.key===key)?.label}"...`);
-      
-      // Temporarily force overlay ON for this step
-      if (typeof setForceOverlay === "function" && overlayMap[key]) {
-        setForceOverlay(overlayMap[key]);
-        // Wait for overlays to render (1 animation frame)
-        await new Promise(r => setTimeout(r, 100));
-      }
+
+      // Turn ON canvas overlays for screenshot
+      setDrawOverlaysOnCanvas(true);
+
+      // Wait for overlays to be drawn on canvas, then capture!
+      await new Promise(r => setTimeout(r, 250));
       const img = await screenshotVisibleCanvas();
+
       // Restore overlay state
-      if (typeof setForceOverlay === "function" && overlayMap[key]) {
-        setForceOverlay({});
-      }
+      setDrawOverlaysOnCanvas(false);
 
       setScreenshots(prev => ({
         ...prev,
@@ -221,6 +220,27 @@ export const PDFExporter = ({
       </div>
 
       {/* Export Button */}
+      {/* Hidden VastuCanvas with overlays drawn directly onto canvas for screenshots (ensures overlays in export) */}
+      <div style={{ display: "none" }}>
+        <VastuCanvas
+          mapImage={mapImage}
+          polygonPoints={polygonPoints}
+          isSelectingPolygon={false}
+          onPolygonPointAdd={() => {}}
+          onPolygonComplete={() => {}}
+          center={center}
+          chakraRotation={chakraRotation}
+          chakraScale={chakraScale}
+          chakraOpacity={chakraOpacity}
+          showDirections={true}
+          showEntrances={true}
+          showShaktiChakra={false}
+          showPlanetsChakra={false}
+          showVastuPurush={false}
+          showBarChart={false}
+          drawOverlaysOnCanvas={drawOverlaysOnCanvas}
+        />
+      </div>
       <Button
         onClick={handleExportPDF}
         disabled={!canExport || isExporting}
@@ -248,8 +268,6 @@ export const PDFExporter = ({
           ✓ Ready to export all screenshots as a PDF!
         </div>
       )}
-
-      {/* (Optional) Tiny previews of each screenshot */}
       <div className="flex gap-3 mt-2 justify-center">
         {EXPORT_STEPS.map(step => (screenshots[step.key] ? (
           <img
