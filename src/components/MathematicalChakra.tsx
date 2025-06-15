@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { DirectionCalculator } from './DirectionCalculator';
 
@@ -106,10 +105,9 @@ export const MathematicalChakra = ({
           textAnchor="middle"
           fontSize="12"
           fontWeight="bold"
-          fill="#000000"
-          stroke="#ffffff"
-          strokeWidth="1.2"
+          fill="#000"
           dominantBaseline="middle"
+          style={{ userSelect: 'none' }}
         >
           {entrance.entrance.name}
         </text>
