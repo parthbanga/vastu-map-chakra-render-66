@@ -14,19 +14,22 @@ interface MarmaSthanOverlayProps {
   polygonPoints: Point[]; // unused, needed for prop compat
 }
 
-// Overlay that simply centers and rotates/scales the given image as a Marma Sthan overlay.
-// Now rotates by (rotation - 9) degrees to align with Shakti Chakra and Vastu Purush overlays.
+// Overlay for Marma Sthan, now with a tweakable north-correction offset to align its "N" perfectly with north of the Shakti Chakra/Vastu Purush overlays.
 export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
   center,
   rotation,
   opacity,
   scale,
 }) => {
-  const baseRadius = 120; // matches the approx size of ShaktiChakra, tweak for aesthetics
+  const baseRadius = 120; // matches approx size of ShaktiChakra, tweak for aesthetics
   const imgSize = baseRadius * scale * 2.2;
 
-  // Apply -9 degree offset to match north alignment convention
-  const overlayRotation = rotation - 9;
+  // Fine-tune this correction angle (in degrees) to visually align the MarmaSthan "N" with the grid's North.
+  // Positive values rotate clockwise, negative counterclockwise.
+  const marmaImageNorthCorrection = 5; // <--- Tweak this value (try 5, 3, -2, etc for perfect alignment!)
+
+  // Final rotation formula: user rotation - 9 + north correction
+  const overlayRotation = rotation - 9 + marmaImageNorthCorrection;
 
   return (
     <div
