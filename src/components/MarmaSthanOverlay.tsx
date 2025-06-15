@@ -115,14 +115,39 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
 }) => {
   if (!polygonPoints || polygonPoints.length < 3) return null;
 
-  // --- Fix: Always compute all 8 main Marma Sthan boundary points (N, NE, E, SE, S, SW, W, NW) ---
-  // Standard compass angles (degrees): N=0, NE=45, E=90, SE=135, S=180, SW=225, W=270, NW=315
+  // Standard compass angles: N, NE, E, SE, S, SW, W, NW
   const compassAngles = [0, 45, 90, 135, 180, 225, 270, 315];
-  // Compute Marma Sthan points at boundary intersections
-  const marmaBoundaryPoints = compassAngles.map((ang) => {
+  
+  // Store info whether fallback was used (for diagnostics)
+  const marmaBoundaryPoints: { pt: Point; usedFallback: boolean; angle: number; label: string }[] = compassAngles.map((ang, idx) => {
     const dir = getDirVec(ang, rotation);
-    // Always use robust intersection
-    return getSafePolygonRayIntersection(center, dir, polygonPoints);
+    const intersection = getPolygonRayIntersection(center, dir, polygonPoints);
+    let usedFallback = false;
+    let pt: Point;
+    if (intersection) {
+      pt = intersection;
+    } else {
+      // Fallback: get closest polygon point
+      let minDist = Infinity;
+      let closest = polygonPoints[0];
+      for (const p of polygonPoints) {
+        const dist = Math.hypot(p.x - center.x, p.y - center.y);
+        if (dist < minDist) {
+          minDist = dist;
+          closest = p;
+        }
+      }
+      usedFallback = true;
+      pt = closest;
+    }
+
+    // Debug log for troubleshooting which points use fallback
+    if (typeof window !== "undefined" && window.console && usedFallback) {
+      console.warn(`[MarmaSthanOverlay] Fallback used for angle ${ang} (${["N","NE","E","SE","S","SW","W","NW"][idx]}), using vertex:`, pt);
+    }
+
+    // Optional: add text label for debugging/clarity (not shown in UI unless wanted)
+    return { pt, usedFallback, angle: ang, label: ["N","NE","E","SE","S","SW","W","NW"][idx] };
   });
 
   // --- Draw Marma Sthan square grid (keep existing logic) ---
@@ -228,17 +253,19 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
         );
       })}
 
-      {/* --- Draw the 8 Marma Sthan boundary points as bold black circles --- */}
-      {marmaBoundaryPoints.map((pt, idx) => (
+      {/* --- Draw all 8 Marma Sthan boundary points as bold black circles --- */}
+      {marmaBoundaryPoints.map(({ pt, usedFallback, label }, idx) => (
         <circle
           key={`marma-pt-${idx}`}
           cx={pt.x}
           cy={pt.y}
-          r={10} // Make it slightly larger for clarity
+          r={usedFallback ? 12 : 10}
           fill="#111"
           stroke="#fff"
-          strokeWidth={3.5}
+          strokeWidth={usedFallback ? 4.5 : 3.5}
         />
+        // Optionally, to display the direction label, uncomment:
+        // <text x={pt.x + 15} y={pt.y} fontSize="16" fill="black">{label}</text>
       ))}
 
       {/* Center (Brahmasthan): also bold black */}
@@ -251,7 +278,7 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
         strokeWidth={3.5}
       />
 
-      {/* Classic Brahmasthan center indicator (keep for overlay effect) */}
+      {/* Classic Brahmasthan center indicator */}
       <circle
         cx={center.x}
         cy={center.y}
