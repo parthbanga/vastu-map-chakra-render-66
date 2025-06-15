@@ -13,8 +13,8 @@ interface MarmaSthanOverlayProps {
   polygonPoints: Point[]; // unused, needed for prop compat
 }
 
-// Overlay for Marma Sthan, applies an internal offset (+14°) so image "N" aligns visually.
-// User sees their input value in the UI; overlay adds +14 to rotation then -9 for "north" convention.
+// Overlay for Marma Sthan, applies an internal offset (+17°) so image "N" aligns visually.
+// User sees their input value in the UI; overlay adds +17 to rotation then -9 for "north" convention.
 export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
   center,
   rotation,
@@ -26,7 +26,7 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
 
   // Internal north correction offset so the Marma Sthan overlay aligns visually.
   // Positive: rotates overlay clockwise for image-to-north correction.
-  const marmaImageNorthCorrection = 14; // 14° as per latest user request
+  const marmaImageNorthCorrection = 17; // 17° as per latest user request
 
   // Overlay rotation: user input + correction offset -9 (to match north like other overlays)
   const overlayRotation = rotation + marmaImageNorthCorrection - 9;
