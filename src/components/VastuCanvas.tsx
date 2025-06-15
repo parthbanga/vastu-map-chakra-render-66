@@ -1,3 +1,4 @@
+
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 import { ShaktiChakra } from "./ShaktiChakra";
@@ -268,10 +269,12 @@ export const VastuCanvas = ({
   }, [polygonPoints, onPolygonComplete]);
 
   return (
+    // ***** THIS is the KEY WRAPPER for the screenshot *****
     <div
       ref={containerRef}
       id="vastu-canvas-container"
-      className="relative w-full h-full min-h-[400px] bg-gray-50 rounded-lg overflow-hidden"
+      className="relative w-full h-full min-h-[400px] bg-white rounded-lg overflow-hidden border border-gray-200"
+      style={{ background: "#fff" }} // ensure white bg for export!
     >
       {!mapImage ? (
         <div className="absolute inset-0 flex items-center justify-center text-gray-500">
@@ -283,6 +286,7 @@ export const VastuCanvas = ({
         </div>
       ) : (
         <>
+          {/* MAIN CANVAS */}
           <canvas
             ref={canvasRef}
             width={canvasSize.width}
@@ -313,6 +317,7 @@ export const VastuCanvas = ({
             </div>
           )}
           
+          {/* == OVERLAYS are rendered HERE, inside the container with id="vastu-canvas-container"! == */}
           {center && (
             <>
               <MathematicalChakra
