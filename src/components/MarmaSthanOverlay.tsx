@@ -115,43 +115,9 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
 }) => {
   if (!polygonPoints || polygonPoints.length < 3) return null;
 
-  // Standard compass angles: N, NE, E, SE, S, SW, W, NW
-  const compassAngles = [0, 45, 90, 135, 180, 225, 270, 315];
-  // For coordinate label, set offsets so label doesn't overlap point
-  const labelRadiusOffset = 20; // px away from point for text
+  // --- MarmaSthan GRID LOGIC ---
 
-  // Compute Marma Sthan boundary points
-  const marmaBoundaryPoints: { pt: Point; usedFallback: boolean; angle: number; labelPos: Point }[] = compassAngles.map((ang) => {
-    const dir = getDirVec(ang, rotation);
-    // Find plot intersection (black point)
-    const intersection = getPolygonRayIntersection(center, dir, polygonPoints);
-    let usedFallback = false;
-    let pt: Point;
-    if (intersection) {
-      pt = intersection;
-    } else {
-      // fallback: closest polygon point
-      let minDist = Infinity;
-      let closest = polygonPoints[0];
-      for (const p of polygonPoints) {
-        const dist = Math.hypot(p.x - center.x, p.y - center.y);
-        if (dist < minDist) {
-          minDist = dist;
-          closest = p;
-        }
-      }
-      usedFallback = true;
-      pt = closest;
-    }
-    // For the label, move 'labelRadiusOffset' px *further* from point along direction vector
-    const labelPos: Point = {
-      x: pt.x + dir.x * labelRadiusOffset,
-      y: pt.y + dir.y * labelRadiusOffset,
-    };
-    return { pt, usedFallback, angle: ang, labelPos };
-  });
-
-  // --- Draw Marma Sthan square grid (keep existing logic) ---
+  // Get square aligned with center and the four cardinal directions
   const orthAngles = [0, 90, 180, 270];
   const sides = orthAngles.map((ang) => {
     const dir = getDirVec(ang, rotation);
@@ -159,28 +125,12 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
     return Math.hypot(pt.x - center.x, pt.y - center.y);
   });
 
+  // The side is ~distance from center to closest edge x2
   const minSide = Math.max(1, Math.min(...sides)) * 0.95 * scale;
   const halfSide = minSide;
   const squareSide = halfSide * 2;
 
-  // Compute grid lines (just like before, in square)
-  const lines: { x1: number; y1: number; x2: number; y2: number }[] = [];
-  for (let i = -1; i <= 1; i += 2) {
-    lines.push({
-      x1: center.x + (i * squareSide) / 6,
-      y1: center.y - halfSide,
-      x2: center.x + (i * squareSide) / 6,
-      y2: center.y + halfSide,
-    });
-    lines.push({
-      x1: center.x - halfSide,
-      y1: center.y + (i * squareSide) / 6,
-      x2: center.x + halfSide,
-      y2: center.y + (i * squareSide) / 6,
-    });
-  }
-
-  // --- Viewbox calculation for overlay (just like before) ---
+  // The square bounds (rotated)
   const rot = (deg: number) => {
     const theta = (rotation * Math.PI) / 180;
     const cos = Math.cos(theta),
@@ -192,11 +142,58 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
   };
   const rotate = rot(rotation);
 
-  const gridTL = rotate(center.x - halfSide, center.y - halfSide);
-  const gridTR = rotate(center.x + halfSide, center.y - halfSide);
-  const gridBR = rotate(center.x + halfSide, center.y + halfSide);
-  const gridBL = rotate(center.x - halfSide, center.y + halfSide);
+  // 9x9 grid (default for Vastu Marma overlays)
+  const N = 9;
+  const step = squareSide / (N - 1);
 
+  // Top-left corner (unrotated)
+  const gridX0 = center.x - halfSide;
+  const gridY0 = center.y - halfSide;
+
+  // Find grid cell indices for Brahmasthan (center 3x3 in 9x9)
+  // 0-based indices: 3, 4, 5 (Rows and Columns)
+  const centralIdx = Math.floor(N / 2); // 4
+  const brahmaStart = centralIdx - 1; // 3
+  const brahmaEnd = centralIdx + 1;   // 5
+
+  // Helper: Is grid cell in Brahmasthan (center 3x3)
+  function isBrahmasthanCell(i: number, j: number) {
+    return (
+      i >= brahmaStart &&
+      i <= brahmaEnd &&
+      j >= brahmaStart &&
+      j <= brahmaEnd
+    );
+  }
+
+  // Helper: Is grid cell in Marma Sthan ("donut" around Brahmasthan)
+  function isMarmaSthanCell(i: number, j: number) {
+    // Marma: 1-cell border ring around Brahmasthan
+    return (
+      ((i === brahmaStart - 1 || i === brahmaEnd + 1) && (j >= brahmaStart - 1 && j <= brahmaEnd + 1)) ||
+      ((j === brahmaStart - 1 || j === brahmaEnd + 1) && (i >= brahmaStart - 1 && i <= brahmaEnd + 1))
+    ) && !isBrahmasthanCell(i, j);
+  }
+
+  // Calculate grid points and types
+  const gridPoints: {pt: Point, i: number, j: number, type: "brahma" | "marma" | "normal"}[] = [];
+  for (let i = 0; i < N; ++i) {
+    for (let j = 0; j < N; ++j) {
+      // Grid point before rotation
+      const px = gridX0 + step * j;
+      const py = gridY0 + step * i;
+      // Rotate around center by rotation deg
+      const { x, y } = rotate(px, py);
+
+      let type: "brahma" | "marma" | "normal" = "normal";
+      if (isBrahmasthanCell(i, j)) type = "brahma";
+      else if (isMarmaSthanCell(i, j)) type = "marma";
+
+      gridPoints.push({ pt: { x, y }, i, j, type });
+    }
+  }
+
+  // For bounding and svg viewbox, reuse previous logic
   const polygonPath = polygonPoints
     .map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`)
     .join(" ") + " Z";
@@ -204,10 +201,15 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
   const vbPad = 40;
   const xs = polygonPoints.map((p) => p.x);
   const ys = polygonPoints.map((p) => p.y);
-  const vbMinX = Math.min(...xs, gridTL.x, gridTR.x, gridBR.x, gridBL.x) - vbPad;
-  const vbMaxX = Math.max(...xs, gridTL.x, gridTR.x, gridBR.x, gridBL.x) + vbPad;
-  const vbMinY = Math.min(...ys, gridTL.y, gridTR.y, gridBR.y, gridBL.y) - vbPad;
-  const vbMaxY = Math.max(...ys, gridTL.y, gridTR.y, gridBR.y, gridBL.y) + vbPad;
+
+  // For grid, find extremes
+  const allGridXs = gridPoints.map(g => g.pt.x);
+  const allGridYs = gridPoints.map(g => g.pt.y);
+
+  const vbMinX = Math.min(...xs, ...allGridXs) - vbPad;
+  const vbMaxX = Math.max(...xs, ...allGridXs) + vbPad;
+  const vbMinY = Math.min(...ys, ...allGridYs) - vbPad;
+  const vbMaxY = Math.max(...ys, ...allGridYs) + vbPad;
 
   return (
     <svg
@@ -227,72 +229,96 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
       <path d={polygonPath} fill="none" stroke="#6366f1" strokeWidth={3} opacity={0.6} />
 
       {/* Marma Sthan bounding square outline */}
-      <polygon
-        points={`${gridTL.x},${gridTL.y} ${gridTR.x},${gridTR.y} ${gridBR.x},${gridBR.y} ${gridBL.x},${gridBL.y}`}
+      <rect
+        x={gridX0}
+        y={gridY0}
+        width={squareSide}
+        height={squareSide}
         fill="#fde68a"
-        fillOpacity="0.20"
+        fillOpacity="0.18"
         stroke="#facc15"
         strokeWidth={2.5}
+        transform={`rotate(${rotation},${center.x},${center.y})`}
       />
 
-      {/* Marma Sthan inner grid lines */}
-      {lines.map((l, idx) => {
-        const p1 = rotate(l.x1, l.y1);
-        const p2 = rotate(l.x2, l.y2);
+      {/* Draw grid lines */}
+      {Array.from({length: N}, (_, idx) => {
+        // verticals
+        const startV = rotate(gridX0 + step * idx, gridY0);
+        const endV = rotate(gridX0 + step * idx, gridY0 + squareSide);
+        // horizontals
+        const startH = rotate(gridX0, gridY0 + step * idx);
+        const endH = rotate(gridX0 + squareSide, gridY0 + step * idx);
         return (
-          <line
-            key={idx}
-            x1={p1.x}
-            y1={p1.y}
-            x2={p2.x}
-            y2={p2.y}
-            stroke="#b45309"
-            strokeWidth="2"
-            strokeDasharray="9 3"
-            opacity={0.75}
-          />
+          <g key={"grid-" + idx}>
+            {/* Vertical */}
+            <line
+              x1={startV.x} y1={startV.y} x2={endV.x} y2={endV.y}
+              stroke="#bbb"
+              strokeWidth={1.1}
+              opacity={0.7}
+            />
+            {/* Horizontal */}
+            <line
+              x1={startH.x} y1={startH.y} x2={endH.x} y2={endH.y}
+              stroke="#bbb"
+              strokeWidth={1.1}
+              opacity={0.7}
+            />
+          </g>
         );
       })}
 
-      {/* --- Draw all 8 Marma Sthan boundary points as bold black circles with polar-positioned coordinate labels --- */}
-      {marmaBoundaryPoints.map(({ pt, usedFallback, labelPos }, idx) => (
-        <g key={`marma-pt-label-${idx}`}>
+      {/* Render all grid intersections (Marma and Brahma highlights) */}
+      {gridPoints.map(({ pt, type }, idx) => (
+        <g key={`marma-grid-pt-${idx}`}>
+          {/* Dot */}
           <circle
             cx={pt.x}
             cy={pt.y}
-            r={usedFallback ? 12 : 10}
-            fill="#111"
-            stroke="#fff"
-            strokeWidth={usedFallback ? 4.5 : 3.5}
+            r={type === "brahma" ? 11 : type === "marma" ? 9 : 6.5}
+            fill={
+              type === "brahma"
+                ? "#2563eb"    // Blue center
+                : type === "marma"
+                ? "#facc15"    // Gold highlight for Marma Sthan ring
+                : "#222"       // Normal point
+            }
+            stroke={
+              type === "brahma"
+                ? "#7dd3fc"
+                : type === "marma"
+                ? "#fde68a"
+                : "#e5e7eb"
+            }
+            strokeWidth={type === "brahma" ? 5 : type === "marma" ? 3.5 : 2.5}
+            opacity={type === "normal" ? 0.8 : 1}
           />
+          {/* (x, y) label */}
           <text
-            x={labelPos.x}
-            y={labelPos.y}
-            fontSize="15"
+            x={pt.x}
+            y={pt.y - 16}
+            fontSize="12"
             fontWeight="bold"
             fill="#1e293b"
             stroke="#f8fafc"
-            strokeWidth="0.75"
+            strokeWidth="0.7"
             paintOrder="stroke"
             alignmentBaseline="middle"
             textAnchor="middle"
             style={{ pointerEvents: "none", userSelect: "none" }}
           >
-            (
-            {pt.x.toFixed(1)}
-            ,{" "}
-            {pt.y.toFixed(1)}
-            )
+            ({pt.x.toFixed(1)}, {pt.y.toFixed(1)})
           </text>
         </g>
       ))}
 
-      {/* Center (Brahmasthan): also bold black */}
+      {/* Central Brahmasthan central point indicator */}
       <circle
         cx={center.x}
         cy={center.y}
         r={12}
-        fill="#111"
+        fill="#2563eb"
         stroke="#a21caf"
         strokeWidth={3.5}
       />
