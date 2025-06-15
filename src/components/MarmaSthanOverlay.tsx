@@ -1,3 +1,4 @@
+
 import React from "react";
 
 interface Point {
@@ -13,7 +14,7 @@ interface MarmaSthanOverlayProps {
   scale: number;
 }
 
-// Helper: Ray-segment intersection
+// Helper: Ray-segment intersection (returns intersection point, or null)
 function raySegmentIntersection(
   rayStart: Point,
   rayDir: Point,
@@ -44,14 +45,14 @@ function raySegmentIntersection(
   return null;
 }
 
-// Helper: from angle, get unit vector (with optional rotation)
+// Helper: from angle, get unit vector (with rotation)
 function getDirVec(angleDeg: number, rotation: number) {
   const theta = ((angleDeg + rotation) * Math.PI) / 180;
   return { x: Math.cos(theta), y: Math.sin(theta) };
 }
 
-// Helper: Given a direction angle, get intersection of ray with polygon boundary
-function getPolygonRayIntersection(center: Point, dir: Point, polygon: Point[]): Point | null {
+// Helper: get intersection of direction ray with polygon boundary (or closest point)
+function getPolygonRayIntersection(center: Point, dir: Point, polygon: Point[]): Point {
   let minDist = Infinity;
   let result: Point | null = null;
   for (let i = 0; i < polygon.length; i++) {
@@ -66,31 +67,10 @@ function getPolygonRayIntersection(center: Point, dir: Point, polygon: Point[]):
       }
     }
   }
-  return result;
-}
-
-// Determines if a point is inside a polygon (ray-casting algorithm)
-function isPointInPolygon(point: Point, polygon: Point[]): boolean {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i].x, yi = polygon[i].y;
-    const xj = polygon[j].x, yj = polygon[j].y;
-    const intersect =
-      yi > point.y !== yj > point.y &&
-      point.x < ((xj - xi) * (point.y - yi)) / (yj - yi + 0.000001) + xi;
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
-
-// New helper: returns point on polygon boundary in given direction, or the closest vertex if no intersection
-function getSafePolygonRayIntersection(center: Point, dir: Point, polygon: Point[]): Point {
-  const intersection = getPolygonRayIntersection(center, dir, polygon);
-  if (intersection) return intersection;
-
-  // No ray intersection found; fallback: use closest point on the polygon
-  let minDist = Infinity;
+  // fallback
+  if (result) return result;
   let closest = polygon[0];
+  minDist = Math.hypot(closest.x - center.x, closest.y - center.y);
   for (const p of polygon) {
     const dist = Math.hypot(p.x - center.x, p.y - center.y);
     if (dist < minDist) {
@@ -98,118 +78,60 @@ function getSafePolygonRayIntersection(center: Point, dir: Point, polygon: Point
       closest = p;
     }
   }
-  // Debugging: notify if fallback is needed
-  // @ts-ignore
-  if (typeof window !== "undefined" && window.console) {
-    console.warn("[MarmaSthanOverlay] No intersection at dir", dir, ". Using closest vertex.", {center, closest});
-  }
   return closest;
 }
+
+// 16 major directions, labels and compass angles (0°=N=up)
+const directionLabels = [
+  { name: "N", angle: 0 },
+  { name: "NNE", angle: 22.5 },
+  { name: "NE", angle: 45 },
+  { name: "ENE", angle: 67.5 },
+  { name: "E", angle: 90 },
+  { name: "ESE", angle: 112.5 },
+  { name: "SE", angle: 135 },
+  { name: "SSE", angle: 157.5 },
+  { name: "S", angle: 180 },
+  { name: "SSW", angle: 202.5 },
+  { name: "SW", angle: 225 },
+  { name: "WSW", angle: 247.5 },
+  { name: "W", angle: 270 },
+  { name: "WNW", angle: 292.5 },
+  { name: "NW", angle: 315 },
+  { name: "NNW", angle: 337.5 },
+];
 
 export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
   polygonPoints,
   center,
   rotation,
   opacity,
-  scale,
+  scale
 }) => {
   if (!polygonPoints || polygonPoints.length < 3) return null;
 
-  // --- MarmaSthan GRID LOGIC ---
-
-  // Get square aligned with center and the four cardinal directions
-  const orthAngles = [0, 90, 180, 270];
-  const sides = orthAngles.map((ang) => {
-    const dir = getDirVec(ang, rotation);
-    const pt = getSafePolygonRayIntersection(center, dir, polygonPoints);
-    return Math.hypot(pt.x - center.x, pt.y - center.y);
+  // Get the intersection point for each direction ray
+  const rays = directionLabels.map(({ name, angle }) => {
+    const dir = getDirVec(angle, rotation);
+    const pt = getPolygonRayIntersection(center, dir, polygonPoints);
+    return { name, angle, pt };
   });
 
-  // The side is ~distance from center to closest edge x2
-  const minSide = Math.max(1, Math.min(...sides)) * 0.95 * scale;
-  const halfSide = minSide;
-  const squareSide = halfSide * 2;
-
-  // The square bounds (rotated)
-  const rot = (deg: number) => {
-    const theta = (rotation * Math.PI) / 180;
-    const cos = Math.cos(theta),
-      sin = Math.sin(theta);
-    return (x: number, y: number) => ({
-      x: center.x + (x - center.x) * cos - (y - center.y) * sin,
-      y: center.y + (x - center.x) * sin + (y - center.y) * cos,
-    });
-  };
-  const rotate = rot(rotation);
-
-  // 9x9 grid (default for Vastu Marma overlays)
-  const N = 9;
-  const step = squareSide / (N - 1);
-
-  // Top-left corner (unrotated)
-  const gridX0 = center.x - halfSide;
-  const gridY0 = center.y - halfSide;
-
-  // Find grid cell indices for Brahmasthan (center 3x3 in 9x9)
-  // 0-based indices: 3, 4, 5 (Rows and Columns)
-  const centralIdx = Math.floor(N / 2); // 4
-  const brahmaStart = centralIdx - 1; // 3
-  const brahmaEnd = centralIdx + 1;   // 5
-
-  // Helper: Is grid cell in Brahmasthan (center 3x3)
-  function isBrahmasthanCell(i: number, j: number) {
-    return (
-      i >= brahmaStart &&
-      i <= brahmaEnd &&
-      j >= brahmaStart &&
-      j <= brahmaEnd
-    );
-  }
-
-  // Helper: Is grid cell in Marma Sthan ("donut" around Brahmasthan)
-  function isMarmaSthanCell(i: number, j: number) {
-    // Marma: 1-cell border ring around Brahmasthan
-    return (
-      ((i === brahmaStart - 1 || i === brahmaEnd + 1) && (j >= brahmaStart - 1 && j <= brahmaEnd + 1)) ||
-      ((j === brahmaStart - 1 || j === brahmaEnd + 1) && (i >= brahmaStart - 1 && i <= brahmaEnd + 1))
-    ) && !isBrahmasthanCell(i, j);
-  }
-
-  // Calculate grid points and types
-  const gridPoints: {pt: Point, i: number, j: number, type: "brahma" | "marma" | "normal"}[] = [];
-  for (let i = 0; i < N; ++i) {
-    for (let j = 0; j < N; ++j) {
-      // Grid point before rotation
-      const px = gridX0 + step * j;
-      const py = gridY0 + step * i;
-      // Rotate around center by rotation deg
-      const { x, y } = rotate(px, py);
-
-      let type: "brahma" | "marma" | "normal" = "normal";
-      if (isBrahmasthanCell(i, j)) type = "brahma";
-      else if (isMarmaSthanCell(i, j)) type = "marma";
-
-      gridPoints.push({ pt: { x, y }, i, j, type });
-    }
-  }
-
-  // For bounding and svg viewbox, reuse previous logic
+  // Polygon outline for context
   const polygonPath = polygonPoints
     .map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`)
     .join(" ") + " Z";
 
+  // SVG Viewbox bounds
   const vbPad = 40;
   const xs = polygonPoints.map((p) => p.x);
   const ys = polygonPoints.map((p) => p.y);
-
-  // For grid, find extremes
-  const allGridXs = gridPoints.map(g => g.pt.x);
-  const allGridYs = gridPoints.map(g => g.pt.y);
-
-  const vbMinX = Math.min(...xs, ...allGridXs) - vbPad;
-  const vbMaxX = Math.max(...xs, ...allGridXs) + vbPad;
-  const vbMinY = Math.min(...ys, ...allGridYs) - vbPad;
-  const vbMaxY = Math.max(...ys, ...allGridYs) + vbPad;
+  const rayXs = rays.map(r => r.pt.x);
+  const rayYs = rays.map(r => r.pt.y);
+  const vbMinX = Math.min(...xs, ...rayXs, center.x) - vbPad;
+  const vbMaxX = Math.max(...xs, ...rayXs, center.x) + vbPad;
+  const vbMinY = Math.min(...ys, ...rayYs, center.y) - vbPad;
+  const vbMaxY = Math.max(...ys, ...rayYs, center.y) + vbPad;
 
   return (
     <svg
@@ -228,111 +150,108 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
       {/* Plot outline */}
       <path d={polygonPath} fill="none" stroke="#6366f1" strokeWidth={3} opacity={0.6} />
 
-      {/* Marma Sthan bounding square outline */}
-      <rect
-        x={gridX0}
-        y={gridY0}
-        width={squareSide}
-        height={squareSide}
-        fill="#fde68a"
-        fillOpacity="0.18"
-        stroke="#facc15"
-        strokeWidth={2.5}
-        transform={`rotate(${rotation},${center.x},${center.y})`}
-      />
-
-      {/* Draw grid lines */}
-      {Array.from({length: N}, (_, idx) => {
-        // verticals
-        const startV = rotate(gridX0 + step * idx, gridY0);
-        const endV = rotate(gridX0 + step * idx, gridY0 + squareSide);
-        // horizontals
-        const startH = rotate(gridX0, gridY0 + step * idx);
-        const endH = rotate(gridX0 + squareSide, gridY0 + step * idx);
-        return (
-          <g key={"grid-" + idx}>
-            {/* Vertical */}
-            <line
-              x1={startV.x} y1={startV.y} x2={endV.x} y2={endV.y}
-              stroke="#bbb"
-              strokeWidth={1.1}
-              opacity={0.7}
-            />
-            {/* Horizontal */}
-            <line
-              x1={startH.x} y1={startH.y} x2={endH.x} y2={endH.y}
-              stroke="#bbb"
-              strokeWidth={1.1}
-              opacity={0.7}
-            />
-          </g>
-        );
-      })}
-
-      {/* Render all grid intersections (Marma and Brahma highlights) */}
-      {gridPoints.map(({ pt, type }, idx) => (
-        <g key={`marma-grid-pt-${idx}`}>
-          {/* Dot */}
-          <circle
-            cx={pt.x}
-            cy={pt.y}
-            r={type === "brahma" ? 11 : type === "marma" ? 9 : 6.5}
-            fill={
-              type === "brahma"
-                ? "#2563eb"    // Blue center
-                : type === "marma"
-                ? "#facc15"    // Gold highlight for Marma Sthan ring
-                : "#222"       // Normal point
-            }
-            stroke={
-              type === "brahma"
-                ? "#7dd3fc"
-                : type === "marma"
-                ? "#fde68a"
-                : "#e5e7eb"
-            }
-            strokeWidth={type === "brahma" ? 5 : type === "marma" ? 3.5 : 2.5}
-            opacity={type === "normal" ? 0.8 : 1}
+      {/* Draw 16 direction rays */}
+      {rays.map((ray, idx) => (
+        <g key={`direction-ray-${ray.name}`}>
+          <line
+            x1={center.x} y1={center.y} x2={ray.pt.x} y2={ray.pt.y}
+            stroke="#d97706"
+            strokeWidth={2.8}
+            opacity={0.55}
+            strokeDasharray="7 5"
           />
-          {/* (x, y) label */}
+          {/* Direction Point */}
+          <circle
+            cx={ray.pt.x}
+            cy={ray.pt.y}
+            r={10}
+            fill="#000"
+            stroke="#fde68a"
+            strokeWidth={3}
+          />
+          {/* Label: direction name */}
           <text
-            x={pt.x}
-            y={pt.y - 16}
-            fontSize="12"
+            x={ray.pt.x}
+            y={ray.pt.y - 16}
+            fontSize="15"
             fontWeight="bold"
-            fill="#1e293b"
-            stroke="#f8fafc"
-            strokeWidth="0.7"
-            paintOrder="stroke"
-            alignmentBaseline="middle"
+            fill="#1e40af"
+            stroke="#fff"
+            strokeWidth="1"
             textAnchor="middle"
-            style={{ pointerEvents: "none", userSelect: "none" }}
+            alignmentBaseline="middle"
+            style={{
+              pointerEvents: "none",
+              userSelect: "none",
+              fontFamily: "monospace"
+            }}
           >
-            ({pt.x.toFixed(1)}, {pt.y.toFixed(1)})
+            {ray.name}
+          </text>
+          {/* Label: coordinates */}
+          <text
+            x={ray.pt.x}
+            y={ray.pt.y + 18}
+            fontSize="12.5"
+            fill="#020202"
+            stroke="#fff"
+            strokeWidth="0.65"
+            textAnchor="middle"
+            alignmentBaseline="middle"
+            style={{
+              pointerEvents: "none",
+              userSelect: "none"
+            }}
+          >
+            ({ray.pt.x.toFixed(1)}, {ray.pt.y.toFixed(1)})
           </text>
         </g>
       ))}
 
-      {/* Central Brahmasthan central point indicator */}
+      {/* Central Brahmasthan */}
       <circle
         cx={center.x}
         cy={center.y}
-        r={12}
+        r={16}
         fill="#2563eb"
         stroke="#a21caf"
-        strokeWidth={3.5}
+        strokeWidth={5}
       />
-
-      {/* Classic Brahmasthan center indicator */}
-      <circle
-        cx={center.x}
-        cy={center.y}
-        r={halfSide * 0.25}
-        fill="#a21caf"
-        stroke="#ede9fe"
-        strokeWidth="3"
-        opacity={0.6}
-      />
+      <text
+        x={center.x}
+        y={center.y}
+        fontSize="15"
+        fontWeight="bold"
+        fill="#fff"
+        stroke="#333"
+        strokeWidth="1.1"
+        textAnchor="middle"
+        alignmentBaseline="middle"
+        style={{
+          pointerEvents: "none",
+          userSelect: "none",
+          fontFamily: "monospace"
+        }}
+      >
+        CENTER
+      </text>
+      {/* Center coordinates below */}
+      <text
+        x={center.x}
+        y={center.y + 22}
+        fontSize="13"
+        fill="#0a0a0a"
+        stroke="#fff"
+        strokeWidth="0.7"
+        textAnchor="middle"
+        alignmentBaseline="middle"
+        style={{
+          pointerEvents: "none",
+          userSelect: "none"
+        }}
+      >
+        ({center.x.toFixed(1)}, {center.y.toFixed(1)})
+      </text>
     </svg>
   );
 };
