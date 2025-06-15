@@ -115,14 +115,13 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
 }) => {
   if (!polygonPoints || polygonPoints.length < 3) return null;
 
-  // --- Compute main 8 directions (compass) ---
-  // Angles: N=0, NE=45, E=90, SE=135, S=180, SW=225, W=270, NW=315 (+center)
+  // --- Fix: Always compute all 8 main Marma Sthan boundary points (N, NE, E, SE, S, SW, W, NW) ---
+  // Standard compass angles (degrees): N=0, NE=45, E=90, SE=135, S=180, SW=225, W=270, NW=315
   const compassAngles = [0, 45, 90, 135, 180, 225, 270, 315];
-
-  // Get robust intersection for each direction
+  // Compute Marma Sthan points at boundary intersections
   const marmaBoundaryPoints = compassAngles.map((ang) => {
     const dir = getDirVec(ang, rotation);
-    // Use robust intersection to ensure always a valid point
+    // Always use robust intersection
     return getSafePolygonRayIntersection(center, dir, polygonPoints);
   });
 
@@ -229,30 +228,30 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
         );
       })}
 
-      {/* --- New: Marma Sthan 9 direction points as big black dots --- */}
-      {/* 8 on boundary */}
+      {/* --- Draw the 8 Marma Sthan boundary points as bold black circles --- */}
       {marmaBoundaryPoints.map((pt, idx) => (
         <circle
           key={`marma-pt-${idx}`}
           cx={pt.x}
           cy={pt.y}
-          r={9}
+          r={10} // Make it slightly larger for clarity
           fill="#111"
           stroke="#fff"
-          strokeWidth={2.5}
+          strokeWidth={3.5}
         />
       ))}
-      {/* Center (Brahmasthan): bold black */}
+
+      {/* Center (Brahmasthan): also bold black */}
       <circle
         cx={center.x}
         cy={center.y}
-        r={10}
+        r={12}
         fill="#111"
         stroke="#a21caf"
-        strokeWidth={3}
+        strokeWidth={3.5}
       />
 
-      {/* Classic Brahmasthan center indicator (purple/pastel, kept for transition effect) */}
+      {/* Classic Brahmasthan center indicator (keep for overlay effect) */}
       <circle
         cx={center.x}
         cy={center.y}
