@@ -184,7 +184,7 @@ const Index = () => {
             showPlanetsChakra={showPlanetsChakra}
             showVastuPurush={showVastuPurush}
             showBarChart={showBarChart}
-            showMarmaSthan={showMarmaSthan}
+            showMarmaSthan={!!showMarmaSthan} // ensure boolean
           />
         </Card>
       </div>
@@ -293,6 +293,7 @@ const Index = () => {
               showPlanetsChakra={showPlanetsChakra}
               showVastuPurush={showVastuPurush}
               showBarChart={showBarChart}
+              showMarmaSthan={!!showMarmaSthan} // ensure boolean
               onRotationChange={handleRotationChange}
               onScaleChange={setChakraScale}
               onOpacityChange={setChakraOpacity}
@@ -302,7 +303,7 @@ const Index = () => {
               onShowPlanetsChakraChange={setShowPlanetsChakra}
               onShowVastuPurushChange={setShowVastuPurush}
               onShowBarChartChange={setShowBarChart}
-              onShowMarmaSthanChange={setShowMarmaSthan}
+              onShowMarmaSthanChange={setShowMarmaSthan} // direct setter
               disabled={!center}
             />
           </div>

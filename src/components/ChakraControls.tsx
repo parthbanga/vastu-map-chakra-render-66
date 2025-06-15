@@ -1,3 +1,4 @@
+
 import { RotateCw, Eye, EyeOff, BarChart3, Globe, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -14,7 +15,7 @@ interface ChakraControlsProps {
   showBarChart: boolean;
   showPlanetsChakra: boolean;
   showVastuPurush: boolean;
-  showMarmaSthan?: boolean;
+  showMarmaSthan: boolean; // Now always boolean
   onRotationChange: (rotation: number) => void;
   onScaleChange: (scale: number) => void;
   onOpacityChange: (opacity: number) => void;
@@ -24,7 +25,7 @@ interface ChakraControlsProps {
   onShowBarChartChange: (show: boolean) => void;
   onShowPlanetsChakraChange: (show: boolean) => void;
   onShowVastuPurushChange: (show: boolean) => void;
-  onShowMarmaSthanChange?: (show: boolean) => void;
+  onShowMarmaSthanChange: (show: boolean) => void; // Now required & always boolean
   disabled?: boolean;
 }
 
@@ -48,7 +49,7 @@ export const ChakraControls = ({
   onShowBarChartChange,
   onShowPlanetsChakraChange,
   onShowVastuPurushChange,
-  onShowMarmaSthanChange = () => {},
+  onShowMarmaSthanChange,
   disabled = false
 }: ChakraControlsProps) => {
   if (disabled) {
@@ -122,7 +123,7 @@ export const ChakraControls = ({
 
       <Card className="p-4 space-y-4">
         <h4 className="font-medium text-sm">Display Options</h4>
-        
+
         {/* Directions */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -202,7 +203,7 @@ export const ChakraControls = ({
             <span className="text-sm">Marma Sthan</span>
           </div>
           <Switch
-            checked={!!showMarmaSthan}
+            checked={showMarmaSthan}
             onCheckedChange={onShowMarmaSthanChange}
           />
         </div>
