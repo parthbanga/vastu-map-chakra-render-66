@@ -308,6 +308,21 @@ export const VastuCanvas = ({
     showEntrances
   ]);
 
+  // DIAGNOSTICS: Log relevant Marma Sthan data
+  useEffect(() => {
+    if (showMarmaSthan) {
+      console.log('[VastuCanvas] MarmaSthanOverlay check:', {
+        showMarmaSthan,
+        polygonPointsLength: polygonPoints.length,
+        polygonPoints,
+        center,
+        chakraRotation,
+        chakraOpacity,
+        chakraScale
+      });
+    }
+  }, [showMarmaSthan, polygonPoints, center, chakraRotation, chakraOpacity, chakraScale]);
+
   const getEventCoordinates = useCallback((event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
@@ -509,7 +524,7 @@ export const VastuCanvas = ({
           )}
 
           {/* Show Marma Sthan if enabled and exactly 4-sided plot */}
-          {showMarmaSthan && polygonPoints.length === 4 && (
+          {(showMarmaSthan && polygonPoints.length === 4) ? (
             <MarmaSthanOverlay
               polygonPoints={polygonPoints}
               center={center}
@@ -517,7 +532,23 @@ export const VastuCanvas = ({
               opacity={chakraOpacity}
               scale={chakraScale}
             />
-          )}
+          ) : (showMarmaSthan && polygonPoints.length !== 4) ? (
+            <div style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: "100%",
+              height: "100%",
+              zIndex: 22,
+              pointerEvents: "none"
+            }}>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg shadow text-yellow-800 text-sm font-medium">
+                  Marma Sthan overlay only available for 4-sided (rectangular) plots.
+                </div>
+              </div>
+            </div>
+          ) : null}
         </>
       )}
 

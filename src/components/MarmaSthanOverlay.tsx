@@ -1,6 +1,6 @@
-
 import React from "react";
 
+// Diagnostic logging
 interface Point {
   x: number;
   y: number;
@@ -21,8 +21,20 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
   opacity,
   scale,
 }) => {
+  // Diagnostic log at start
+  console.log('[MarmaSthanOverlay] Render:', {
+    polygonPoints,
+    center,
+    rotation,
+    opacity,
+    scale,
+    pointsLength: polygonPoints.length
+  });
   // Step 1: Ensure 4 points (rectangle/square)
-  if (polygonPoints.length !== 4) return null;
+  if (polygonPoints.length !== 4) {
+    console.log('[MarmaSthanOverlay] polygonPoints.length !== 4, returning null');
+    return null;
+  }
 
   // Sort corners to [top-left, top-right, bottom-right, bottom-left]
   const sorted = [...polygonPoints].sort((a, b) =>
