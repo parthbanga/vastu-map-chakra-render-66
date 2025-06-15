@@ -268,114 +268,115 @@ export const VastuCanvas = ({
   }, [polygonPoints, onPolygonComplete]);
 
   return (
-    // ***** THIS is the KEY WRAPPER for the screenshot *****
     <div
       ref={containerRef}
       id="vastu-canvas-container"
       className="relative w-full h-full min-h-[400px] bg-white rounded-lg overflow-hidden border border-gray-200"
       style={{ background: "#fff" }}
     >
-      {/* == TEST BADGE - should show up in PDF == */}
-      <div className="absolute top-4 left-4 z-[2000] bg-yellow-500 text-black px-4 py-2 text-lg font-bold rounded shadow pointer-events-none">
-        TEST BADGE
+      {/* MAIN CANVAS (base map + polygons) */}
+      <canvas
+        ref={canvasRef}
+        width={canvasSize.width}
+        height={canvasSize.height}
+        onClick={handleCanvasClick}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className={`absolute inset-0 w-full h-full ${!center ? 'cursor-crosshair' : 'cursor-default'}`}
+        style={{ 
+          touchAction: 'none',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          zIndex: 0 // Lower z-index than overlays
+        }}
+      />
+
+      {/* === Overlays + BADGE are absolutely above the canvas === */}
+      <div className="absolute inset-0 z-[2000] pointer-events-none">
+        {/* == TEST BADGE - should show up in PDF and app == */}
+        <div className="absolute top-4 left-4 bg-yellow-500 text-black px-4 py-2 text-lg font-bold rounded shadow">
+          TEST BADGE
+        </div>
+        {/* == OVERLAYS == */}
+        {center && (
+          <>
+            <MathematicalChakra
+              center={center}
+              radius={calculateRadius()}
+              rotation={chakraRotation}
+              opacity={chakraOpacity}
+              scale={chakraScale}
+              showDirections={showDirections}
+              showEntrances={showEntrances}
+              polygonPoints={polygonPoints}
+            />
+
+            {showShaktiChakra && (
+              <ShaktiChakra
+                center={center}
+                radius={calculateRadius()}
+                rotation={chakraRotation}
+                opacity={chakraOpacity}
+                scale={chakraScale}
+              />
+            )}
+
+            {showPlanetsChakra && (
+              <PlanetsChakra
+                center={center}
+                radius={calculateRadius()}
+                rotation={chakraRotation}
+                opacity={chakraOpacity}
+                scale={chakraScale}
+                polygonPoints={polygonPoints}
+              />
+            )}
+
+            {showVastuPurush && (
+              <VastuPurush
+                center={center}
+                radius={calculateRadius()}
+                rotation={chakraRotation}
+                opacity={chakraOpacity}
+                scale={chakraScale}
+              />
+            )}
+
+            {showBarChart && (
+              <DirectionalBarChart
+                center={center}
+                polygonPoints={polygonPoints}
+                rotation={chakraRotation}
+              />
+            )}
+          </>
+        )}
       </div>
 
-      {!mapImage ? (
-        <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+      {/* Overlay: No Map Uploaded */}
+      {!mapImage && (
+        <div className="absolute inset-0 flex items-center justify-center text-gray-500 z-[3000] pointer-events-none">
           <div className="text-center p-8">
             <div className="text-5xl mb-4">🗺️</div>
             <p className="text-lg font-medium mb-2">No Map Uploaded</p>
             <p className="text-sm text-gray-400">Go to Upload tab to add your house plan</p>
           </div>
         </div>
-      ) : (
-        <>
-          {/* MAIN CANVAS */}
-          <canvas
-            ref={canvasRef}
-            width={canvasSize.width}
-            height={canvasSize.height}
-            onClick={handleCanvasClick}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            className={`absolute inset-0 w-full h-full ${!center ? 'cursor-crosshair' : 'cursor-default'}`}
-            style={{ 
-              touchAction: 'none',
-              userSelect: 'none',
-              WebkitUserSelect: 'none'
-            }}
-          />
-          
-          {/* Finish Button - appears when selecting polygon and have 3+ points */}
-          {isSelectingPolygon && polygonPoints.length >= 3 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
-              <Button
-                onClick={handleFinishPolygon}
-                className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
-                size="lg"
-              >
-                <CheckCircle className="w-5 h-5 mr-2" />
-                Finish Polygon ({polygonPoints.length} points)
-              </Button>
-            </div>
-          )}
-          
-          {/* == OVERLAYS are rendered HERE, inside the container with id="vastu-canvas-container"! == */}
-          {center && (
-            <>
-              <MathematicalChakra
-                center={center}
-                radius={calculateRadius()}
-                rotation={chakraRotation}
-                opacity={chakraOpacity}
-                scale={chakraScale}
-                showDirections={showDirections}
-                showEntrances={showEntrances}
-                polygonPoints={polygonPoints}
-              />
-              
-              {showShaktiChakra && (
-                <ShaktiChakra
-                  center={center}
-                  radius={calculateRadius()}
-                  rotation={chakraRotation}
-                  opacity={chakraOpacity}
-                  scale={chakraScale}
-                />
-              )}
+      )}
 
-              {showPlanetsChakra && (
-                <PlanetsChakra
-                  center={center}
-                  radius={calculateRadius()}
-                  rotation={chakraRotation}
-                  opacity={chakraOpacity}
-                  scale={chakraScale}
-                  polygonPoints={polygonPoints}
-                />
-              )}
-
-              {showVastuPurush && (
-                <VastuPurush
-                  center={center}
-                  radius={calculateRadius()}
-                  rotation={chakraRotation}
-                  opacity={chakraOpacity}
-                  scale={chakraScale}
-                />
-              )}
-
-              {showBarChart && (
-                <DirectionalBarChart
-                  center={center}
-                  polygonPoints={polygonPoints}
-                  rotation={chakraRotation}
-                />
-              )}
-            </>
-          )}
-        </>
+      {/* Finish Button */}
+      {isSelectingPolygon && polygonPoints.length >= 3 && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[3000]">
+          <Button
+            onClick={handleFinishPolygon}
+            className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
+            size="lg"
+          >
+            <CheckCircle className="w-5 h-5 mr-2" />
+            Finish Polygon ({polygonPoints.length} points)
+          </Button>
+        </div>
       )}
     </div>
   );
