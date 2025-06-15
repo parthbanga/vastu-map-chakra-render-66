@@ -165,10 +165,10 @@ export class DirectionCalculator {
     };
   }
 
-  // Get radial line endpoints that stop at polygon boundary - generates 16 lines for directions
+  // Get radial line endpoints for sector boundaries
   getRadialLineEndpoints(): Array<{ start: Point; end: Point; angle: number }> {
     const lines = [];
-    // 0° = up (North), increment by 22.5 deg (16 lines)
+    // Lines at sector boundaries: i*22.5°, i in 0..15 (N, NNE, NE, ...)
     for (let i = 0; i < 16; i++) {
       // COMPASS: 0°=up, so angle = i * 22.5
       const angle = i * 22.5;
@@ -180,6 +180,16 @@ export class DirectionCalculator {
           angle: angle
         });
       }
+    }
+    // Close the circle with final boundary at 360°
+    const angle = 360;
+    const endPoint = this.getPolygonIntersection(angle);
+    if (endPoint) {
+      lines.push({
+        start: this.center,
+        end: endPoint,
+        angle: angle
+      });
     }
     return lines;
   }
@@ -246,13 +256,11 @@ export class DirectionCalculator {
   }
 
   getDirectionLabels(): Array<{ point: Point; label: string; angle: number }> {
-    // Place label IN BETWEEN radial lines: at center of each sector.
-    // The 16 sectors start at i*22.5°, each spans 22.5°, so midpoint is start + 11.25°
+    // Place label at the center of each sector: angle = i*22.5 + 11.25°
     const labelRadius = 0.6;
     return this.vastuZones.map((zone, i) => {
-      // The label should be at the sector MIDPOINT (zone.angle + 11.25°) for proper between-lines placement.
-      // Special case: For last zone (NNW, 337.5°), next is back to N (0°), so (+ 11.25°) mod 360:
-      const midAngle = (zone.angle + 11.25) % 360;
+      // Sector midpoint = start boundary + 11.25°, i.e. i*22.5 + 11.25
+      const midAngle = (i * 22.5 + 11.25) % 360;
       const boundaryPoint = this.getPolygonIntersection(midAngle);
       let labelPoint: Point;
       if (boundaryPoint) {
