@@ -117,7 +117,18 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
 
   // Standard compass angles: N, NE, E, SE, S, SW, W, NW
   const compassAngles = [0, 45, 90, 135, 180, 225, 270, 315];
-  
+
+  const labelOffsets = [
+    { dx: 0, dy: -18 },   // N
+    { dx: 18, dy: -18 },  // NE
+    { dx: 20, dy: 0 },    // E
+    { dx: 15, dy: 18 },   // SE
+    { dx: 0, dy: 24 },    // S
+    { dx: -15, dy: 18 },  // SW
+    { dx: -22, dy: 0 },   // W
+    { dx: -17, dy: -17 }  // NW
+  ];
+
   // Store info whether fallback was used (for diagnostics)
   const marmaBoundaryPoints: { pt: Point; usedFallback: boolean; angle: number; label: string }[] = compassAngles.map((ang, idx) => {
     const dir = getDirVec(ang, rotation);
@@ -253,19 +264,33 @@ export const MarmaSthanOverlay: React.FC<MarmaSthanOverlayProps> = ({
         );
       })}
 
-      {/* --- Draw all 8 Marma Sthan boundary points as bold black circles --- */}
+      {/* --- Draw all 8 Marma Sthan boundary points as bold black circles with labels --- */}
       {marmaBoundaryPoints.map(({ pt, usedFallback, label }, idx) => (
-        <circle
-          key={`marma-pt-${idx}`}
-          cx={pt.x}
-          cy={pt.y}
-          r={usedFallback ? 12 : 10}
-          fill="#111"
-          stroke="#fff"
-          strokeWidth={usedFallback ? 4.5 : 3.5}
-        />
-        // Optionally, to display the direction label, uncomment:
-        // <text x={pt.x + 15} y={pt.y} fontSize="16" fill="black">{label}</text>
+        <g key={`marma-pt-label-${idx}`}>
+          <circle
+            cx={pt.x}
+            cy={pt.y}
+            r={usedFallback ? 12 : 10}
+            fill="#111"
+            stroke="#fff"
+            strokeWidth={usedFallback ? 4.5 : 3.5}
+          />
+          <text
+            x={pt.x + (labelOffsets[idx]?.dx ?? 15)}
+            y={pt.y + (labelOffsets[idx]?.dy ?? 0)}
+            fontSize="17"
+            fontWeight="bold"
+            fill="#1e293b"
+            stroke="#f8fafc"
+            strokeWidth="1"
+            paintOrder="stroke"
+            alignmentBaseline="middle"
+            textAnchor="middle"
+            style={{ pointerEvents: "none", userSelect: "none" }}
+          >
+            {label}
+          </text>
+        </g>
       ))}
 
       {/* Center (Brahmasthan): also bold black */}
