@@ -12,6 +12,8 @@ interface Point {
   y: number;
 }
 
+const ROTATION_OFFSET = 7; // Subtract 7 degrees for calculation, per user request.
+
 const Index = () => {
   const [mapImage, setMapImage] = useState<string | null>(null);
   const [polygonPoints, setPolygonPoints] = useState<Point[]>([]);
@@ -170,7 +172,9 @@ const Index = () => {
             }}
             onPolygonComplete={handlePolygonComplete}
             center={center}
-            chakraRotation={chakraRotation}
+            chakraRotation={
+              chakraRotation - ROTATION_OFFSET
+            }
             chakraScale={chakraScale}
             chakraOpacity={chakraOpacity}
             showDirections={actualShowDirections}
