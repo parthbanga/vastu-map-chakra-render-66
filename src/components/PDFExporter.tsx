@@ -4,10 +4,8 @@ import { Download, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
-// New: import html2canvas
 import html2canvas from "html2canvas";
-
-import { VastuCanvas } from "./VastuCanvas"; // For hidden export view
+import { VastuCanvas } from "./VastuCanvas";
 
 interface Point {
   x: number;
@@ -32,12 +30,15 @@ export const PDFExporter = ({
   chakraOpacity
 }: PDFExporterProps) => {
   const [isExporting, setIsExporting] = useState(false);
-  // Ref to hidden printable view
   const exportRef = useRef<HTMLDivElement>(null);
+
+  // Use fixed export resolution for matching what the user sees
+  const EXPORT_WIDTH = 800;
+  const EXPORT_HEIGHT = 600;
 
   // Helper for dom-to-image with html2canvas
   const captureExportView = async (node: HTMLElement) => {
-    // Use high DPI scale for PDF clarity
+    // Use a high DPI scale for PDF clarity
     return await html2canvas(node, {
       backgroundColor: "#fff",
       scale: 2,
@@ -54,18 +55,17 @@ export const PDFExporter = ({
     setIsExporting(true);
 
     try {
-      // Step 1: Ensure hidden element is rendered
       const exportNode = exportRef.current;
       if (!exportNode) throw new Error("Export view not available");
 
-      // Step 2: Wait for browser to paint (guarantee up-to-date DOM)
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Wait for DOM paint and all canvas renders (long enough for images to render)
+      await new Promise(resolve => setTimeout(resolve, 600));
 
-      // Step 3: Capture export view with html2canvas
+      // Step 1: Capture export view with html2canvas
       const canvas = await captureExportView(exportNode);
       const dataURL = canvas.toDataURL("image/png", 1.0);
 
-      // Step 4: Compose PDF with this screenshot
+      // Step 2: Compose PDF with this screenshot
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -73,23 +73,24 @@ export const PDFExporter = ({
       });
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const maxImgWidth = pageWidth - 40;
-      const maxImgHeight = pageHeight - 60;
+
+      // Calculate image size to fit A4, preserve aspect
+      const marginX = 20;
+      const marginY = 20;
+      const maxImgWidth = pageWidth - marginX * 2;
+      const maxImgHeight = pageHeight - marginY * 2 - 10;
 
       const imgAspectRatio = canvas.width / canvas.height;
       let imgWidth = maxImgWidth;
-      let imgHeight = maxImgWidth / imgAspectRatio;
+      let imgHeight = imgWidth / imgAspectRatio;
       if (imgHeight > maxImgHeight) {
         imgHeight = maxImgHeight;
-        imgWidth = maxImgHeight * imgAspectRatio;
+        imgWidth = imgHeight * imgAspectRatio;
       }
 
-      pdf.setFontSize(20);
-      pdf.text('Vastu Analysis - Map with Plot Area', 20, 20);
-      pdf.addImage(dataURL, 'PNG', 20, 30, imgWidth, imgHeight, undefined, 'FAST');
-
-      // TODO: Future - Add more pages using the same technique for directions/entrances
-      // For now, do 1 page for accurate user visual
+      pdf.setFontSize(18);
+      pdf.text('Vastu Analysis - Map with Plot Area', pageWidth / 2, marginY, { align: 'center' });
+      pdf.addImage(dataURL, 'PNG', marginX, marginY + 10, imgWidth, imgHeight, undefined, 'FAST');
 
       const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
       pdf.save(`vastu-chakra-analysis-${timestamp}.pdf`);
@@ -138,15 +139,16 @@ export const PDFExporter = ({
           </div>
         )}
       </div>
-      {/* Hidden export view */}
+
+      {/* Hidden export view for html2canvas (matches main canvas exactly) */}
       <div
         ref={exportRef}
         style={{
           position: "absolute",
           left: "-9999px",
           top: 0,
-          width: "800px",
-          height: "600px",
+          width: `${EXPORT_WIDTH}px`,
+          height: `${EXPORT_HEIGHT}px`,
           pointerEvents: "none",
           opacity: 1,
           background: "#fff",
@@ -164,8 +166,8 @@ export const PDFExporter = ({
           chakraRotation={chakraRotation}
           chakraScale={chakraScale}
           chakraOpacity={chakraOpacity}
-          showDirections={false}
-          showEntrances={false}
+          showDirections={true}
+          showEntrances={true}
           showShaktiChakra={false}
           showPlanetsChakra={false}
           showVastuPurush={false}
