@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 
 interface Point {
   x: number;
@@ -161,10 +161,18 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
     percentage: totalArea > 0 ? (directionalAreas[index] / totalArea) * 100 : 0
   }));
 
-  // Custom XAxis tick for two-line display
+  // Config: if too many bars to fit horizontally, we'll show direction names on bars
+  // This chart is always 400px wide; each bar is 22px with some margin, but we can compute available width.
+  // If labels are likely to overlap, or if forced, we'll use on-bar labels.
+  const alwaysOnBar = data.length > 12; // fallback for >12 bars
+
+  // XAxis renderer: If enough space (<=12 bars) stagger as before, else render nothing/blank (will use on-bar)
   const renderCustomTick = (props: any) => {
     const { x, y, payload, index } = props;
-    // Stagger labels: even row lower, odd row higher
+    if (alwaysOnBar) {
+      // Don't render bottom labels if we're using bar labels
+      return null;
+    }
     const dy = (index % 2 === 0) ? 18 : 34;
     return (
       <g transform={`translate(${x},${y})`}>
@@ -181,6 +189,47 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
         </text>
       </g>
     );
+  };
+
+  // Function to render direction label on top of the bar
+  const renderLabelOnBar = (props: any) => {
+    const { x, y, width, value, fill, index, height } = props;
+    // Only show label if bar is tall enough, otherwise skip
+    // (12px font, we need at least 18px high bar to look nice. But for small bars, still show label above bar.)
+    const barMinHeightForInside = 18;
+    const insideBar = height > barMinHeightForInside;
+    // Place inside top of bar if tall, else a few px above bar
+    if (insideBar) {
+      return (
+        <text
+          x={x + width / 2}
+          y={y + 14}
+          textAnchor="middle"
+          fill="#fff"
+          fontSize={12}
+          fontWeight="bold"
+          style={{
+            textShadow: '0 1px 2px #333'
+          }}
+        >
+          {directions[index]}
+        </text>
+      );
+    } else {
+      // Show label just above short bar in dark
+      return (
+        <text
+          x={x + width / 2}
+          y={y - 6}
+          textAnchor="middle"
+          fill="#333"
+          fontSize={12}
+          fontWeight="600"
+        >
+          {directions[index]}
+        </text>
+      );
+    }
   };
 
   return (
@@ -213,14 +262,14 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
       </h3>
 
       <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
+        <BarChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: alwaysOnBar ? 10 : 50 }}>
           <CartesianGrid strokeDasharray="3,3" />
           <XAxis
             dataKey="direction"
             fontSize={12}
             interval={0}
             tick={renderCustomTick}
-            height={58}
+            height={alwaysOnBar ? 10 : 58}
             tickLine={false}
           />
           <YAxis fontSize={12} />
@@ -234,7 +283,11 @@ export const DirectionalBarChart = ({ center, polygonPoints, rotation }: Directi
             name="Area %"
             barSize={22}
             radius={[4, 4, 0, 0]}
-          />
+          >
+            {alwaysOnBar && (
+              <LabelList dataKey="percentage" content={renderLabelOnBar} />
+            )}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
 
