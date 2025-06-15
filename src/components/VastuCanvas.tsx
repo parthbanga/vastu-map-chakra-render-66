@@ -449,7 +449,8 @@ export const VastuCanvas = ({
 
       {/* When not exporting, render SVG overlays as before */}
       {!drawOverlaysOnCanvas && center && polygonPoints.length >= 3 && (
-        <div className="absolute inset-0 z-[2000] pointer-events-none">
+        <>
+          {/* Directions + Entrances Chakra */}
           <MathematicalChakra
             center={center}
             radius={getOverlayRadius()}
@@ -460,7 +461,50 @@ export const VastuCanvas = ({
             showEntrances={showEntrances}
             polygonPoints={polygonPoints}
           />
-        </div>
+          
+          {/* Show Shakti Chakra image overlay if toggle is enabled */}
+          {showShaktiChakra && (
+            <ShaktiChakra
+              center={center}
+              radius={getOverlayRadius()}
+              rotation={chakraRotation}
+              opacity={chakraOpacity}
+              scale={chakraScale}
+            />
+          )}
+
+          {/* Show Planets Chakra overlay if toggle is enabled */}
+          {showPlanetsChakra && (
+            <PlanetsChakra
+              center={center}
+              radius={getOverlayRadius()}
+              rotation={chakraRotation}
+              opacity={chakraOpacity}
+              scale={chakraScale}
+              polygonPoints={polygonPoints}
+            />
+          )}
+
+          {/* Show Vastu Purush image overlay if toggle is enabled */}
+          {showVastuPurush && (
+            <VastuPurush
+              center={center}
+              radius={getOverlayRadius()}
+              rotation={chakraRotation}
+              opacity={chakraOpacity}
+              scale={chakraScale}
+            />
+          )}
+
+          {/* Show Directional Bar Chart if enabled */}
+          {showBarChart && (
+            <DirectionalBarChart
+              center={center}
+              radius={getOverlayRadius()}
+              polygonPoints={polygonPoints}
+            />
+          )}
+        </>
       )}
 
       {/* Finish Button */}
