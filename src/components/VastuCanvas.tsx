@@ -1,6 +1,8 @@
+
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 import { ShaktiChakra } from "./ShaktiChakra";
+import { AstroVastu } from "./AstroVastu";
 import { PlanetsChakra } from "./PlanetsChakra";
 import { VastuPurush } from "./VastuPurush";
 import { DirectionalBarChart } from "./DirectionalBarChart";
@@ -26,6 +28,7 @@ interface VastuCanvasProps {
   showDirections: boolean;
   showEntrances: boolean;
   showShaktiChakra: boolean;
+  showAstroVastu: boolean;
   showPlanetsChakra: boolean;
   showVastuPurush: boolean;
   showBarChart: boolean;
@@ -47,6 +50,7 @@ export const VastuCanvas = ({
   showDirections,
   showEntrances,
   showShaktiChakra,
+  showAstroVastu,
   showPlanetsChakra,
   showVastuPurush,
   showBarChart,
@@ -485,6 +489,17 @@ export const VastuCanvas = ({
             {/* Show Shakti Chakra image overlay if toggle is enabled */}
             {showShaktiChakra && (
               <ShaktiChakra
+                center={center}
+                radius={getOverlayRadius()}
+                rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
+                opacity={chakraOpacity}
+                scale={chakraScale}
+              />
+            )}
+
+            {/* Show AstroVastu image overlay if toggle is enabled */}
+            {showAstroVastu && (
+              <AstroVastu
                 center={center}
                 radius={getOverlayRadius()}
                 rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
