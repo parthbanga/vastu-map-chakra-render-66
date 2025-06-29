@@ -1,4 +1,3 @@
-
 import { RotateCw, Eye, EyeOff, BarChart3, Globe, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -12,20 +11,22 @@ interface ChakraControlsProps {
   showDirections: boolean;
   showEntrances: boolean;
   showShaktiChakra: boolean;
+  showAstroVastu: boolean;
   showBarChart: boolean;
   showPlanetsChakra: boolean;
   showVastuPurush: boolean;
-  showMarmaSthan: boolean; // Now always boolean
+  showMarmaSthan: boolean;
   onRotationChange: (rotation: number) => void;
   onScaleChange: (scale: number) => void;
   onOpacityChange: (opacity: number) => void;
   onShowDirectionsChange: (show: boolean) => void;
   onShowEntrancesChange: (show: boolean) => void;
   onShowShaktiChakraChange: (show: boolean) => void;
+  onShowAstroVastuChange: (show: boolean) => void;
   onShowBarChartChange: (show: boolean) => void;
   onShowPlanetsChakraChange: (show: boolean) => void;
   onShowVastuPurushChange: (show: boolean) => void;
-  onShowMarmaSthanChange: (show: boolean) => void; // Now required & always boolean
+  onShowMarmaSthanChange: (show: boolean) => void;
   disabled?: boolean;
 }
 
@@ -36,6 +37,7 @@ export const ChakraControls = ({
   showDirections,
   showEntrances,
   showShaktiChakra,
+  showAstroVastu,
   showBarChart,
   showPlanetsChakra,
   showVastuPurush,
@@ -46,6 +48,7 @@ export const ChakraControls = ({
   onShowDirectionsChange,
   onShowEntrancesChange,
   onShowShaktiChakraChange,
+  onShowAstroVastuChange,
   onShowBarChartChange,
   onShowPlanetsChakraChange,
   onShowVastuPurushChange,
@@ -157,6 +160,18 @@ export const ChakraControls = ({
           <Switch
             checked={showShaktiChakra}
             onCheckedChange={onShowShaktiChakraChange}
+          />
+        </div>
+
+        {/* AstroVastu */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Eye className="w-4 h-4 text-gray-500" />
+            <span className="text-sm">AstroVastu</span>
+          </div>
+          <Switch
+            checked={showAstroVastu}
+            onCheckedChange={onShowAstroVastuChange}
           />
         </div>
 

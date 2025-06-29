@@ -1,3 +1,4 @@
+
 import { useState, useRef, useCallback } from "react";
 import { Upload, RotateCw, Download, Trash2, Sparkles, Settings, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ const Index = () => {
   const [showDirections, setShowDirections] = useState(true);
   const [showEntrances, setShowEntrances] = useState(true);
   const [showShaktiChakra, setShowShaktiChakra] = useState(false);
+  const [showAstroVastu, setShowAstroVastu] = useState(false);
   const [showPlanetsChakra, setShowPlanetsChakra] = useState(false);
   const [showVastuPurush, setShowVastuPurush] = useState(false);
   const [showBarChart, setShowBarChart] = useState(false);
@@ -181,10 +183,11 @@ const Index = () => {
             showDirections={actualShowDirections}
             showEntrances={actualShowEntrances}
             showShaktiChakra={showShaktiChakra}
+            showAstroVastu={showAstroVastu}
             showPlanetsChakra={showPlanetsChakra}
             showVastuPurush={showVastuPurush}
             showBarChart={showBarChart}
-            showMarmaSthan={!!showMarmaSthan} // ensure boolean
+            showMarmaSthan={!!showMarmaSthan}
           />
         </Card>
       </div>
@@ -290,20 +293,22 @@ const Index = () => {
               showDirections={actualShowDirections}
               showEntrances={actualShowEntrances}
               showShaktiChakra={showShaktiChakra}
+              showAstroVastu={showAstroVastu}
               showPlanetsChakra={showPlanetsChakra}
               showVastuPurush={showVastuPurush}
               showBarChart={showBarChart}
-              showMarmaSthan={!!showMarmaSthan} // ensure boolean
+              showMarmaSthan={!!showMarmaSthan}
               onRotationChange={handleRotationChange}
               onScaleChange={setChakraScale}
               onOpacityChange={setChakraOpacity}
               onShowDirectionsChange={setShowDirections}
               onShowEntrancesChange={setShowEntrances}
               onShowShaktiChakraChange={setShowShaktiChakra}
+              onShowAstroVastuChange={setShowAstroVastu}
               onShowPlanetsChakraChange={setShowPlanetsChakra}
               onShowVastuPurushChange={setShowVastuPurush}
               onShowBarChartChange={setShowBarChart}
-              onShowMarmaSthanChange={setShowMarmaSthan} // direct setter
+              onShowMarmaSthanChange={setShowMarmaSthan}
               disabled={!center}
             />
           </div>
