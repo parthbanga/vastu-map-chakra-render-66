@@ -27,6 +27,7 @@ export const AstroVastu = ({
     <div
       style={{
         position: 'absolute',
+        // Center the container precisely on the polygon center
         top: center.y - imageSize / 2,
         left: center.x - imageSize / 2,
         width: imageSize,
@@ -34,7 +35,7 @@ export const AstroVastu = ({
         opacity,
         pointerEvents: 'none',
         transform: `rotate(${rotation}deg)`,
-        transformOrigin: 'center center', // Ensure rotation happens around center
+        transformOrigin: '50% 50%', // Ensure rotation happens around the exact center
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -48,6 +49,7 @@ export const AstroVastu = ({
           height: '100%',
           objectFit: 'contain',
           objectPosition: 'center center', // Ensure image is centered within container
+          display: 'block', // Remove any inline spacing
         }}
       />
     </div>
