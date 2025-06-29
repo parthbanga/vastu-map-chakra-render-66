@@ -19,8 +19,9 @@ export const AstroVastu = ({
   opacity, 
   scale 
 }: AstroVastuProps) => {
-  const scaledRadius = radius * scale;
-  const imageSize = scaledRadius * 2.2; // Make the image cover the full chakra area
+  // Increase the scaling effect - make it more responsive to scale changes
+  const scaledRadius = radius * scale * 1.5; // Increased multiplier for better scaling
+  const imageSize = scaledRadius * 2.4; // Adjusted for better coverage
   
   return (
     <div
@@ -33,7 +34,10 @@ export const AstroVastu = ({
         opacity,
         pointerEvents: 'none',
         transform: `rotate(${rotation}deg)`,
-        transformOrigin: 'center',
+        transformOrigin: 'center center', // Ensure rotation happens around center
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
     >
       <img
@@ -43,6 +47,7 @@ export const AstroVastu = ({
           width: '100%',
           height: '100%',
           objectFit: 'contain',
+          objectPosition: 'center center', // Ensure image is centered within container
         }}
       />
     </div>
