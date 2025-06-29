@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Download, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -251,6 +252,7 @@ export const PDFExporter = ({
             showDirections={true}      // FORCED ON
             showEntrances={true}       // FORCED ON
             showShaktiChakra={false}
+            showAstroVastu={false}     // Add missing prop
             showPlanetsChakra={false}
             showVastuPurush={false}
             showBarChart={false}
