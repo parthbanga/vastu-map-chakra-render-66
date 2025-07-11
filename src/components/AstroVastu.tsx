@@ -19,14 +19,8 @@ export const AstroVastu = ({
   opacity, 
   scale 
 }: AstroVastuProps) => {
-  // Debug: Log the positioning values
-  console.log('AstroVastu positioning:', { center, radius, scale, rotation });
-  
   const scaledRadius = radius * scale;
-  const imageSize = scaledRadius * 2.2; // Make the image cover the full chakra area
-  
-  // Debug: Log the calculated values
-  console.log('AstroVastu calculated:', { scaledRadius, imageSize, finalTop: center.y - imageSize / 2, finalLeft: center.x - imageSize / 2 });
+  const imageSize = scaledRadius * 1.8; // Reduced from 2.2 to keep it properly sized
   
   return (
     <div
