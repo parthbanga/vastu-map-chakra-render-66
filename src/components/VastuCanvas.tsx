@@ -31,6 +31,7 @@ interface VastuCanvasProps {
   showAstroVastu: boolean;
   showPlanetsChakra: boolean;
   showVastuPurush: boolean;
+  showVastuPurush2: boolean;
   showBarChart: boolean;
   /** If true: overlays are drawn directly onto the main canvas (for PDF/screenshot exporting) */
   drawOverlaysOnCanvas?: boolean;
@@ -53,6 +54,7 @@ export const VastuCanvas = ({
   showAstroVastu,
   showPlanetsChakra,
   showVastuPurush,
+  showVastuPurush2,
   showBarChart,
   drawOverlaysOnCanvas = false,
   showMarmaSthan,
@@ -522,6 +524,17 @@ export const VastuCanvas = ({
 
             {/* Show Vastu Purush image overlay if toggle is enabled */}
             {showVastuPurush && (
+              <VastuPurush
+                center={center}
+                radius={getOverlayRadius()}
+                rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
+                opacity={chakraOpacity}
+                scale={chakraScale}
+              />
+            )}
+
+            {/* Show second Vastu Purush image overlay if toggle is enabled */}
+            {showVastuPurush2 && (
               <VastuPurush
                 center={center}
                 radius={getOverlayRadius()}

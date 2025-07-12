@@ -255,6 +255,7 @@ export const PDFExporter = ({
             showAstroVastu={false}     // Add missing prop
             showPlanetsChakra={false}
             showVastuPurush={false}
+            showVastuPurush2={false}
             showBarChart={false}
             drawOverlaysOnCanvas={true} // Draw directly on the canvas for export
           />

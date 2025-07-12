@@ -27,6 +27,7 @@ const Index = () => {
   const [showAstroVastu, setShowAstroVastu] = useState(false);
   const [showPlanetsChakra, setShowPlanetsChakra] = useState(false);
   const [showVastuPurush, setShowVastuPurush] = useState(false);
+  const [showVastuPurush2, setShowVastuPurush2] = useState(false);
   const [showBarChart, setShowBarChart] = useState(false);
   const [center, setCenter] = useState<Point | null>(null);
   const [activeTab, setActiveTab] = useState<'upload' | 'controls' | 'export'>('upload');
@@ -186,6 +187,7 @@ const Index = () => {
             showAstroVastu={showAstroVastu}
             showPlanetsChakra={showPlanetsChakra}
             showVastuPurush={showVastuPurush}
+            showVastuPurush2={showVastuPurush2}
             showBarChart={showBarChart}
             showMarmaSthan={!!showMarmaSthan}
           />
@@ -294,9 +296,10 @@ const Index = () => {
               showEntrances={actualShowEntrances}
               showShaktiChakra={showShaktiChakra}
               showAstroVastu={showAstroVastu}
-              showPlanetsChakra={showPlanetsChakra}
-              showVastuPurush={showVastuPurush}
-              showBarChart={showBarChart}
+                showPlanetsChakra={showPlanetsChakra}
+                showVastuPurush={showVastuPurush}
+                showVastuPurush2={showVastuPurush2}
+                showBarChart={showBarChart}
               showMarmaSthan={!!showMarmaSthan}
               onRotationChange={handleRotationChange}
               onScaleChange={setChakraScale}
@@ -307,6 +310,7 @@ const Index = () => {
               onShowAstroVastuChange={setShowAstroVastu}
               onShowPlanetsChakraChange={setShowPlanetsChakra}
               onShowVastuPurushChange={setShowVastuPurush}
+              onShowVastuPurush2Change={setShowVastuPurush2}
               onShowBarChartChange={setShowBarChart}
               onShowMarmaSthanChange={setShowMarmaSthan}
               disabled={!center}
