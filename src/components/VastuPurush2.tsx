@@ -19,20 +19,20 @@ export const VastuPurush2 = ({
   scale 
 }: VastuPurush2Props) => {
   const scaledRadius = radius * scale;
-  const imageSize = scaledRadius * 2.2; // Make the image cover the full chakra area
+  const imageSize = scaledRadius * 2;
   
   return (
     <div
       style={{
         position: 'absolute',
-        top: center.y - imageSize / 2,
-        left: center.x - imageSize / 2,
-        width: imageSize,
-        height: imageSize,
+        top: center.y - scaledRadius,
+        left: center.x - scaledRadius,
+        width: scaledRadius * 2,
+        height: scaledRadius * 2,
         opacity,
         pointerEvents: 'none',
         transform: `rotate(${rotation}deg)`,
-        transformOrigin: 'center',
+        transformOrigin: `${scaledRadius}px ${scaledRadius}px`,
       }}
     >
       <img
