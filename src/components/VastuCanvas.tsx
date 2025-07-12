@@ -5,6 +5,7 @@ import { ShaktiChakra } from "./ShaktiChakra";
 import { AstroVastu } from "./AstroVastu";
 import { PlanetsChakra } from "./PlanetsChakra";
 import { VastuPurush } from "./VastuPurush";
+import { VastuPurush2 } from "./VastuPurush2";
 import { DirectionalBarChart } from "./DirectionalBarChart";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
@@ -535,7 +536,7 @@ export const VastuCanvas = ({
 
             {/* Show second Vastu Purush image overlay if toggle is enabled */}
             {showVastuPurush2 && (
-              <VastuPurush
+              <VastuPurush2
                 center={center}
                 radius={getOverlayRadius()}
                 rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
