@@ -1,10 +1,9 @@
-
 interface Point {
   x: number;
   y: number;
 }
 
-interface AstroVastuProps {
+interface VastuPurush2Props {
   center: Point;
   radius: number;
   rotation: number;
@@ -12,33 +11,33 @@ interface AstroVastuProps {
   scale: number;
 }
 
-export const AstroVastu = ({ 
+export const VastuPurush2 = ({ 
   center, 
   radius, 
   rotation, 
   opacity, 
   scale 
-}: AstroVastuProps) => {
+}: VastuPurush2Props) => {
   const scaledRadius = radius * scale;
-  const imageSize = scaledRadius * 2.2; // Make the image cover the full chakra area
+  const imageSize = scaledRadius * 2;
   
   return (
     <div
       style={{
         position: 'absolute',
-        top: center.y - imageSize / 2,
-        left: center.x - imageSize / 2,
-        width: imageSize,
-        height: imageSize,
+        top: center.y - scaledRadius,
+        left: center.x - scaledRadius,
+        width: scaledRadius * 2,
+        height: scaledRadius * 2,
         opacity,
         pointerEvents: 'none',
         transform: `rotate(${rotation}deg)`,
-        transformOrigin: 'center',
+        transformOrigin: `${scaledRadius}px ${scaledRadius}px`,
       }}
     >
       <img
-        src="/lovable-uploads/93526fdf-864e-490b-bfcf-d711194548b2.png"
-        alt="AstroVastu"
+        src="/lovable-uploads/5c7549ba-4000-4ff0-8083-187d64bc4934.png"
+        alt="Vastu Purush 2"
         style={{
           width: '100%',
           height: '100%',

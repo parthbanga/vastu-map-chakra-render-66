@@ -12,6 +12,10 @@ interface ChakraControlsProps {
   showEntrances: boolean;
   showShaktiChakra: boolean;
   showAstroVastu: boolean;
+  showBarChart: boolean;
+  showPlanetsChakra: boolean;
+  showVastuPurush: boolean;
+  showVastuPurush2: boolean;
   showMarmaSthan: boolean;
   onRotationChange: (rotation: number) => void;
   onScaleChange: (scale: number) => void;
@@ -20,6 +24,10 @@ interface ChakraControlsProps {
   onShowEntrancesChange: (show: boolean) => void;
   onShowShaktiChakraChange: (show: boolean) => void;
   onShowAstroVastuChange: (show: boolean) => void;
+  onShowBarChartChange: (show: boolean) => void;
+  onShowPlanetsChakraChange: (show: boolean) => void;
+  onShowVastuPurushChange: (show: boolean) => void;
+  onShowVastuPurush2Change: (show: boolean) => void;
   onShowMarmaSthanChange: (show: boolean) => void;
   disabled?: boolean;
 }
@@ -32,6 +40,10 @@ export const ChakraControls = ({
   showEntrances,
   showShaktiChakra,
   showAstroVastu,
+  showBarChart,
+  showPlanetsChakra,
+  showVastuPurush,
+  showVastuPurush2,
   showMarmaSthan,
   onRotationChange,
   onScaleChange,
@@ -40,6 +52,10 @@ export const ChakraControls = ({
   onShowEntrancesChange,
   onShowShaktiChakraChange,
   onShowAstroVastuChange,
+  onShowBarChartChange,
+  onShowPlanetsChakraChange,
+  onShowVastuPurushChange,
+  onShowVastuPurush2Change,
   onShowMarmaSthanChange,
   disabled = false
 }: ChakraControlsProps) => {
@@ -163,7 +179,55 @@ export const ChakraControls = ({
           />
         </div>
 
-        {/* Marma Sthan */}
+        {/* Planets Chakra */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-gray-500" />
+            <span className="text-sm">8 Planets</span>
+          </div>
+          <Switch
+            checked={showPlanetsChakra}
+            onCheckedChange={onShowPlanetsChakraChange}
+          />
+        </div>
+
+        {/* Vastu Purush */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 text-gray-500" />
+            <span className="text-sm">Vastu Purush</span>
+          </div>
+          <Switch
+            checked={showVastuPurush}
+            onCheckedChange={onShowVastuPurushChange}
+          />
+        </div>
+
+        {/* Vastu Purush 2 */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 text-blue-500" />
+            <span className="text-sm">Vastu Purush 2</span>
+          </div>
+          <Switch
+            checked={showVastuPurush2}
+            onCheckedChange={onShowVastuPurush2Change}
+          />
+        </div>
+
+        {/* Area Analysis */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-gray-500" />
+            <span className="text-sm">Area Analysis</span>
+          </div>
+          <Switch
+            checked={showBarChart}
+            onCheckedChange={onShowBarChartChange}
+          />
+        </div>
+
+        {/* Marma Sthan - placed below Area Analysis */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-yellow-500" />

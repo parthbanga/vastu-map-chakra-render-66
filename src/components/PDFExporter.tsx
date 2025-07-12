@@ -252,8 +252,11 @@ export const PDFExporter = ({
             showDirections={true}      // FORCED ON
             showEntrances={true}       // FORCED ON
             showShaktiChakra={false}
-            showAstroVastu={false}
-            
+            showAstroVastu={false}     // Add missing prop
+            showPlanetsChakra={false}
+            showVastuPurush={false}
+            showVastuPurush2={false}
+            showBarChart={false}
             drawOverlaysOnCanvas={true} // Draw directly on the canvas for export
           />
         </div>

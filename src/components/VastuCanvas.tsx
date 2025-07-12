@@ -3,6 +3,9 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { MathematicalChakra } from "./MathematicalChakra";
 import { ShaktiChakra } from "./ShaktiChakra";
 import { AstroVastu } from "./AstroVastu";
+import { PlanetsChakra } from "./PlanetsChakra";
+import { VastuPurush } from "./VastuPurush";
+import { VastuPurush2 } from "./VastuPurush2";
 import { DirectionalBarChart } from "./DirectionalBarChart";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
@@ -27,7 +30,10 @@ interface VastuCanvasProps {
   showEntrances: boolean;
   showShaktiChakra: boolean;
   showAstroVastu: boolean;
-  
+  showPlanetsChakra: boolean;
+  showVastuPurush: boolean;
+  showVastuPurush2: boolean;
+  showBarChart: boolean;
   /** If true: overlays are drawn directly onto the main canvas (for PDF/screenshot exporting) */
   drawOverlaysOnCanvas?: boolean;
   showMarmaSthan?: boolean;
@@ -47,7 +53,10 @@ export const VastuCanvas = ({
   showEntrances,
   showShaktiChakra,
   showAstroVastu,
-  
+  showPlanetsChakra,
+  showVastuPurush,
+  showVastuPurush2,
+  showBarChart,
   drawOverlaysOnCanvas = false,
   showMarmaSthan,
 }: VastuCanvasProps & { showMarmaSthan?: boolean }) => {
@@ -502,7 +511,48 @@ export const VastuCanvas = ({
               />
             )}
 
+            {/* Show Planets Chakra overlay if toggle is enabled */}
+            {showPlanetsChakra && (
+              <PlanetsChakra
+                center={center}
+                radius={getOverlayRadius()}
+                rotation={chakraRotation}
+                opacity={chakraOpacity}
+                scale={chakraScale}
+                polygonPoints={polygonPoints}
+              />
+            )}
 
+            {/* Show Vastu Purush image overlay if toggle is enabled */}
+            {showVastuPurush && (
+              <VastuPurush
+                center={center}
+                radius={getOverlayRadius()}
+                rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
+                opacity={chakraOpacity}
+                scale={chakraScale}
+              />
+            )}
+
+            {/* Show second Vastu Purush image overlay if toggle is enabled */}
+            {showVastuPurush2 && (
+              <VastuPurush2
+                center={center}
+                radius={getOverlayRadius()}
+                rotation={chakraRotation + 9} // Use the user-entered rotation (not offset), compensating for the -9 elsewhere
+                opacity={chakraOpacity}
+                scale={chakraScale}
+              />
+            )}
+
+            {/* Show Directional Bar Chart if enabled */}
+            {showBarChart && (
+              <DirectionalBarChart
+                center={center}
+                polygonPoints={polygonPoints}
+                rotation={chakraRotation}
+              />
+            )}
 
             {/* Show Marma Sthan if enabled and 3+ sided plot */}
             {(showMarmaSthan && polygonPoints.length >= 3) ? (
